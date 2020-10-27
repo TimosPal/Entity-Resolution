@@ -1,0 +1,79 @@
+{
+    "<page title>": "Canon PowerShot SX20 IS - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ae lock": "Yes",
+    "aeb": "1/3 \u2013 2 EV in 1/3 stop increments",
+    "af assist beam": "Yes",
+    "af lock": "On/Off Selectable",
+    "af modes": [
+        "\u00b9 Some settings limit availability",
+        "Single, Continuous, Servo AF/AE\u00b9"
+    ],
+    "af point selection": "Manual selection using FlexiZone AF/AE, Size (Normal, Small)",
+    "af system points": "Face Detection, 1-point AF (Any position is available, fixed to centre or Face Select and Track)",
+    "battery life": "\u00b9 Using the batteries and memory card format supplied with the camera (where included), except where indicated.",
+    "builtin flash range": "50 cm \u2013 6.8 m (W) / 1.0 m \u2013 3.7 m (T)",
+    "cases  straps": "Soft Case DCC-800",
+    "closest focusing distance": "0 cm (W) from front of lens in Super Macro",
+    "construction": "13 elements in 11 groups (1 UD and 1 single-sided UA element)",
+    "continuous shooting": [
+        "\u00b9 Under conditions where the flash does not fire.\n\u00b2 Depending on memory card speed / capacity / compression setting.",
+        "Approx. 1.0 shots/sec.\u00b9, AF: Approx. 0.7 shots/sec.\u00b9, LV: Approx. 0.7 shots/sec.\u00b9 (until memory card becomes full)\u00b2"
+    ],
+    "dimensions wxhxd": "124.0 x 88.3 x 86.9 mm (excluding protrusions)",
+    "drive modes": "Single, Continuous, Self-Timer, FaceSelf-Timer",
+    "exposure compensation": "+/- 2 EV in 1/3 stop increments\nEnhanced i-Contrast for automatic dynamic range correction",
+    "external flash": [
+        "\u00b9 Not all functions of the flash are supported.",
+        "E-TTL with EX series Speedlites\u00b9, Canon High Power Flash HF-DC1"
+    ],
+    "flash": [
+        "\u00b9 Not all functions of the flash are supported.",
+        "Canon Speedlites (including 270EX, 430EX II, 580EX, 580EX II\u00b9), Speedlite Transmitter ST-E2, Off-Camera Shoe Cord OC-E3\nHigh Power Flash HF-DC1"
+    ],
+    "flash exposure compensation": "+/- 2 EV in 1/3 stop increments. Face Detection FE. Safety FE.",
+    "flash exposure lock": "Yes",
+    "focal length": "5.0 \u2013 100.0 mm (35 mm equivalent: 28 \u2013 560 mm)",
+    "focus bracketing": "Yes",
+    "histogram": "Yes, live histogram",
+    "image stabilisation": "Yes (shift-type)",
+    "intelligent orientation sensor": "Yes",
+    "iso sensitivity": "AUTO, 80, 100, 200, 400, 800, 1600",
+    "manual focus": "Yes",
+    "manual power adjustment": [
+        "\u00b9 Not all functions of the flash are supported.",
+        "3 levels with internal flash (up to 19 levels with external EX Speedlites 270EX and 430EX II. 22 levels with 580EX II\u00b9)"
+    ],
+    "maximum fnumber": "f/2.8-f/5.7",
+    "menu languages": "English, German, French, Dutch, Danish, Finnish, Italian, Norwegian, Swedish, Spanish, Simplified Chinese, Chinese (traditional), Japanese, Russian, Portuguese, Korean, Greek, Polish, Czech, Hungarian, Turkish, Thai, Arabic, Ukrainian, Romanian, Farsi",
+    "metering modes": "Evaluative (linked to Face Detection AF frame), Centre-weighted average, Spot (centre or linked to Face Detection AF or FlexiZone AF frame)",
+    "modes": [
+        "Auto*, Program AE, Shutter priority AE, Aperture priority AE, Manual, Custom, Portrait, Landscape, Night Snapshot, Sports, SCN (Indoor, Sunset, Night Scene, Fireworks, Beach, Aquarium, Foliage, Snow, ISO 3200\u00b9, Color Accent, Color Swap), Stitch Assist, Movie, Super Macro\n*with Scene Detection Technology and Motion Detection Technology",
+        "\u00b9 Recording pixels fixed at 1600 x 1200 (ISO 3200 Mode) and 1824 x 1368 (Low Light Mode).",
+        "Auto, Manual Flash On / Off"
+    ],
+    "movie length": "\u00b9 The following Speed Class memory cards are required for maximum record time: 1280 x 720, 30 fps Speed Class 4 or above. 1920 x 1080, 30 fps Speed Class 6\n\u00b2 Depending on memory card speed / capacity / compression setting.",
+    "movies": "MOV [H.264 + Linear PCM (monaural / stereo)]",
+    "my camera  my menu": "Start-up image and camera sounds customisation. Menu customisation",
+    "my category": "Image tagging feature",
+    "operating environment": [
+        "0 \u2013 40 \u00b0C\u00b9, 10 \u2013 90% humidity",
+        "\u00b9 0 \u2013 35 \u00b0C when NB-3AH is used"
+    ],
+    "other": "Canon HDMI Cable HTC-100",
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Positive Film, Lighter Skin Tone, Darker Skin Tone, Vivid Blue, Vivid Green, Vivid Red, Custom Color)",
+    "playback zoom": "Approx. 2x \u2013 10x",
+    "power supply  battery chargers": "Compact AC power adapter CA-PS700, Battery Charger Kit CBK4-300, Ni-MH Batteries NB4-300",
+    "redeye correction": "Yes, during shooting and playback",
+    "redeye reduction": "Yes",
+    "second curtain synchronisation": "Yes",
+    "self timer": "Approx. 2 or 10 sec., Custom or FaceSelf-Timer",
+    "slow sync speed": "Yes. Fastest speed 1/500 sec.",
+    "still image type": "JPEG compression, (Exif 2.2 [Exif Print] compliant) / Design rule for Camera File system, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "type": "TTL",
+    "ultrasonic motor usm": "Yes, zoom",
+    "weight": "Approx. 647 g (including battery/batteries and memory card)",
+    "zoom": [
+        "\u00b9 Depending on the image size selected.\n\u00b2 Digital zoom available for still image and standard movie modes only. Optical zoom may not be available during movie recording.",
+        "Optical 20x. Digital Approx. 4x (with Digital Tele-Converter Approx. 1.5x or 2.0x and Safety Zoom\u00b9)\u00b2. Combined Approx. 80x"
+    ]
+}

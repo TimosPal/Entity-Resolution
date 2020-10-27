@@ -1,0 +1,69 @@
+{
+    "<page title>": "Canon IXUS 1000 HS - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ac power supply": "Optional, AC adapter kit ACK-DC70",
+    "ae lock": "On/Off Selectable",
+    "af assist beam": "Yes",
+    "af lock": "On/Off Selectable",
+    "af modes": [
+        "Single, Servo AF/AE\u00b9",
+        "\u00b9 Some settings limit availability"
+    ],
+    "af point selection": "Size (Normal, Small)",
+    "af system points": "AiAF (Face Detection / 9-point), 1-point AF (fixed to centre)",
+    "batteries": "Rechargeable Li-ion Battery NB-9L (battery and charger supplied)",
+    "battery life": [
+        "\u00b9 Using the batteries and memory card format supplied with the camera (where included), except where indicated.",
+        "Approx. 150 shots\u00b9\nApprox. 270 min. playback"
+    ],
+    "builtin flash range": "30cm - 3.5 m (W) / 1.0 cm - 2.0 m (T)",
+    "cases  straps": "Soft Leather Case DCC-1700",
+    "closest focusing distance": "1 cm (W) from front of lens in macro",
+    "compression": "Fine, Normal",
+    "construction": "14 elements in 12 groups (1 double-sided aspherical lens, 1 single-sided aspherical lens with UA element, 1 light-folding prism)",
+    "continuous shooting": [
+        "\u00b9 Under conditions where the flash does not fire.\n\u00b2 Depending on memory card speed / capacity / compression setting.",
+        "Approx. 3.7 shots/sec\u00b9, High-speed Burst (2.5MP): Approx. 8.8 shots/sec.\u00b9, (until memory card becomes full)\u00b2"
+    ],
+    "drive modes": "Single, Continuous, Self-Timer",
+    "exposure compensation": "+/- 2 EV in 1/3 stop increments\nEnhanced i-Contrast for automatic dynamic range correction",
+    "external flash": "Canon High Power Flash HF-DC1",
+    "flash": "High Power Flash HF-DC1",
+    "flash exposure compensation": "Face Detection FE, Smart Flash Exposure",
+    "flash exposure lock": "Yes",
+    "focal length": "6.3 - 63.0 mm (35 mm equivalent: 36 - 360 mm)",
+    "histogram": "Yes",
+    "image size": "(L) 3648 x 2736, (M1) 2816 x 2112, (M2) 1600 x 1200, (S) 640 x 480, (W) 3648 x 2048. Resize in playback (M2, S, 320 x 240)",
+    "image stabilisation": "Yes (lens shift-type), 4-stop. Dynamic IS (in Movie)",
+    "intelligent orientation sensor": "Yes",
+    "iso sensitivity": "AUTO, 125, 200, 400, 800, 1600, 3200",
+    "maximum fnumber": "f/3.4 \u2013 f/5.6",
+    "metering modes": "Evaluative (linked to Face Detection AF frame), Centre-weighted average, Spot (centre)",
+    "modes": [
+        "Auto*, P, Portrait, Kids & Pets, Smart Shutter (Smile, Wink Self-Timer, FaceSelf-Timer), High-speed Burst (2.5MP), Best Image Selection (2.5MP), Handheld Night Scene, Low Light (2.5MP), Super Vivid, Poster Effect Color Accent, Color Swap, Fish-eye Effect, Miniature Effect, Beach, Foliage, Snow, Fireworks, Long Shutter, Stitch Assist, Movie*.\n*with Scene Detection Technology and Motion Detection Technology",
+        "Auto, Manual Flash On / Off, Slow Synchro"
+    ],
+    "movie length": [
+        "(Full HD & HD) Up to 4 GB or 10 min. 00 sec.\u00b9\n(L and M) Up to 4 GB or 1 hour\u00b2\n(Super Slow Motion Movie) 30 sec.",
+        "\u00b9 The following Speed Class memory cards are required for maximum record time: 1280 x 720, 30 fps Speed Class 4 or above. 1920 x 1080, 30 fps Speed Class 6.\n\u00b2 Depending on memory card speed / capacity / compression setting."
+    ],
+    "movies": [
+        "MOV [H.264 + Linear PCM (stereo)]",
+        "(Full HD) 1920 x 1080, 24 fps, (HD) 1280 x 720, 30 fps, (L) 640 x 480, 30 fps, (M) 320 x 240, 30 fps\nMiniature Effect (HD, L) 6 fps, 3 fps, 1.5 fps"
+    ],
+    "my camera  my menu": "Start-up image and camera sounds customisation",
+    "my category": "Image tagging feature",
+    "other": "Canon HDMI Cable HTC-100",
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Positive Film, Lighter Skin Tone, Darker Skin Tone, Vivid Blue, Vivid Green, Vivid Red, Custom Color)",
+    "playback zoom": "Approx. 2x - 10x",
+    "power supply  battery chargers": "AC Adapter kit ACK-DC70",
+    "redeye correction": "Yes, during shooting and playback",
+    "redeye reduction": "Yes",
+    "self timer": "Approx. 2 or 10 sec., Custom",
+    "slow sync speed": "Yes. Fastest speed 1/2000 sec.",
+    "still image type": "JPEG compression, (Exif 2.3 [Exif Print] compliant) / Design rule for Camera File system, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "type": "TTL",
+    "zoom": [
+        "\u00b9 Depending on the image size selected.",
+        "Optical 10x. Digital Approx. 4x (with Digital Tele-Converter Approx. 1.4x or 2.3x and Safety Zoom\u00b9). Combined Approx. 40x"
+    ]
+}

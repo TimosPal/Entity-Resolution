@@ -1,0 +1,73 @@
+{
+    "<page title>": "Canon PowerShot S90 - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ac power supply": "Optional, AC Adapter Kit ACK-DC40",
+    "ae lock": "Yes",
+    "aeb": "1/3 \u2013 2 EV in 1/3 stop increments",
+    "af assist beam": "Yes",
+    "af lock": "On/Off Selectable",
+    "af modes": [
+        "\u00b9 Some settings limit availability",
+        "Single, Continuous (only available in Auto mode), Servo AF/AE\u00b9"
+    ],
+    "af point selection": "Size (Normal, Small)",
+    "af system points": "AiAF (Face Detection / 9-point), 1-point AF (fixed to centre)",
+    "batteries": "Rechargeable Li-ion Battery NB-6L (NB-6L battery and charger supplied)",
+    "battery life": [
+        "Approx. 220 shots\u00b9\nApprox. 300 min. playback",
+        "\u00b9 Using the batteries and memory card format supplied with the camera (where included), except where indicated."
+    ],
+    "builtin flash range": "50 cm \u2013 6.5 m (W) / 2.5 m (T)",
+    "cases  straps": "Soft Case DCC-1400",
+    "closest focusing distance": "5 cm (W) from front of lens in macro",
+    "colour filter type": "\u00b9 Some settings limit availability",
+    "construction": "7 elements in 6 groups (2 double-sided aspherical elements including 1 UA element)",
+    "continuous shooting": [
+        "\u00b9 Under conditions where the flash does not fire.\n\u00b2 Depending on memory card speed / capacity / compression setting.",
+        "Approx. 0.9 shots/sec.Recording pixels fixed at 1600 x 1200 (ISO 3200 Mode) and 1824 x 1368 (Low Light Mode)\u00b9, AF: Approx. 0.6 shots/sec.\u00b9, LV: Approx. 0.6 shots/sec.\u00b9 (until memory card becomes full)\u00b2"
+    ],
+    "dimensions wxhxd": "100.0 x 58.4 x 30.9 mm (excluding protrusions)",
+    "drive modes": "Single, Continuous, Self-Timer, FaceSelf-Timer",
+    "exposure compensation": "+/- 2 EV in 1/3 stop increments\nEnhanced i-Contrast for automatic dynamic range correction",
+    "external flash": "Canon High Power Flash HF-DC1",
+    "flash": "High Power Flash HF-DC1",
+    "flash exposure compensation": "+/- 2 EV in 1/3 stop increments. Face Detection FE. Safety FE.",
+    "flash exposure lock": "Yes",
+    "focal length": "6.0 \u2013 22.5 mm (35 mm equivalent: 28 \u2013 105 mm)",
+    "focus bracketing": "Yes",
+    "histogram": "Yes",
+    "image stabilisation": "Yes (shift-type)",
+    "intelligent orientation sensor": "Yes",
+    "iso sensitivity": "AUTO, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600, 2000, 2500, 3200",
+    "manual focus": "Yes",
+    "manual power adjustment": "3 levels with internal flash",
+    "maximum fnumber": "f/2.0-f/4.9",
+    "menu languages": "English, German, French, Dutch, Danish, Finnish, Italian, Norwegian, Swedish, Spanish, Simplified Chinese, Chinese (traditional), Japanese, Russian, Portuguese, Korean, Greek, Polish, Czech, Hungarian, Turkish, Thai, Arabic, Ukrainian, Romanian, Farsi",
+    "metering modes": "Evaluative (linked to Face Detection AF frame), Centre-weighted average, Spot (Centre)",
+    "modes": [
+        "Auto*, Program AE, Shutter priority AE, Aperture priority AE, Manual, Custom, Low Light\u00b9, SCN (Portrait, Landscape, Night Scene, Night Snapshot, Kids & Pets, Indoor, Sunset, Foliage, Snow, Beach, Fireworks, Aquarium, Underwater, Color Accent, Color Swap, Nostalgic, Stitch Assist), Movie\n* with Scene Detection Technology and Motion Detection Technology",
+        "Auto, Manual Flash On / Off",
+        "\u00b9 Recording pixels fixed at 1600 x 1200 (ISO 3200 Mode) and 1824 x 1368 (Low Light Mode)."
+    ],
+    "movie length": "\u00b9 Depending on memory card speed / capacity / compression setting.",
+    "movies": "MOV [H.264 + Linear PCM (monaural)]",
+    "my camera  my menu": "Start-up image and camera sounds customisation. Menu customisation",
+    "my category": "Image tagging feature",
+    "operating environment": "0 \u2013 40 \u00b0C, 10 \u2013 90% humidity",
+    "other": "Canon HDMI Cable HTC-100",
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Positive Film, Lighter Skin Tone, Darker Skin Tone, Vivid Blue, Vivid Green, Vivid Red, Custom Color)",
+    "playback zoom": "Approx. 2x \u2013 10x",
+    "power supply  battery chargers": "AC Adapter Kit ACK-DC40, Battery Charger CB-2LYE",
+    "redeye correction": "Yes, during shooting and playback",
+    "redeye reduction": "Yes",
+    "second curtain synchronisation": "Yes",
+    "self timer": "Approx. 2 or 10 sec., Custom or FaceSelf-Timer",
+    "slow sync speed": "Yes. Fastest speed 1/500 sec.",
+    "still image type": "JPEG compression, (Exif 2.2 [Exif Print] compliant) / Design rule for Camera File system, RAW, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "type": "TTL",
+    "waterproof  weatherproof case": "Waterproof Case (40m) WP-DC35, Waterproof Case Weight WW-DC1",
+    "weight": "Approx. 198 g (including battery/batteries and memory card)",
+    "zoom": [
+        "Optical 3.8x. Digital Approx. 4x (with Digital Tele-Converter Approx. 1.4x or 2.3x and Safety Zoom\u00b9)\u00b2. Combined Approx. 15x",
+        "\u00b9 Depending on the image size selected.\n\u00b2 Digital zoom available for still image and standard movie modes only. Optical zoom may not be available during movie recording."
+    ]
+}

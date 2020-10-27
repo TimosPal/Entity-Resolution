@@ -1,0 +1,91 @@
+{
+    "3d mode": "Yes",
+    "<page title>": "(not Provided) | Sony Cyber-shot DSC-HX9V Digital Camera (Black) Reviews - Buzzillions.com",
+    "aperture": "f/3.3-8.0",
+    "camera color": "Black",
+    "camera pixel count": "16 Megapixel",
+    "camera style": "Point & Shoot with Zoom Lens",
+    "color": "Black",
+    "compatible battery": "NP-BG1",
+    "continuous advance fps": "10",
+    "depth inches": "1.4",
+    "effective megapixel count": "16.2",
+    "flash": [
+        "Slow Synchro",
+        "On",
+        "Off",
+        "Built-in with Red Eye Reducer",
+        "Auto"
+    ],
+    "focus modes": [
+        "Semi Manual",
+        "Manual",
+        "Flexible Spot AF",
+        "Center AF",
+        "9 point AF"
+    ],
+    "hdmi mini": "Yes",
+    "height inches": "2.4",
+    "image format": "JPEG",
+    "lcd display size inches": "3.0",
+    "lcd viewer": "3 Inch",
+    "lens": "Zoom Lens",
+    "megapixels": "16",
+    "metering": [
+        "Spot",
+        "Multi-pattern",
+        "Center Weighted"
+    ],
+    "microphone": "Stereo",
+    "optical zoom": [
+        "16x",
+        "16"
+    ],
+    "removable memory type": [
+        "Memory Stick Duo",
+        "SDXC",
+        "Memory Stick PRO HG-Duo",
+        "SDHC",
+        "Memory Stick Pro Duo",
+        "Secure Digital"
+    ],
+    "scene modes": [
+        "Gourmet",
+        "Pet",
+        "Soft Skin",
+        "Handheld Twilight",
+        "Landscape",
+        "High Sensitivity",
+        "Soft Snap",
+        "Anti Motion Blur",
+        "Beach/Snow",
+        "Twilight",
+        "Twilight Portrait",
+        "Fireworks"
+    ],
+    "self timer": [
+        "portrait1",
+        "10 Seconds",
+        "portrait2",
+        "2 Seconds"
+    ],
+    "sensitivity": "ISO 100-3200",
+    "sensor": "CMOS",
+    "speakers": "Mono",
+    "specification": "Description",
+    "still image resolution max": "4608 x 3456",
+    "storage media type": "Memory Stick Pro Duo / SDHC",
+    "usb port": "USB 2.0 High Speed",
+    "weight pounds": "0.5",
+    "white balance": [
+        "White Balance Sift",
+        "Onepush",
+        "Incandescent",
+        "Fluorescent",
+        "Flash",
+        "Daylight",
+        "Cloudy",
+        "Auto"
+    ],
+    "width inches": "4.25"
+}

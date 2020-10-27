@@ -1,0 +1,33 @@
+{
+    "<page title>": "3.0 Megapixel Ip Camera,5.0 Megapixel Ip Camera - Buy Camera Ip,3.0 Megapixel Ip Camera,5.0 Megapixel Camera Product on Alibaba.com",
+    "alarm": "Types Motion Detection, Video Blind , Video Loss",
+    "audio": "Input and output Optional [1ch input( micphone),1ch output( Speaker&micphone)]",
+    "bit rate": "support 0.1M ~8Mpbs bit rate adjustable support 0.1M ~8Mpbs bit rate adjustable",
+    "camera": "Effective Pixels 3.0 Mega Pixels 2.0 Megapixels",
+    "cms software": "Uniform CMS Software(multiple devices management system)",
+    "compression": "G.711 compression,support two-way audio intercom,support audio and video synchronized output",
+    "dimensions": "38*38mm",
+    "dsp": "Dual core 32-bit DSP Dual core 32-bit DSP",
+    "general": "Language 20 kinds of languages such as English, Finnish, French, German, Greek,Italian, Japanese, Polish, Portuguese, Russian, Spanish, Thai, S-Chinese, T-Chinese and Turkish",
+    "image sensor": "1/3\" Aptina AR0330 CMOS Sensor 1/2.8\" SONY Exmor IMX222 CMOS Sensor",
+    "io connector": "1*DC Connector ,1* RJ45(10/100M Network)",
+    "ir cut filter": "Set of double light switch IR-CUT filter",
+    "lens mount": "CS Lens/Board Lens/Varifocal Lens",
+    "min illumination": "Color 0.01Lux/F1.2 Color 0.01Lux/F1.2",
+    "model no": "EST-IPA30 EST-IPA20",
+    "network": [
+        "1 * RJ45,10/100M,Support RTSP/FTP/PPPOE/DHCP/DDNS/NTP/UPnP/SMTP",
+        "WEB Browser Support WEB remote config( IE, Safari, Google Chrome, Firefox etc.)"
+    ],
+    "onvif": "Support (ONVIF 2.0)",
+    "poe": "(optional)",
+    "power consumption": "Less than 200mA",
+    "smart phone": "mobile remote Monitoring (iPhone,Android,Windows Mobile,BlackBerry,Symbian)",
+    "stream": "support dual stream,AVI format support dual stream,AVI format",
+    "supplied voltage": "DC12V/PoE(802.3af/820.3at)",
+    "system": "Embedded RTOS design",
+    "type": "IP Camera Board",
+    "video": "Compression H.264 Main profile H.264 Main profile",
+    "weight": "20g",
+    "wifi": "(optional)"
+}

@@ -1,0 +1,88 @@
+{
+    "<page title>": "Canon EOS 50D Digital SLR Camera Body Reviews | Buzzillions.com",
+    "ac adapter": "ACKE2",
+    "compatible battery": "BP-511A",
+    "compatible with macintosh": "Yes",
+    "compatible with windows pc": "Yes",
+    "continuous advance fps": "6.3",
+    "depth inches": "2.9",
+    "digital slr": "Body Only",
+    "effective megapixel count": "15.10",
+    "electronic flash": "Built-in",
+    "exposure modes": [
+        "Shutter-Priority AE",
+        "Program AE",
+        "Manual",
+        "Depth-of-Field AE",
+        "Auto",
+        "Aperture-Priority AE"
+    ],
+    "flash": [
+        "Built-In, Auto pop-up flash",
+        "Accepts External Flash"
+    ],
+    "focus modes": [
+        "9 point AF",
+        "Predictive Focus",
+        "One-Shot AF",
+        "Manual focusing (MF)",
+        "Auto",
+        "AI Focus AF"
+    ],
+    "hdmi mini": "Yes",
+    "height inches": "4.2",
+    "image format": [
+        "RAW",
+        "JPEG"
+    ],
+    "lcd display size inches": "3.0",
+    "lcd viewer": "3 Inch",
+    "lens": "Not Included",
+    "lens mount": "Canon EF",
+    "megapixels": "15",
+    "model": "0001380310468",
+    "optical viewfinder": "Yes",
+    "pictbridge": "Compatible",
+    "removable memory type": [
+        "Compact Flash (type I)",
+        "Compact Flash (type II)"
+    ],
+    "resolution": "15.1Megapixel",
+    "scene modes": [
+        "Close-up",
+        "Night portrait",
+        "Landscape",
+        "Portrait",
+        "Sports"
+    ],
+    "screen size": "3\"",
+    "self timer": [
+        "2 Seconds",
+        "10 Seconds",
+        "Yes"
+    ],
+    "sensitivity": "ISO 100-6400",
+    "shutter speed": [
+        "30 to 1/8000 Second",
+        "1/8000-30 second"
+    ],
+    "sound": "Yes",
+    "specification": "Description",
+    "still image resolution max": "4752 x 3168",
+    "still picture capture": "Yes",
+    "storage media type": "Compact Flash",
+    "usb port": "Mini-B",
+    "weight pounds": "1.6",
+    "white balance": [
+        "Shade",
+        "Custom",
+        "Tungsten Bulb",
+        "Cloudy",
+        "Auto",
+        "Flash",
+        "Color Temperature Setting",
+        "Daylight",
+        "Fluorescent"
+    ],
+    "width inches": "5.7"
+}

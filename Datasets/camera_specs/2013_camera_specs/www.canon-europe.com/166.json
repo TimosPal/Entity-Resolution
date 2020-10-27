@@ -1,0 +1,40 @@
+{
+    "<page title>": "Canon PowerShot A420 - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ac power supply": "Optional, AC adapter kit ACK800",
+    "ae lock": "Locked when shutter button is pressed half way",
+    "batteries": "2x Size-AA Alkaline or NiMH Batteries (Alkalines supplied)",
+    "battery life": [
+        "\u00b9 Based on the CIPA Standard and using the batteries and memory card format supplied with the camera, except where indicated",
+        "Approx. 90 shots\u00b9 (with supplied batteries)\nApprox. 360 shots (with optional Canon NB-3AH batteries)\u00b9\nApprox. 10 hours playback (with supplied batteries)\nApprox. 12 hours playback (with Canon NB-3AH batteries)"
+    ],
+    "builtin flash range": "47cm - 3.0m (W) / 2.0m (T) (at ISO AUTO equivalent)",
+    "case": "Soft Case DCC-400",
+    "construction": "7 elements in 6 groups (1 aspherical element)",
+    "continuous shooting": [
+        "\u00b9 Large/Fine with LCD monitor off\n\u00b2 Depending on memory card speed / capacity",
+        "Approx. 2.3 fps\u00b9 until the card is full\u00b2"
+    ],
+    "drive modes": "Single, Continuous, Self-Timer",
+    "exposure compensation": "+/- 2 EV in 1/3 stop increments",
+    "external flash": "Canon's High Power Flash HF-DC1",
+    "flash": "High Power Flash HF-DC1",
+    "focal length": "5.4 - 17.3mm (35mm film equivalent: 39 \u2013 125mm)",
+    "iso sensitivity": "AUTO, 64, 100, 200, 400",
+    "maximum fnumber": "f/2.8 - f/5.1",
+    "metering modes": "Evaluative, Centre-weighted average, Spot (centre)",
+    "modes": [
+        "Auto, Manual Flash On / Off",
+        "Auto, Manual, Stitch Assist, Movie, Special Scene (Portrait, Night Snapshot, Kids & Pets, Indoor, Foliage, Snow, Beach, Fireworks), Super Macro, Color Accent, Color Swap."
+    ],
+    "movie length": "\u00b9 Depending on memory card speed / capacity",
+    "movies": "AVI [Motion JPEG compression]",
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Lighter Skin Tone, Darker Skin Tone, Positive Film, Custom Color)",
+    "power supply  battery chargers": "Battery Charger Kit CBK4-300, Ni-MH Batteries NB4-300, AC adapter kit ACK800",
+    "redeye reduction": "Yes",
+    "slow sync speed": "Yes",
+    "still image type": "JPEG compression, (Exif 2.2 [Exif Print] compliant) / Design rule for Camera File system, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "zoom": [
+        "\u00b9 Digital zoom available for still image and standard movie modes only",
+        "Optical 3.2x , digital approx. 3.6x (still images), 2.0x (movies), combined approx. 11x (still images) 6.4x (movies)\u00b9"
+    ]
+}

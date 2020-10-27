@@ -1,0 +1,87 @@
+{
+    "<page title>": "Nikon 1 J2 10 Megapixel Digital Camera with 10-30mm VR Lens - Silver Reviews | Buzzillions.com",
+    "camera type": "Compact System / Mirrorless Cameras",
+    "compatible battery": "EN-EL20",
+    "continuous advance fps": "5",
+    "depth inches": "1.2",
+    "effective megapixel count": "10.1",
+    "electronic flash": "Built-in",
+    "exposure modes": [
+        "Shutter Priority AE",
+        "Aperture-Priority AE",
+        "Program Auto",
+        "Manual",
+        "Scene Auto Selector"
+    ],
+    "flash": [
+        "Slow Sync",
+        "Rear curtain with slow sync",
+        "Rear curtain with sync",
+        "Red-Eye Reduction",
+        "Fill"
+    ],
+    "focus modes": [
+        "Continuous-servo",
+        "Auto",
+        "Manual Focus",
+        "Full-time Servo",
+        "Single-servo AF"
+    ],
+    "hdmi mini": "Side Output",
+    "height inches": "2.4",
+    "image format": [
+        "JPEG",
+        "RAW"
+    ],
+    "interchangeable lens camera format": "1\" (Nikon 1)",
+    "lcd display size inches": "3.0",
+    "lcd viewer": "3 Inch",
+    "lens": "Zoom Lens",
+    "lens mount": "Nikon 1 mount",
+    "megapixels": "10.0",
+    "model": [
+        "Nikon J2",
+        "0001820827572"
+    ],
+    "movie mode": [
+        ".MOV",
+        "1920 x 1080",
+        "1280 x 720",
+        "640 x 240",
+        "320 x 120"
+    ],
+    "optical zoom": "3x",
+    "removable memory type": [
+        "Secure Digital",
+        "SDHC",
+        "SDXC"
+    ],
+    "self timer": [
+        "10 Seconds",
+        "2 Seconds",
+        "5 Seconds"
+    ],
+    "sensitivity": "ISO 100 - 6400",
+    "sensor": "CMOS",
+    "shutter speed": [
+        "Fastest Shutter Speed: 1/16,000 sec.",
+        "Slowest Shutter Speed: 30 sec."
+    ],
+    "sound": "Yes",
+    "specification": "Description",
+    "still picture capture": "Yes",
+    "storage media type": "SD - SDHC - SDXC",
+    "usb port": "Mini-B",
+    "video movie capture": "1920x1080",
+    "weight pounds": "0.5",
+    "white balance": [
+        "Direct Sunlight",
+        "Flash",
+        "Auto",
+        "Incandescent",
+        "Fluorescent",
+        "Shade",
+        "Cloudy"
+    ],
+    "width inches": "4.2"
+}

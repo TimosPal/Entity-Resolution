@@ -1,0 +1,76 @@
+{
+    "<page title>": "Canon PowerShot G12 - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ac power supply": "Optional, AC Adapter Kit ACK-DC50",
+    "ae lock": "Yes",
+    "aeb": "1/3 - 2 EV in 1/3 stop increments",
+    "af assist beam": "Yes",
+    "af lock": "On/Off Selectable",
+    "af modes": "Single, Continuous (only available in Auto mode), Servo AF/AE[10], Tracking AF",
+    "af point selection": "Manual selection using FlexiZone AF/AE, Size (Normal, Small)",
+    "af system points": "AiAF (Face Detection / 9-point), 1-point AF (Any position is available, fixed centre or Face Select and Track)",
+    "batteries": "Rechargeable Li-ion Battery NB-7L (NB-7L battery and charger supplied)",
+    "battery life": [
+        "Approx. 370 shots\u00b9\nApprox. 420 min. playback",
+        "\u00b9 Using the batteries and memory card format supplied with the camera (where included), except where indicated."
+    ],
+    "builtin flash range": "50 cm - 7.0 m (W) / 4.0 m (T)",
+    "cases  straps": "Soft Case DCC-660, SC-DC65A, DCC-1600",
+    "closest focusing distance": "1 cm (W) from front of lens in macro",
+    "construction": "11 elements in 9 groups (1 double-sided aspherical element)",
+    "continuous shooting": [
+        "Approx. 2.0 shots/sec.\u00b9, AF: Approx. 0.7 shots/sec.\u00b9, LV: Approx. 0.8 shots/sec.\u00b9 (until memory card becomes full)\u00b2",
+        "\u00b9 Under conditions where the flash does not fire.\n\u00b2 Depending on memory card speed / capacity / compression setting."
+    ],
+    "dimensions wxhxd": "112.1 x 76.2 x 48.3 mm",
+    "drive modes": "Single, Continuous, Self-Timer",
+    "exposure compensation": "+/- 2 EV in 1/3 stop increments\nEnhanced i-Contrast for automatic dynamic range correction\nND Filter (3 stop)",
+    "external flash": [
+        "\u00b9 Not all functions of the flash are supported.",
+        "E-TTL with EX series Speedlites\u00b9, Macro Twin Lite MT-24EX, Macro Ring Lite MR-14EX, Canon High Power Flash HF-DC1"
+    ],
+    "flash": "Canon Speedlites (including 220EX, 270EX, 430EX II, 580EX II [4]), Macro Twin Lite MT-24EX, Macro Ring Lite MR-14EX, Speedlite Transmitter ST-E2, Off-Camera Shoe Cord OC-E3, Bracket BKT-DC1, Speedlite Bracket SB-E2,\nHigh Power Flash HF-DC1",
+    "flash exposure compensation": "+/- 2 EV in 1/3 stop increments. Face Detection FE. Safety FE.",
+    "flash exposure lock": "Yes",
+    "focal length": "6.1 - 30.5 mm (35 mm equivalent: 28 - 140 mm)",
+    "focus bracketing": "Yes",
+    "histogram": "Yes, live histogram",
+    "image stabilisation": "Yes (lens shift-type), 4-stop, Hybrid IS",
+    "intelligent orientation sensor": "Yes",
+    "iso sensitivity": "AUTO, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600, 2000, 2500, 3200",
+    "lenses": "Tele-converter 1.4x TC-DC58D\nLens Adapter LA-DC58K\nFilter Adapter FA-DC58B (Compatible with Canon 58mm Filters: Circular Polarizing PL-C B, Neutral Density Filter ND4X-L & ND8X-L, Protect, UV, Softmat No.1 & 2)",
+    "manual focus": "Yes",
+    "manual power adjustment": [
+        "\u00b9 Not all functions of the flash are supported.",
+        "3 levels with internal flash (up to 19 levels with external EX Speedlites 270EX and 430EX II. 22 levels with 580EX II\u00b9)"
+    ],
+    "maximum fnumber": "f/2.8-f/4.5",
+    "menu languages": "English, German, French, Dutch, Danish, Finnish, Italian, Norwegian, Swedish, Spanish, Simplified Chinese, Chinese (traditional), Japanese, Russian, Portuguese, Korean, Greek, Polish, Czech, Hungarian, Turkish, Thai, Arabic, Ukrainian, Romanian, Farsi",
+    "metering modes": "Evaluative (linked to Face Detection AF frame), Centre-weighted average, Spot (centre or linked to Face Detection AF or FlexiZone AF frame)",
+    "modes": [
+        "Auto, Manual Flash On / Off",
+        "Auto*, Program AE, Shutter priority AE, Aperture priority AE, Manual, Custom (2 modes), Low Light (2.5MP), Quick Shot, SCN (Portrait, Landscape, Kids & Pets, Sports, Smart Shutter(Smile, Wink Self-Timer, FaceSelf-Timer), Super Vivid, Poster Effect, Foliage, Snow, Beach, Fireworks, Underwater, Color Accent, Color Swap, High Dynamic Range, Fish-eye Effect, Miniature Effect, Nostalgic, Stitch Assist), Movie\n*with Scene Detection Technology and Motion Detection Technology"
+    ],
+    "movie length": "\u00b9 The following Speed Class memory cards are required for maximum record time: 1280 x 720, 30 fps Speed Class 4 or above. 1920 x 1080, 30 fps Speed Class 6\n\u00b2 Depending on memory card speed / capacity / compression setting.",
+    "movies": "MOV [H.264 + Linear PCM (stereo)]",
+    "my camera  my menu": "Start-up image and camera sounds customisation. Menu customisation",
+    "my category": "Image tagging feature",
+    "operating environment": "0 - 40\u00b0C, 10 - 90% humidity",
+    "other": "Ring Accessory Kit RAK-DC2\nCanon HDMI Cable HTC-100",
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Positive Film, Lighter Skin Tone, Darker Skin Tone, Vivid Blue, Vivid Green, Vivid Red, Custom Color)",
+    "playback zoom": "Approx. 2x - 10x",
+    "power supply  battery chargers": "AC Adapter Kit ACK-DC50, Battery Charger CB-2LZE",
+    "redeye correction": "Yes, during shooting and playback",
+    "redeye reduction": "Yes",
+    "remote controller switch": "Remote Switch RS-60E3",
+    "second curtain synchronisation": "Yes",
+    "self timer": "Custom",
+    "slow sync speed": "Yes. Fastest speed 1/2000 sec.",
+    "still image type": "JPEG compression, (Exif 2.3 [Exif Print] compliant) / Design rule for Camera File system, RAW, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "type": "TTL",
+    "waterproof  weatherproof case": "Waterproof Case (40m) WP-DC34, Waterproof Case Weight WW-DC1",
+    "weight": "Approx. 401 g (including battery/batteries and memory card)",
+    "zoom": [
+        "\u00b9 Depending on the image size selected.\n\u00b2 Digital zoom available for still image and standard movie modes only. Optical zoom may not be available during movie recording.",
+        "Optical 5x. Digital Approx. 4x (with Digital Tele-Converter Approx. 1.4x or 2.3x and Safety Zoom\u00b9)\u00b2. Combined Approx. 20x"
+    ]
+}

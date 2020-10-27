@@ -1,0 +1,16 @@
+{
+    "<page title>": "[#3373] Ambarella A5 Full Hd 1080p Full Hd Night Vision Infrared Vandalproof P2p Security Cctv Ip Dome Camera - Buy Ip Dome Camera,Cctv Ip Camera,Cctv Dome Camera Product on Alibaba.com",
+    "access protocol": "Standard ONVIF Protocol, Support third party access; PC;",
+    "dn mode": "Auto switching,black and white vide and IR cut action linkage",
+    "frame rate": "2.0 MP 25 frame(full real time),support 1~25frame/seconds adjustable",
+    "function": "Support WEB configuration, OSD,real-time video transmission",
+    "illumination": "Color 1.0Lux at F1.2,Black 0.1 Lux at F1.2",
+    "network interface": "RJ45 ethernet,10/100M;RTSP/FTP/PPPOE/DHCP/DDNS/NTP/UPnP protocol supported",
+    "operation temperature": "-10\u00b0C~+60\u00b0C,10%~90%RH",
+    "output resolution": "1920(H)\u00d71080(V)",
+    "power supply": "DC12V/POE(optional)",
+    "sensor": "1/2.8\u201dSony IMX222 CMOS Sensor",
+    "system": "Ambarella A5S ARM11 high-performance DSP",
+    "video output": "Main streaming: 1920\u00d71080,1600\u00d71200,1280\u00d71024,1280\u00d7960,1024\u00d7768,1280\u00d7720; Sub streaming; 960*540,640\u00d7360,480\u00d7270,352\u00d7288,320\u00d7240, 352\u00d7192, 320\u00d7192, 288\u00d7192, 256\u00d7192",
+    "video processing": "H.264 video compression, dual streaming"
+}

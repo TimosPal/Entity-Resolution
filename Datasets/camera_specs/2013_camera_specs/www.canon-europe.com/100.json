@@ -1,0 +1,65 @@
+{
+    "<page title>": "Canon Digital IXUS 870 IS - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ac power supply": "Optional, AC adapter kit ACK-DC30",
+    "ae lock": "On/Off Selectable",
+    "af assist beam": "Yes",
+    "af lock": "On/Off Selectable",
+    "af modes": [
+        "Single, Servo AF\u00b9",
+        "\u00b9 Some settings limit availability"
+    ],
+    "af point selection": "Size (Normal, Small)",
+    "af system points": "AiAF (Face Detection / 9-point), 1-point AF (fixed to centre or Face Select and Track)",
+    "batteries": "Rechargeable Li-ion Battery NB-5L (battery and charger supplied)",
+    "battery life": [
+        "\u00b9 Using the batteries and memory card format supplied with the camera, except where indicated.",
+        "Approx. 310 shots \u00b9\nApprox. 420 min. playback"
+    ],
+    "builtin flash range": "30cm - 4.2m (W) / 2.0m (T)",
+    "case": "Soft Leather Case DCC-75, Digital IXUS Metal or Leather Strap",
+    "closest focusing distance": "2cm (W) from front of lens in macro",
+    "construction": "7 elements in 5 groups (2 aspherical elements including 1 double-sided UA element)",
+    "continuous shooting": [
+        "\u00b9 Under conditions where the flash does not fire.\n\u00b2 Depending on memory card speed / capacity.",
+        "Approx. 1.4 shots/sec.\u00b9 (until memory card becomes full)\u00b2"
+    ],
+    "drive modes": "Single, Continuous, Self-Timer, FaceSelf-Timer",
+    "exposure compensation": "+/- 2 EV in 1/3 stop increments.\ni-Contrast for automatic dynamic range correction",
+    "external flash": "Canon High Power Flash HF-DC1",
+    "flash": "High Power Flash HF-DC1",
+    "flash exposure compensation": "Face Detection FE",
+    "flash exposure lock": "Yes",
+    "focal length": "5.0 - 20.0 mm (35mm equivalent: 28 \u2013 112mm)",
+    "histogram": "Yes",
+    "image stabilisation": "Yes (shift-type)",
+    "intelligent orientation sensor": "Yes",
+    "iso sensitivity": "AUTO, High ISO Auto (incorporating Motion Detection Technology), 80, 100, 200, 400, 800, 1600",
+    "maximum fnumber": "f/2.8 \u2013 f/5.8",
+    "menu languages": "English, German, French, Dutch, Danish, Finnish, Italian, Norwegian, Swedish, Spanish, Simplified Chinese, Chinese (traditional), Japanese, Russian, Portuguese, Korean, Greek, Polish, Czech, Hungarian, Turkish, Thai, Arabic, Ukrainian, Romanian, Farsi",
+    "metering modes": "Evaluative (linked to Face Detection AF frame), Centre-weighted average, Spot (centre)",
+    "modes": [
+        "Auto, P, Movie, Special Scene (Portrait, Night Snapshot, Kids & Pets, Indoor, Sunset, Foliage, Snow, Beach, Fireworks, Aquarium, Underwater, ISO 3200\u00b9, Digital Macro, Color Accent, Color Swap, Stitch Assist)",
+        "\u00b9 Recording pixels fixed at 1600 x 1200",
+        "Auto, Manual Flash On / Off"
+    ],
+    "movie length": "\u00b9 Depending on memory card speed / capacity.",
+    "movies": "MOV [H.264 + Linear PCM (monaural)]",
+    "my camera  my menu": "Start-up image and camera sounds customisation",
+    "my category": "Image tagging feature",
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Positive Film, Lighter Skin Tone, Darker Skin Tone, Vivid Blue, Vivid Green, Vivid Red, Custom Color)",
+    "playback zoom": "Approx. 2x \u2013 10x",
+    "power supply  battery chargers": "AC Adapter Kit ACK-DC30",
+    "redeye correction": "Yes, during shooting and playback",
+    "redeye reduction": "Yes",
+    "self timer": "Approx. 2 or 10 sec., Custom or FaceSelf-Timer",
+    "slow sync speed": "Yes",
+    "sound files": "WAVE (monaural)",
+    "sound memo": "Up to 60 sec per image",
+    "still image type": "JPEG compression, (Exif 2.2 [Exif Print] compliant) / Design rule for Camera File system, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "type": "TTL",
+    "waterproof  weatherproof case": "Waterproof Case (40m) WP-DC26, Waterproof Case Weight WW-DC1",
+    "zoom": [
+        "Optical 4x. Digital approx. 4x (with Digital Tele-Converter approx.1.4x or 2.3x and Safety Zoom \u00b9) \u00b2. Combined approx. 16x",
+        "\u00b9 Depending on the image size selected.\n\u00b2 Digital zoom available for still image and standard movie modes only. Optical zoom may not be available during movie recording."
+    ]
+}

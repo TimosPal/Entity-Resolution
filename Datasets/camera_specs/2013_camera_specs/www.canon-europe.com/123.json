@@ -1,0 +1,24 @@
+{
+    "<page title>": "Canon PowerShot A300 - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "builtin flash range": "20cm-2.0m (at ISO AUTO equivalent)",
+    "construction": "5 elements in 5 groups (1 aspherical element)",
+    "continuous shooting": "Approx. 2.2 fps\u00b9 (speed maintained for up to 12 images)",
+    "dimensions": "110.0 x 58.0 x 36.6 mm",
+    "exposure compensation": "+/- 2 EV in 1/3 step increments",
+    "focal length": "5.0 mm (35mm film equivalent: 33 mm)",
+    "iso sensitivity": "AUTO, 50, 100, 200, 400",
+    "maximum fnumber": "f/3.6",
+    "metering modes": "Evaluative, Centre-weighted average, Spot (centre)",
+    "modes": [
+        "Auto, Manual, Stitch Assist, Movie",
+        "Auto, Manual Flash On / Off"
+    ],
+    "movies": "AVI [Motion JPEG + WAVE (monaural)]",
+    "operating environment": "0 \u2013 40 \u00b0C, 10 \u2013 90% humidity",
+    "photo effects": "Vivid, Neutral, Low Sharpening, Sepia, Black & White",
+    "redeye reduction": "Yes",
+    "slow sync speed": "Yes",
+    "still image type": "JPEG (Exif 2.2 [Exif Print] compliant) / Design rule for Camera File system, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "weight body only": "Approx. 175g",
+    "zoom": "Digital approx. 5.1x"
+}

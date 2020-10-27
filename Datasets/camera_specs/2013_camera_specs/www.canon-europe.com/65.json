@@ -1,0 +1,83 @@
+{
+    "<page title>": "Canon PowerShot G11 - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ac power supply": "Optional, AC Adapter Kit ACK-DC50",
+    "ae lock": "Yes",
+    "aeb": "1/3 - 2 EV in 1/3 stop increments",
+    "af assist beam": "Yes",
+    "af lock": "On/Off Selectable",
+    "af modes": [
+        "\u00b9 Some settings limit availability",
+        "Single, Continuous, Servo AF/AE\u00b9"
+    ],
+    "af point selection": "Manual selection using FlexiZone AF/AE, Size (Normal, Small)",
+    "af system points": "AiAF (Face Detection / 9-point), 1-point AF (Any position is available, fixed centre or Face Select and Track)",
+    "batteries": "Rechargeable Li-ion Battery NB-7L (NB-7L battery and charger supplied)",
+    "battery life": [
+        "\u00b9 Using the batteries and memory card format supplied with the camera (where included), except where indicated.",
+        "Approx. 390 shots\u00b9\nApprox. 420 min. playback"
+    ],
+    "builtin flash range": "50cm-7.0m (W) / 4.0m (T)",
+    "cases  straps": "Soft Case DCC-660, SC-DC65A",
+    "closest focusing distance": "1cm (W) from front of lens in macro",
+    "construction": "11 elements in 9 groups (1 double-sided aspherical element)",
+    "continuous shooting": [
+        "\u00b9 Under conditions where the flash does not fire.\n\u00b2 Depending on memory card speed / capacity / compression setting.",
+        "Approx. 1.1 shots/sec.\u00b9, AF: Approx. 0.7 shots/sec.\u00b9, LV: Approx. 0.8 shots/sec.\u00b9 (until memory card becomes full)\u00b2"
+    ],
+    "dimensions wxhxd": "112.1 x 76.2 x 48.3 mm (excluding protrusions)",
+    "drive modes": "Single, Continuous, Self-Timer, FaceSelf-Timer",
+    "exposure compensation": "+/- 2 EV in 1/3 stop increments\nEnhanced i-Contrast for automatic dynamic range correction\nND Filter (3 stop)",
+    "external flash": [
+        "\u00b9 Not all functions of the flash are supported.",
+        "E-TTL with EX series Speedlites\u00b9, Macro Twin Lite MT-24EX, Macro Ring Lite MR-14EX, Canon High Power Flash HF-DC1"
+    ],
+    "flash": [
+        "Canon Speedlites (including 220EX, 270EX, 430 EX, 430EX II, 580 EX, 580EX II\u00b9), Macro Twin Lite MT-24EX, Macro Ring Lite MR-14EX, Speedlite Transmitter ST-E2, Off-Camera Shoe Cord OC-E3, Speedlite Bracket BKT-DC1\nHigh Power Flash HF-DC1",
+        "\u00b9 Not all functions of the flash are supported."
+    ],
+    "flash exposure compensation": "+/- 2 EV in 1/3 stop increments. Face Detection FE. Safety FE.",
+    "flash exposure lock": "Yes",
+    "focal length": "6.1 - 30.5 mm (35mm equivalent: 28-140mm)",
+    "focus bracketing": "Yes",
+    "histogram": "Yes",
+    "image stabilisation": "Yes (shift-type)",
+    "intelligent orientation sensor": "Yes",
+    "iso sensitivity": "AUTO, 80, 100, 200, 400, 800, 1600, 3200",
+    "lenses": "Tele-converter 1.4x TC-DC58D\nLens adapter LA-DC58K",
+    "manual focus": "Yes",
+    "manual power adjustment": [
+        "\u00b9 Not all functions of the flash are supported.",
+        "3 levels with internal flash (up to 19 levels with external EX Speedlites 270EX and 430EX II. 22 levels with 580EX II\u00b9)"
+    ],
+    "maximum fnumber": "f/2.8-f/4.5",
+    "menu languages": "English, German, French, Dutch, Danish, Finnish, Italian, Norwegian, Swedish, Spanish, Simplified Chinese, Chinese (traditional), Japanese, Russian, Portuguese, Korean, Greek, Polish, Czech, Hungarian, Turkish, Thai, Arabic, Ukrainian, Romanian, Farsi",
+    "metering modes": "Evaluative (linked to Face Detection AF frame), Centre-weighted average, Spot (centre or linked to Face Detection AF or FlexiZone AF frame)",
+    "modes": [
+        "Auto, Manual Flash On / Off",
+        "\u00b9 Recording pixels fixed at 1600 x 1200 (ISO 3200 Mode) and 1824 x 1368 (Low Light Mode).",
+        "Auto*, Program AE, Shutter priority AE, Aperture priority AE, Manual, Custom (2 modes), Low Light\u00b9, Quick Shot, SCN (Portrait, Landscape, Night Scene, Sports, Night Snapshot, Kids & Pets, Indoor, Sunset, Foliage, Snow, Beach, Fireworks, Aquarium, Underwater, Color Accent, Color Swap, Stitch Assist), Movie\n*with Scene Detection Technology and Motion Detection Technology"
+    ],
+    "movie length": "\u00b9 Depending on memory card speed / capacity / compression setting.",
+    "movies": "MOV [H.264 + Linear PCM (monaural)]",
+    "my camera  my menu": "Start-up image and camera sounds customisation. Menu customisation",
+    "my category": "Image tagging feature",
+    "operating environment": "0 \u2013 40 \u00b0C, 10 \u2013 90% humidity",
+    "other": "Ring Accessory Kit RAK-DC2\nCanon HDMI Cable HTC-100",
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Positive Film, Lighter Skin Tone, Darker Skin Tone, Vivid Blue, Vivid Green, Vivid Red, Custom Color)",
+    "playback zoom": "Approx. 2x \u2013 10x",
+    "power supply  battery chargers": "AC Adapter Kit ACK-DC50, Battery Charger CB-2LZE",
+    "redeye correction": "Yes, during shooting and playback",
+    "redeye reduction": "Yes",
+    "remote controller switch": "Remote Switch RS-60E3",
+    "second curtain synchronisation": "Yes",
+    "self timer": "Approx. 2 or 10 sec., Custom or FaceSelf-Timer",
+    "slow sync speed": "Yes. Fastest speed 1/2000 sec",
+    "still image type": "JPEG compression, (Exif 2.2 [Exif Print] compliant) / Design rule for Camera File system, RAW, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "type": "TTL",
+    "waterproof  weatherproof case": "Waterproof Case (40m) WP-DC34, Waterproof Case Weight WW-DC1",
+    "weight": "Approx. 401 g (including battery/batteries and memory card)",
+    "zoom": [
+        "\u00b9 Depending on the image size selected.\n\u00b2 Digital zoom available for still image and standard movie modes only. Optical zoom may not be available during movie recording.",
+        "Optical 5x. Digital approx. 4x (with Digital Tele-Converter approx. 1.4x or 2.3x and Safety Zoom\u00b9)\u00b2. Combined approx. 20x"
+    ]
+}

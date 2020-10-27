@@ -1,0 +1,84 @@
+{
+    "<page title>": "Canon PowerShot G16 - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ac power supply": "Optional, AC Adapter Kit ACK-DC80",
+    "ae lock": "Yes",
+    "aeb": "1/3 \u2013 2 EV in 1/3 stop increments",
+    "af assist beam": "Yes",
+    "af lock": "On/Off Selectable",
+    "af modes": [
+        "\u00b9 Some settings limit availability.",
+        "Single, Continuous, Servo AF/AE\u00b9, Tracking AF"
+    ],
+    "af point selection": "Size (Normal, Small)",
+    "af system points": "AiAF (9-point or Face Detection with Face Select and Track), 1-point AF (any position is available or fixed centre)",
+    "batteries": "Rechargeable Li-ion Battery NB-10L (NB-10L battery and charger supplied)",
+    "battery life": "Approx. 360 shots\nEco mode approx. 480 shots\nApprox. 420 min. playback",
+    "builtin flash range": "50 cm \u2013 7.0 m (W) / 50 cm \u2013 4.5 m (T)",
+    "cases  straps": "Soft Case DCC-1620, SC-DC85\nTravel Case DCC-2500",
+    "closest focusing distance": "1 cm (W) from front of lens in macro",
+    "computerother": "\u00b9 Wi-Fi use may be restricted in certain countries or regions. Wi-Fi support varies by device and region. For more information visit www.canon-europe.com/wirelesscompacts",
+    "construction": "11 elements in 9 groups (1 single sided aspherical lens, 1 UD lens and 2 double-sided aspherical lenses)",
+    "continuous shooting": [
+        "Approx. 12.2 shots/sec for up to 5 frames then approx. 9.3 shots/sec for 522 frames\u00b9\nwith AF: Approx. 5.7 shots/sec\u00b2\u00b3\nwith Live View: Approx. 5.9 shots/sec\u00b2\u00b3",
+        "\u00b9 Sustained continuous shooting function requires compatible SDHC/SDXC UHS Speed Class 1 memory card, total number of frames captured varies depending on shooting subject.\n\u00b2 Under conditions where the flash does not fire.\n\u00b3 Depending on memory card speed / capacity / compression setting."
+    ],
+    "dimensions wxhxd": "108.8 x 75.9 x 40.3 mm",
+    "drive modes": "Single, Auto Drive, Continuous, Continuous with AF, Self-Timer",
+    "exposure compensation": "+/- 3 EV in 1/3 stop increments\nManual and automatic dynamic range correction\nAutomatic shadow correction\nND Filter (3 stop)",
+    "external flash": [
+        "\u00b9 Not all functions of the flash are supported.",
+        "E-TTL with EX series Speedlite\u00b9, Macro Twin Lite MT-24EX, Macro Ring Lite MR-14EX, Canon High Power Flash HF-DC1 and HF-DC2"
+    ],
+    "flash": [
+        "Canon Speedlites (including 270EX II, 320EX, 430EX II, 580EX II, 600EX, 600EX-R\u00b9), Macro Twin Lite MT-24EX, Macro Ring Lite MR-14EX (Both require Conversion Lens Adapter LA-DC58L),\nSpeedlite Transmitter ST-E2, Off-Camera Shoe Cord OC-E3, Bracket BKT-DC1, Speedlite Bracket SB-E2",
+        "\u00b9 Not all functions of the flash are supported."
+    ],
+    "flash exposure compensation": "+/- 2 EV in 1/3 stop increments. Face Detection FE, Safety FE, Smart Flash Exposure",
+    "flash exposure lock": "Yes",
+    "focal length": "6.1 \u2013 30.5 mm (35 mm equivalent: 28 \u2013 140 mm)",
+    "focus bracketing": "Yes",
+    "gps": "GPS via mobile (linked to compatible smartphone)",
+    "histogram": "Yes, live histogram",
+    "image stabilisation": [
+        "\u00b9 Values at maximum optical focal length. Cameras whose focal length exceeds 350mm (35mm equivalent) are measured at 350mm.",
+        "Yes (lens shift-type), approx. 3-stop\u00b9. Intelligent IS with 5-axis Enhanced Dynamic IS"
+    ],
+    "intelligent orientation sensor": "Yes",
+    "iso sensitivity": "AUTO, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800",
+    "lenses": "Tele-converter 1.4x TC-DC58E\nConversion Lens Adapter LA-DC58L\nFilter Adapter FA-DC58D (Compatible with Canon 58mm Filters: Circular Polarizing Filter PL-C (B), Neutral Density Filters ND4-L & ND8-L, Protect Filter, UV Filter, Skylight Filter, Softmat Filter No.1 & 2)",
+    "manual focus": "Yes, plus MF Peaking",
+    "manual power adjustment": [
+        "\u00b9 Not all functions of the flash are supported.",
+        "3 levels with internal flash (up to 19 levels with external EX Speedlites 270EX II and 430EX II. 22 levels with 580EX II, 600EX and 600EX-RT\u00b9)"
+    ],
+    "maximum fnumber": "f/1.8-f/2.8",
+    "menu languages": "English, German, French, Dutch, Danish, Finnish, Italian, Greek, Norwegian, Portuguese, Russian, Swedish, Spanish, Ukrainian, Polish, Czech, Hungarian, Turkish, Simplified Chinese, Chinese (traditional), Japanese, Korean, Thai, Arabic, Romanian, Farsi, Hindi, Malay, Indonesian, Vietnamese",
+    "metering modes": "Evaluative (linked to Face Detection AF frame), Centre-weighted average, Spot (centre or linked to Face Detection AF or FlexiZone AF frame)",
+    "modes": [
+        "Smart Auto (58 scenes detected), Hybrid Auto, Program AE, Shutter priority AE, Aperture priority AE, Manual, Custom 1, Custom 2, SCN (Portrait, Smart Shutter (Smile, Wink Self-Timer, FaceSelf-Timer), Star (Star Nightscape, Star Trails, Star Time-Lapse Movie), Handheld Night Scene, Underwater, Snow, Fireworks), Creative Filters (High Dynamic Range, Nostalgic, Fish-eye Effect, Miniature Effect, Toy Camera Effect, Background Defocus, Soft Focus, Monochrome, Super Vivid, Poster Effect), Movie",
+        "Auto, Manual Flash On / Off, Slow Synchro"
+    ],
+    "modes in movie": "Smart Auto (21 scenes detected), Standard, Program AE, Portrait, Nostalgic, Miniature Effect, Monochrome, Super Vivid, Poster Effect, Underwater, Snow, Fireworks, Super Slow Motion Movie",
+    "movie length": "\u00b9 The following Speed Class memory cards are required for maximum record time: (HD) 1280 x 720 Speed Class 4 or above. (Full HD) 1920 x 1080 Speed Class 6 or above. (iFrame) 1280 x 720 Speed Class 6 or above.\n\u00b2 Depending on memory card speed / capacity / compression setting.",
+    "movies": "MP4 [Video: MPEG4-AVC (H.264), Audio: MPEG2 AAC-LC (stereo)]",
+    "my category": "Image tagging feature",
+    "operating environment": "0 \u2013 40 \u00b0C, 10 \u2013 90% humidity",
+    "other": "Canon HDMI Cable HTC-100, interface cable IFC-400PCU",
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Positive Film, Lighter Skin Tone, Darker Skin Tone, Vivid Blue, Vivid Green, Vivid Red, Custom Color)",
+    "playback zoom": "Approx. 2x \u2013 10x",
+    "power supply  battery chargers": "AC Adapter Kit ACK-DC80, Battery Charger CB-2LCE",
+    "redeye correction": "Yes, during shooting and playback",
+    "redeye reduction": "Yes",
+    "remote controller switch": "Remote Switch RS-60E3",
+    "second curtain synchronisation": "Yes",
+    "self timer": "Approx. 2 or 10 sec., Custom",
+    "slow sync speed": "Yes.\nFastest speed:\n1/2000 sec. (built-in flash)\n1/250 sec. (external flash)\n1/4000 sec. (external using high-speed synchro)",
+    "still image type": "JPEG compression (Exif 2.3 [Exif Print] compliant) / Design rule for Camera File system and DPOF ver. 1.1 compliant), RAW, RAW+JPEG",
+    "type": "TTL",
+    "waterproof  weatherproof case": "Waterproof Case (40m) WP-DC52, Waterproof Case Weight WW-DC1",
+    "weight": "Approx. 356 g (including battery/batteries and memory card)",
+    "zoom": [
+        "Optical 5x\nZoomPlus 10x\nDigital Approx. 4x (with Digital Tele-Converter Approx. 1.5x or 2.0x and Safety Zoom\u00b9). Combined Approx. 20x",
+        "\u00b9 Depending on the image size selected."
+    ]
+}

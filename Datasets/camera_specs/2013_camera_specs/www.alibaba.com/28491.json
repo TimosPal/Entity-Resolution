@@ -1,0 +1,22 @@
+{
+    "<page title>": "Night Vision 2013 New Product Ip Camera - Buy Ip Camera,Night Vision,New Product Product on Alibaba.com",
+    "alarm interface": "1 CH switch input , alarm input ,recording and background linkage supported",
+    "analog output": "1 analog video output ,CVBS supported, PAL/NTSC (configurable)",
+    "audio interface": "1 CH audio input (Level: 2Vp-p, Impedance: 1k\u03a9) , sound pickup supported",
+    "audio process": "AAC or G711 codec standard, two-way voice talkback, audio and video synchronization.",
+    "auto iris": "Support, DC drive auto iris lens, 1 auto Iris interface. N/A",
+    "consumption": "3W",
+    "day  night": "IR cut filter with auto switch, IR sensor. 1 IR lamp control interface algorithm control IR lamp open and close",
+    "frame rate": "5.0 Megapixel#10FPS, 3.0 Megapixel#17FPS, 2.0 Megapixel#25FPS",
+    "image output": "Main Stream: 2592\u00d71920,2048\u00d71536,1920\u00d71080,1600\u00d71200,1280\u00d71024,1280\u00d7960,1024\u00d7768,1280\u00d7720",
+    "image sensor": "1/2.5\u2019\u2019 5.0 Megapixel CMOS Image sensor.",
+    "lens mount": "CS ( M12/M14 optional )",
+    "minimum illumination": "0.6Lux#F1.2 ( color), 0.08 Lux#F1.2 (B/W)",
+    "model": "GK-9002HD365C GK-9002HD365F",
+    "net weight": "0.2 KG",
+    "network interface": "1RJ45 Ethernet interface, 10/100M adaptation",
+    "others": "Product dimension 38mm\u00d738mm\u00d733mm (three plates).",
+    "system structure": "Embedded LINUX RTOS ,dual core 32 bits DSP (TI Davinci DM368)",
+    "video compression": "H.264 compression ,dual stream ( 0.1M-6Mpbs adjustable)",
+    "voltage": "DC12V"
+}

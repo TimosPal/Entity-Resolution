@@ -1,0 +1,63 @@
+{
+    "<page title>": "Canon IXUS 990 IS - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ac power supply": "Optional, AC adapter kit ACK-DC30",
+    "ae lock": "On/Off Selectable",
+    "af assist beam": "Yes",
+    "af lock": "On/Off Selectable",
+    "af modes": [
+        "Single, Continuous\u00b9, Servo AF\u00b9",
+        "\u00b9 Some settings limit availability"
+    ],
+    "af point selection": "Size (Normal, Small)",
+    "af system points": "AiAF (Face Detection / 9-point), 1-point AF (fixed to centre or Face Select and Track)",
+    "batteries": "Rechargeable Li-ion Battery NB-5L (battery and charger supplied)",
+    "battery life": [
+        "\u00b9 Using the batteries and memory card format supplied with the camera (where included), except where indicated.",
+        "Approx. 270 shots \u00b9\nApprox. 360 min. playback"
+    ],
+    "builtin flash range": "30cm - 3.5m (W) / 2.0m (T)",
+    "cases  straps": "Soft Leather Case DCC-70, Digital IXUS Metal or Leather Strap",
+    "closest focusing distance": "2cm (W) from front of lens in macro",
+    "construction": "8 elements in 6 groups (1 double sided UA element, 1 single sided UA element)",
+    "continuous shooting": [
+        "Approx. 1.0 shots/sec.\u00b9 (until memory card becomes full)\u00b2",
+        "\u00b9 Under conditions where the flash does not fire.\n\u00b2 Depending on memory card speed / capacity / compression setting."
+    ],
+    "drive modes": "Single, Continuous, Self-Timer, FaceSelf-Timer",
+    "exposure compensation": "+/- 2 EV in 1/3 stop increments.\ni-Contrast for automatic dynamic range correction",
+    "external flash": "Canon High Power Flash HF-DC1",
+    "flash": "High Power Flash HF-DC1",
+    "flash exposure compensation": "Face Detection FE",
+    "flash exposure lock": "Yes",
+    "focal length": "6.6 - 33.0 mm (35mm equivalent: 37 \u2013 185mm)",
+    "histogram": "Yes",
+    "image stabilisation": "Yes (shift-type)",
+    "intelligent orientation sensor": "Yes",
+    "iso sensitivity": "AUTO, 80, 100, 200, 400, 800, 1600",
+    "maximum fnumber": "f/3.2 \u2013 f/5.7",
+    "menu languages": "English, German, French, Dutch, Danish, Finnish, Italian, Norwegian, Swedish, Spanish, Simplified Chinese, Chinese (traditional), Japanese, Russian, Portuguese, Korean, Greek, Polish, Czech, Hungarian, Turkish, Thai, Arabic, Ukrainian, Romanian, Farsi",
+    "metering modes": "Evaluative (linked to Face Detection AF frame), Centre-weighted average, Spot (centre)",
+    "modes": [
+        "Auto, Manual Flash On / Off",
+        "Auto*, P, Portrait, Night Snapshot, Kids & Pets, Indoor, Sunset, Creative Light Effect, Fireworks, Long Shutter, Beach, Aquarium, Foliage, Snow, ISO 3200\u00b9, Digital Macro, Zoom Blur, Color Accent, Color Swap, Stitch Assist, Movie.\n*with Scene Detection Technology and Motion Detection Technology",
+        "\u00b9 Recording pixels fixed at 1600 x 1200."
+    ],
+    "movie length": "\u00b9 Depending on memory card speed / capacity / compression setting.\n\u00b2 The following Speed Class memory cards are required for maximum record time: 1280 x 720, 30fps Speed Class 4 or above. 1920 x 1080, 30fps Speed Class 6",
+    "movies": "MOV [H.264 + Linear PCM (monaural)]",
+    "my camera  my menu": "Start-up image and camera sounds customisation",
+    "my category": "Image tagging feature",
+    "other": "Canon HDMI Cable HTC-100",
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Positive Film, Lighter Skin Tone, Darker Skin Tone, Vivid Blue, Vivid Green, Vivid Red, Custom Color)",
+    "playback zoom": "Approx. 2x \u2013 10x",
+    "power supply  battery chargers": "AC Adapter Kit ACK-DC30",
+    "redeye correction": "Yes, during shooting and playback",
+    "redeye reduction": "Yes",
+    "self timer": "Approx. 2 or 10 sec., Custom or FaceSelf-Timer",
+    "slow sync speed": "Yes",
+    "still image type": "JPEG compression, (Exif 2.2 [Exif Print] compliant) / Design rule for Camera File system, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "type": "TTL",
+    "zoom": [
+        "Optical 5x. Digital approx. 4x (with Digital Tele-Converter approx.1.5x or 2.0x and Safety Zoom \u00b9) \u00b2. Combined approx. 20x",
+        "\u00b9 Depending on the image size selected.\n\u00b2 Digital zoom available for still image and standard movie modes only. Optical zoom may not be available during movie recording."
+    ]
+}

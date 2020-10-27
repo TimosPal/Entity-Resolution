@@ -1,0 +1,64 @@
+{
+    "<page title>": "Canon PowerShot SX150 IS - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ae lock": "On/Off Selectable",
+    "af assist beam": "Yes",
+    "af lock": "On/Off Selectable",
+    "af modes": [
+        "\u00b9 Some settings limit availability.",
+        "Single, Continuous (only available in Smart Auto mode), Servo AF/AE\u00b9, Tracking AF"
+    ],
+    "af point selection": "Size (Normal, Small)",
+    "af system points": "Face Detection, 1-point AF (fixed to centre)",
+    "builtin flash range": "50 cm - 3.0 m (W) / 1.0 m - 2.0 m (T)",
+    "cases  straps": "Soft Case DCC-750",
+    "closest focusing distance": "1 cm (W) from front of lens in macro",
+    "construction": "11 elements in 9 groups (1 UD lens, 1 double-sided aspherical lens)",
+    "continuous shooting": [
+        "Approx. 0.9 shots/sec. AF: Approx. 0.6 shots/sec. LV: Approx. 0.6 shots/sec.(until memory card becomes full)\u00b9\u00b2",
+        "\u00b9 Under conditions where the flash does not fire.\n\u00b2 Depending on memory card speed / capacity / compression setting."
+    ],
+    "dimensions wxhxd": "113.3 x 73.2 x 45.8 mm",
+    "drive modes": "Single, Continuous, Continuous with AF, Self-Timer",
+    "exposure compensation": "+/- 2 EV in 1/3 stop increments.\nEnhanced i-Contrast for automatic dynamic range correction",
+    "external flash": "Canon High Power Flash HF-DC1,\nCanon High Power Flash HF-DC2",
+    "flash": "Canon High Power Flash HF-DC1,\nCanon High Power Flash HF-DC2",
+    "flash exposure compensation": "+/- 2 EV in 1/3 stop increments. Face Detection FE. Safety FE.",
+    "flash exposure lock": "Yes",
+    "focal length": "5.0 - 60.0 mm (35 mm equivalent: 28 - 336 mm)",
+    "histogram": "Yes",
+    "image stabilisation": "Yes (lens shift-type). Intelligent IS",
+    "intelligent orientation sensor": "Yes",
+    "iso sensitivity": "AUTO, 80, 100, 200, 400, 800, 1600",
+    "manual focus": "Yes",
+    "manual power adjustment": "3 levels with internal flash",
+    "maximum fnumber": "f/3.4 - f/5.6",
+    "menu languages": "English, German, French, Dutch, Danish, Finnish, Italian, Norwegian, Swedish, Spanish, Simplified Chinese, Chinese (traditional), Japanese, Russian, Portuguese, Korean, Greek, Polish, Czech, Hungarian, Turkish, Thai, Arabic, Ukrainian, Romanian, Farsi, Hindi",
+    "metering modes": "Evaluative (linked to Face Detection AF frame), Centre-weighted average, Spot (Centre)",
+    "modes": [
+        "Smart Auto (32 scenes detected), Program AE, Shutter priority AE, Aperture priority AE, Manual, Easy, SCN (Portrait, Landscape, Kids & Pets, Smart Shutter (Smile, Wink Self-Timer, FaceSelf-Timer), Low Light (2.0MP), Beach, Foliage, Snow, Fireworks), Creative Filters (Fish-eye Effect, Miniature Effect, Toy Camera Effect, Monochrome, Super Vivid, Poster Effect, Color Accent, Color Swap), Discreet, Movie",
+        "Auto, Manual Flash On / Off, Slow Synchro"
+    ],
+    "modes in movie": "Smart Auto (21 scenes detected), Standard, iFrame Movie, Program AE, Portrait, Landscape, Beach, Foliage, Snow, Fireworks, Miniature Effect, Monochrome, Super Vivid, Poster Effect, Color Accent, Color Swap",
+    "movie length": "\u00b9 The following Speed Class memory cards are required for maximum record time: (HD) 1280 x 720 Speed Class 4 or above. (Full HD) 1920 x 1080 Speed Class 6 or above. (iFrame) 1280 x 720 Speed Class 6 or above.\n\u00b2 Depending on memory card speed / capacity / compression setting.",
+    "movies": "MOV [H.264 + Linear PCM (stereo)]\niFrame",
+    "my camera  my menu": "Start-up image and camera sounds customisation",
+    "my category": "Image tagging feature",
+    "operating environment": [
+        "\u00b9 0 \u2013 35 \u00b0C when NB-3AH is used.",
+        "0 - 40 \u00b0C\u00b9, 10 - 90% humidity"
+    ],
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Positive Film, Lighter Skin Tone, Darker Skin Tone, Vivid Blue, Vivid Green, Vivid Red)",
+    "playback zoom": "Approx. 2x - 10x",
+    "power supply  battery chargers": "AC Adapter Kit ACK800, Battery Charger Kit CBK4-300, Ni-MH Batteries NB-3AH",
+    "redeye correction": "Yes, during shooting and playback",
+    "redeye reduction": "Yes",
+    "self timer": "Approx. 2 or 10 sec., Custom",
+    "slow sync speed": "Yes. Fastest speed 1/2000 sec.",
+    "still image type": "JPEG compression, (Exif 2.3 [Exif Print] compliant) / Design rule for Camera File system, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "type": "TTL",
+    "weight": "Approx. 306 g (including battery/batteries and memory card)",
+    "zoom": [
+        "Optical 12x. Digital Approx. 4x (with Digital Tele-Converter Approx. 1.7x or 2.1x and Safety Zoom\u00b9). Combined Approx. 48x",
+        "\u00b9 Depending on the image size selected."
+    ]
+}

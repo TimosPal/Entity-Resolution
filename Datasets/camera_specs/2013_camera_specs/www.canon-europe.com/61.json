@@ -1,0 +1,82 @@
+{
+    "<page title>": "Canon PowerShot D20 - PowerShot and IXUS digital compact cameras - Canon Europe",
+    "ac power supply": "Optional, AC Adapter Kit ACK-DC40",
+    "ae lock": "On/Off Selectable",
+    "af assist beam": "Yes",
+    "af lock": "On/Off Selectable",
+    "af modes": [
+        "\u00b9 Some settings limit availability.",
+        "Single, Continuous (only available in Auto mode), Servo AF/AE\u00b9, Tracking AF"
+    ],
+    "af point selection": "Size (Normal, Small)",
+    "af system points": "AiAF (Face Detection / 9-point), 1-point AF (fixed to centre)",
+    "batteries": "Rechargeable Li-ion Battery NB-6L (battery and charger supplied)",
+    "battery life": [
+        "\u00b9 Using the batteries and memory card format supplied with the camera (where included), except where indicated.",
+        "Approx. 280 shots\u00b9 (Measured with GPS features off)\nApprox. 300 min. playback\nMore than 48 hours using only GPS Logger"
+    ],
+    "builtin flash range": "30 cm \u2013 3.5 m (W) / 1.0 m \u2013 3.0 m (T)",
+    "cases  straps": "Soft Case DCC-550\nAccessory Kit includes: Shoulder Strap, Carabiner Strap, special Neoprene Pouch, Float, Silicon Jacket.\n(optional straps are not designed for underwater use)",
+    "closest focusing distance": "1 cm (W) from front of lens in macro",
+    "construction": "12 elements in 10 groups (2 UD lenses, 3 double-sided aspherical lens, 1 single-sided aspherical lenses)",
+    "continuous shooting": [
+        "\u00b9 Under conditions where the flash does not fire.\n\u00b2 Depending on memory card speed / capacity / compression setting.",
+        "Approx. 1.9 shots/sec.(until memory card becomes full)\u00b9\u00b2"
+    ],
+    "dimensions wxhxd": "112.3 x 70.8 x 28.0 mm",
+    "drive modes": "Single, Continuous, Self-Timer",
+    "exposure compensation": "+/- 2 EV in 1/3 stop increments.\ni-Contrast for automatic dynamic range correction",
+    "external flash": "Canon High Power Flash HF-DC1\nCanon High Power Flash HF-DC2",
+    "flash": "Canon High Power Flash HF-DC1\nCanon High Power Flash HF-DC2",
+    "flash exposure compensation": "Face Detection FE, Smart Flash Exposure",
+    "flash exposure lock": "Yes",
+    "focal length": "5.0 \u2013 25.0 mm (35 mm equivalent: 28 \u2013 140 mm)",
+    "gps": [
+        "Yes\u00b9, GPS tagging, GPS Logger, automatic time update",
+        "\u00b9 GPS use may be restricted in certain countries or regions. Use of GPS should comply with the laws and regulations of the country and area in which it is being operated including any restriction on the use of electronics."
+    ],
+    "gps log": [
+        "\u00b9 Complies with the NMEA (National Marine Electronics Association of the U.S.) 0183",
+        "LOG [NMEA 0183 message format compliant\u00b9]"
+    ],
+    "histogram": "Yes",
+    "image stabilisation": [
+        "\u00b9 Values at maximum optical focal length. Cameras whose focal length exceeds 350 mm (35mm equivalent) are measured at 350 mm.",
+        "Yes (lens shift-type), Approx. 1-stop\u00b9. Intelligent IS"
+    ],
+    "intelligent orientation sensor": "Yes",
+    "iso sensitivity": "AUTO, 100, 200, 400, 800, 1600, 3200",
+    "manual focus": "Yes",
+    "maximum fnumber": "f/3.9 \u2013 f/4.8",
+    "menu languages": "English, German, French, Dutch, Danish, Finnish, Italian, Norwegian, Swedish, Spanish, Simplified Chinese, Chinese (traditional), Japanese, Russian, Portuguese, Korean, Greek, Polish, Czech, Hungarian, Turkish, Thai, Arabic, Ukrainian, Romanian, Farsi, Malaysian,Indonesian, Vietnamese",
+    "metering modes": "Evaluative (linked to Face Detection AF frame), Centre-weighted average, Spot (Centre)",
+    "modes": [
+        "Smart Auto (32 scenes detected), P, Movie Digest, Portrait, Smart Shutter (Smile, Wink Self-Timer, FaceSelf-Timer), Handheld Night Scene, Low Light (3.0MP), Fish-eye Effect, Miniature Effect, Toy Camera Effect, Monochrome, Super Vivid, Poster Effect, Color Accent, Color Swap, Underwater, Underwater Macro, Snow, Fireworks, Long Shutter, Stitch Assist",
+        "Auto, Manual Flash On / Off, Slow Synchro"
+    ],
+    "modes in movie": "Smart Auto (21 scenes detected), P, Portrait, Miniature Effect, Monochrome, Super Vivid, Poster Effect, Color Accent, Color Swap, Underwater, Underwater Macro, Snow, Fireworks, iFrame Movie, Super Slow Motion Movie",
+    "movie length": "\u00b9 The following Speed Class memory cards are required for maximum record time: (HD) 1280 x 720 Speed Class 4 or above. (Full HD) 1920 x 1080 Speed Class 6 or above. (iFrame) 1280 x 720 Speed Class 6 or above.\n\u00b2 Depending on memory card speed / capacity / compression setting.",
+    "movies": "MOV [H.264 + Linear PCM (monaural)]\niFrame",
+    "my camera  my menu": "Start-up image and camera sounds customisation",
+    "my category": "Image tagging feature",
+    "operating environment": [
+        "'-10 \u2013 40 \u00b0C, 10 \u2013 90% humidity\nWaterproof to 10m (IEC/JIS IP Protection Rating IPX8 equivalent)\nDustproof (IEC/JIS IP Protection Rating IP6X equivalent)\nShockproof to 1.5m drop\u00b9",
+        "\u00b9 The shock resistant testing methods are unique to this product and do not guarantee against damage or malfunction of the product."
+    ],
+    "other": "Canon HDMI Cable HTC-100",
+    "photo effects": "My Colors (My Colors Off, Vivid, Neutral, Sepia, Black & White, Positive Film, Lighter Skin Tone, Darker Skin Tone, Vivid Blue, Vivid Green, Vivid Red, Custom Color)",
+    "playback zoom": "Approx. 2x \u2013 10x",
+    "power supply  battery chargers": "AC Adapter Kit ACK-DC40, Battery Charger CB-2LYE",
+    "redeye correction": "Yes, during shooting and playback",
+    "redeye reduction": "Yes",
+    "self timer": "Approx. 2 or 10 sec. or Custom",
+    "slow sync speed": "Yes. Fastest speed 1/1600 sec.",
+    "still image type": "JPEG compression, (Exif 2.3 [Exif Print] compliant) / Design rule for Camera File system, Digital Print Order Format [DPOF] Version 1.1 compliant",
+    "type": "TTL",
+    "waterproof  weatherproof case": "Waterproof Case (40m) WP-DC45 [with attachment for underwater external flash]\nWaterproof Case Weight WW-DC1",
+    "weight": "Approx. 228 g (including battery/batteries and memory card)",
+    "zoom": [
+        "Optical 5x\nDigital Approx. 4.0x (with Digital Tele-Converter Approx. 1.5x or 2.0x and Safety Zoom\u00b9). Combined Approx. 20x",
+        "\u00b9 Depending on the image size selected."
+    ]
+}

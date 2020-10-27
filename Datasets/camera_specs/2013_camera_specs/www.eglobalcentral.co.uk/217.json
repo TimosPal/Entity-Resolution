@@ -1,0 +1,15 @@
+{
+    "<page title>": "Sekonic L-478D LiteMaster Pro Light Meter",
+    "aperture": "f/0.5 to f/162.2 (in 1/3 steps)",
+    "dimensions": "2.2 x 5.5 x 1\" / 57 x 140 x 26 mm",
+    "iso": "ISO 3 to 409600 (in 1/3 steps)",
+    "measuring modes": "Ambient: Aperture priority measuring, Shutter speed priority measuring, TF priority measuring, Cine measuring, HD Cine camera measuring, Illuminance measuring (lux, foot candle), Luminance measuring (foot-lambert, cdm2)",
+    "measuring range": "Ambient- Incident: EV -2 to 22.9 (approx. f/2 at 15 sec. to f/22.9 at 1/8000 sec.) / Reflected: EV 3 to 19.9",
+    "metering method": "Incident light and reflected light (with optional attachment)",
+    "operating temperature": "14-122\u00b0F / -10-50\u00b0C (no condensation)",
+    "power source": "2x AAA dry cell batteries (alkaline, manganese, lithium, nickel hydride, or nickel-based)",
+    "receptor head": "Lumisphere convertible to flat diffuser (with retracted Lumisphere)",
+    "shutter speed": "Ambient: 30 min. to 1/6400 sec. (in 1, 1/2, and 1/3 steps), 1/200 and 1/400 sec. also available\nFlash: 30 min. to 1/1000 sec. (in 1, 1/2, and 1/3 steps), 1/75, 1/80, 1/90, 1/100, 1/200, and 1/400 sec. also available",
+    "storage temperature": "-4-140\u00b0F / -20-60\u00b0C (no condensation)",
+    "weight": "4.6 oz / 130 g (without batteries)"
+}
