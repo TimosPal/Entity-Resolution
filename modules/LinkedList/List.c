@@ -90,3 +90,22 @@ void List_FreeValues(List list, void (*subFree)(void*)){
 		currNode = currNode->next;
 	}
 }
+
+List List_Merge(List *list1, List* list2){
+	List newList;
+	List_Init(&newList);
+
+	Node* temp1 = list1->head;
+	while(temp1 != NULL){
+		List_Append(&newList, temp1->value);
+		temp1 = temp1->next;
+	}
+
+	Node* temp2 = list2->head;
+	while(temp2 != NULL){
+		List_Append(&newList, temp2->value);
+		temp2 = temp2->next;
+	}
+
+	return newList;
+}
