@@ -33,9 +33,7 @@ int main(int argc, char* argv[]){
             sprintf(itemID,"%s//%s",(char*)(currWebsiteFolder->value), (char*)(currItem->value));
             RemoveFileExtension(itemID);
 
-            Item item = {.id = itemID, .specs = GetJsonPairs(jsonFilePath)};
-
-            printf("%s\n", item.id);
+            Item* item = Item_Create(itemID,GetJsonPairs(jsonFilePath)); // TODO: json pairs isnt working YET.
 
             currItem = currItem->next;
         }

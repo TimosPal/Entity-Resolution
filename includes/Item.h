@@ -8,4 +8,6 @@ typedef struct Item {
     List* specs;
 }Item;
 
+Item* Item_Create(char* id, List* specs);
+
 #endif

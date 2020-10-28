@@ -30,4 +30,3 @@ bool FindArgAfterFlag(char** argv, int argc, char* flag, char** value){
     *value = argv[index + 1];
     return true;
 }
-
