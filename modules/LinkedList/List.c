@@ -83,7 +83,7 @@ Node* List_GetNode(List list, int index) {
 	return temp;
 }
 
-void List_FreeValues(List list,void (*subFree)(void*)){
+void List_FreeValues(List list, void (*subFree)(void*)){
 	Node* currNode = list.head;
 	while(currNode != NULL){
 		subFree(currNode->value);

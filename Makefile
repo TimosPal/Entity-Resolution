@@ -4,7 +4,7 @@
 
 MOD_DIR = ./modules
 OBJS 	= main.o List.o ArgUtil.o FolderUtil.o StringUtil.o
-SOURCE	= main.c $(MOD_DIR)/LinkedList/List.c $(MOD_DIR)/ArgUtil/ArgUtil.c $(MOD_DIR)/Utils/FolderUtil.c $(MOD_DIR)/Utils/StringUtil.c
+SOURCE	= main.c $(MOD_DIR)/LinkedList/List.c $(MOD_DIR)/ArgUtil/ArgUtil.c $(MOD_DIR)/Utils/FolderUtil.c $(MOD_DIR)/Utils/StringUtil.c $(MOD_DIR)/Hash/Hash.c
 HEADER  = List.h ArgUtil.h
 OUT  	= main
 CC	= gcc
@@ -32,6 +32,9 @@ FolderUtil.o: $(MOD_DIR)/Utils/FolderUtil.c
 
 StringUtil.o: $(MOD_DIR)/Utils/StringUtil.c
 	$(CC) $(FLAGS) $(MOD_DIR)/Utils/StringUtil.c
+
+Hash.o: $(MOD_DIR)/Hash/Hash.c
+	$(CC) $(FLAGS) $(MOD_DIR)/Hash/Hash.c
 
 
 # clean house
