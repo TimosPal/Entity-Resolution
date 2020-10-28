@@ -4,7 +4,7 @@
 int main(int argc, char* argv[]){
 
     // Get the flags from argv.
-    // -f should contain the path of a folder of folders.
+    // -f should contain the path to the folder containing the websites folders.
     char *websitesFolderPath;
     IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-f", &websitesFolderPath), "arg -f is missing or has no value")
 
