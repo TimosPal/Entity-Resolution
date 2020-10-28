@@ -70,3 +70,16 @@ char* GetFileNameFromPath(char* str){
     List_Destroy(&strings);
     return fileName;
 }
+
+void RemoveFileExtension(char* str){
+    int length = strlen(str);
+
+    char* temp = str + length - 1;
+    while (*temp != '.'){
+        temp--;
+    }
+
+    *temp = '\0';
+
+    return;
+}

@@ -39,3 +39,13 @@ bool IsValidItem(struct dirent* dir) {
         return false;
     return true;
 }
+
+List* GetJsonPairs(char* filePath){
+    /* Reading the file */
+    FILE* fp = fopen(filePath, "r");
+    /* Get size of file */
+
+    fclose(fp);
+
+    return NULL;
+}

@@ -1,4 +1,5 @@
 #include "Util.h"
+#include "Item.h"
 
 
 int main(int argc, char* argv[]){
@@ -16,13 +17,33 @@ int main(int argc, char* argv[]){
     Node* currWebsiteFolder = websiteFolders.head;
     while(currWebsiteFolder != NULL){
         char websitePath[BUFFER_SIZE];
-        sprintf(websitePath,"%s/%s",websitesFolderPath,currWebsiteFolder->value);
+        sprintf(websitePath,"%s/%s",websitesFolderPath,(char*)(currWebsiteFolder->value));
 
         // Open each item inside the current website folder.
         List currItems;
-        IF_ERROR_MSG(!GetFolderItems(websitePath, &currItems), "failed to open/close website folder")
+        IF_ERROR_MSG(!GetFolderItems(websitePath, &currItems), "failed to open/close website folder") //NOTE list could be avoided
+
+        /* Create Nodes from the list of Json file names */
+        Node* currItem = currItems.head;
+        while(currItem != NULL){
+            char jsonFilePath[BUFFER_SIZE];
+            sprintf(jsonFilePath,"%s/%s",websitePath,(char*)(currItem->value));
+
+            char itemID[BUFFER_SIZE];
+            sprintf(itemID,"%s//%s",(char*)(currWebsiteFolder->value), (char*)(currItem->value));
+            RemoveFileExtension(itemID);
+
+            Item item = {.id = itemID, .specs = GetJsonPairs(jsonFilePath)};
+
+            printf("%s\n", item.id);
+
+            currItem = currItem->next;
+        }
 
         currWebsiteFolder = currWebsiteFolder->next;
+
+        List_FreeValues(currItems,free);
+        List_Destroy(&currItems);
     }
 
     List_FreeValues(websiteFolders,free);

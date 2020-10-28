@@ -19,4 +19,6 @@ List StringSplit(char* str, char* token);
 
 unsigned int StringHash(void* str);
 
+void RemoveFileExtension(char* str);
+
 #endif

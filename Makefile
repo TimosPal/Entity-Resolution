@@ -2,12 +2,15 @@
 # In order to execute this "Makefile" just type "make"
 #
 
-OBJS 	= main.o List.o ArgUtil.o
-SOURCE	= main.c ./modules/LinkedList/List.c ./modules/ArgUtil/ArgUtil.c
-HEADER  = ./includes/List.h ./includes/ArgUtil.h
+MOD_DIR = ./modules
+OBJS 	= main.o List.o ArgUtil.o FolderUtil.o StringUtil.o
+SOURCE	= main.c $(MOD_DIR)/LinkedList/List.c $(MOD_DIR)/ArgUtil/ArgUtil.c $(MOD_DIR)/Utils/FolderUtil.c $(MOD_DIR)/Utils/StringUtil.c
+HEADER  = List.h ArgUtil.h
 OUT  	= main
 CC	= gcc
-FLAGS   = -g -c -Wall
+INC_DIR = ./includes
+FLAGS   = -g -c -Wall -I$(INC_DIR)
+
 # -g option enables debugging mode 
 # -c flag generates object code for separate files
 
@@ -18,11 +21,17 @@ $(OUT): $(OBJS)
 main.o: main.c
 	$(CC) $(FLAGS) main.c
 
-List.o: ./modules/LinkedList/List.c
-	$(CC) $(FLAGS) ./modules/LinkedList/List.c
+List.o: $(MOD_DIR)/LinkedList/List.c  
+	$(CC) $(FLAGS) $(MOD_DIR)/LinkedList/List.c
 
-ArgUtil.o: ./modules/ArgUtil/ArgUtil.c
-	$(CC) $(FLAGS) ./modules/ArgUtil/ArgUtil.c
+ArgUtil.o: $(MOD_DIR)/Utils/ArgUtil.c 
+	$(CC) $(FLAGS) $(MOD_DIR)/Utils/ArgUtil.c
+
+FolderUtil.o: $(MOD_DIR)/Utils/FolderUtil.c
+	$(CC) $(FLAGS) $(MOD_DIR)/Utils/FolderUtil.c
+
+StringUtil.o: $(MOD_DIR)/Utils/StringUtil.c
+	$(CC) $(FLAGS) $(MOD_DIR)/Utils/StringUtil.c
 
 
 # clean house
