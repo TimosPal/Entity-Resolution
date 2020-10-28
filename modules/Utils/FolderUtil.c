@@ -5,36 +5,34 @@
 
 #include "Util.h"
 
-bool GetFolderItems(char* input_dir, List* folderItemsList){
+bool GetFolderItems(char* input_dir, List* itemList){
+    // Returns a list of the items contained inside the provided path.
+
     //Open the folder containing the data.
     DIR* directory = opendir(input_dir);
-    if(directory == NULL){
-        perror("Directory could not be opened");
+    if(directory == NULL) //Directory could not be opened
         return false;
-    }
 
-    List_Init(folderItemsList);
+    List_Init(itemList);
 
-    //Access each sub folder.
+    //Access each item.
     struct dirent* dir;
     char buffer[BUFFER_SIZE];
     while((dir = readdir(directory))){
-        if(!IsFolder(dir)) continue;
+        if(!IsValidItem(dir)) continue;
 
-        sprintf(buffer,"%s/%s",input_dir,dir->d_name);
+        sprintf(buffer,"%s",dir->d_name);
         char* itemName = NewString(buffer);
-        List_Append(folderItemsList,itemName);
+        List_Append(itemList, itemName);
     }
 
-    if(closedir(directory) == -1){
-        perror("Directory could not be closed");
+    if(closedir(directory) == -1) //Directory could not be closed"
         return false;
-    }
 
     return true;
 }
 
-bool IsFolder(struct dirent* dir) {
+bool IsValidItem(struct dirent* dir) {
     if (dir->d_ino == 0) //Skip delete inodes.
         return false;
     if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) //Skip . ..

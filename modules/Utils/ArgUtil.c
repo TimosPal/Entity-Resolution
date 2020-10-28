@@ -22,14 +22,10 @@ bool FindArgAfterFlag(char** argv, int argc, char* flag, char** value){
     //and that's incorrect.When successful value is the argument after the flag.
 
     int index;
-    if(!FindFlagIndex(argv, argc, flag, &index)){
-        printf("%s flag not found.\n",flag);
+    if(!FindFlagIndex(argv, argc, flag, &index))
         return false;
-    }
-    if(index + 1 >= argc){
-        printf("No arguments after flag %s\n",flag);
+    if(index + 1 >= argc)
         return false;
-    }
 
     *value = argv[index + 1];
     return true;

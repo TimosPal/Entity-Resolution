@@ -5,9 +5,13 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#define ERROR 1
+#include "ArgUtil.h"
+#include "FolderUtil.h"
+#include "StringUtil.h"
 
-#define IF_ERROR(x) if(x) { exit(ERROR); }
-#define IF_ERROR_MSG(x,msg) if(x) { (errno != 0) ? perror(msg) : printf("%s",msg); exit(ERROR); }
+#define BUFFER_SIZE 256
+#define EXIT_ERROR_CODE 1
+
+#define IF_ERROR_MSG(x,msg) { if(x) {fprintf(stderr,"ERROR : %s.\n",msg); exit(EXIT_ERROR_CODE); } }
 
 #endif

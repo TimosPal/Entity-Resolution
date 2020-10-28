@@ -90,7 +90,3 @@ void List_FreeValues(List list,void (*subFree)(void*)){
 		currNode = currNode->next;
 	}
 }
-
-void List_DefaultFreeMethod(void* value){
-	free(value);
-}
