@@ -1,21 +1,18 @@
 #include <stdio.h>
 #include <dirent.h>
-#include "./includes/Util.h"
-#include "./includes/ArgUtil.h"
+#include "Util.h"
+#include "ArgUtil.h"
 
 int main(int argc, char* argv[]){
 
-    //GET FLAGS
-    //-f FLAG
+    // Get the flags from argv.
+    // -f should contain the path of a folder of folders.
     char *folderName;
-    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-f", &folderName), "Name of folder is not valid\n")
+    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-f", &folderName), "Invalid folder path\n")
 
-    //PARSE FILES
+    // Open the folders.
     DIR *dir_ptr;
     struct dirent *direntp;
-
-    
-
 
     return 0;
 }

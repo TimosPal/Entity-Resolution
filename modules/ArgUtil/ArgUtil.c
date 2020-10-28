@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "../../includes/ArgUtil.h"
+#include "ArgUtil.h"
 
 bool FindFlagIndex(char** argv, int argc, char* flag, int* index){
     //Returns the index of the flag inside argv to index argument.
