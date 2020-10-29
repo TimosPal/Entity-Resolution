@@ -9,6 +9,4 @@
 bool GetFolderItems(char* input_dir, List* itemList);
 bool IsValidItem(struct dirent* dir);
 
-List* GetJsonPairs(char* filePath);
-
 #endif

@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "Util.h"
 
@@ -38,14 +39,4 @@ bool IsValidItem(struct dirent* dir) {
     if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) //Skip . ..
         return false;
     return true;
-}
-
-List* GetJsonPairs(char* filePath){
-    /* Reading the file */
-    FILE* fp = fopen(filePath, "r");
-    /* Get size of file */
-
-    fclose(fp);
-
-    return NULL;
 }

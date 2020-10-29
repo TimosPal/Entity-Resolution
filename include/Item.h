@@ -5,9 +5,9 @@
 
 typedef struct Item {
     char* id; // Id format : website//id_number
-    List* specs;
+    List specs;
 }Item;
 
-Item* Item_Create(char* id, List* specs);
+Item* Item_Create(char* id, List specs);
 
 #endif
