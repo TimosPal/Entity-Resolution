@@ -1,46 +1,54 @@
+#silent make
+MAKE += --silent
+
+#programs inside programs folder
+PROGRAMS = $(subst programs/, , $(wildcard programs/*))
+
+# Compile: all
+all: programs lib tests
+
+programs-%:
+	$(MAKE) -C programs/$*
+
+programs: $(addprefix programs-, $(PROGRAMS))		# depend στο programs-<foo> για κάθε στοιχείο του PROGRAMS
+
+tests:
+	$(MAKE) -C tests all
+
+lib:
+	$(MAKE) -C lib all
+
+# Εκτέλεση: όλα, προγράμματα, tests
+run: run-tests run-programs
+
+run-programs-%:
+	$(MAKE) -C programs/$* run
+
+run-programs: $(addprefix run-programs-, $(PROGRAMS))
+
+run-tests:
+	$(MAKE) -C tests run
+
+# Εκτέλεση με valgrind: όλα, προγράμματα, tests
+valgrind: valgrind-tests valgrind-programs
+
+valgrind-programs-%:
+	$(MAKE) -C programs/$* valgrind
+
+valgrind-programs: $(addprefix valgrind-programs-, $(PROGRAMS))
+
+valgrind-tests:
+	$(MAKE) -C tests valgrind
+
+# Εκκαθάριση
+clean-programs-%:
+	$(MAKE) -C programs/$* clean
+
+clean: $(addprefix clean-programs-, $(PROGRAMS))
+	$(MAKE) -C tests clean
+	$(MAKE) -C lib clean
+
+# Δηλώνουμε ότι οι παρακάτω κανόνες είναι εικονικοί, δεν παράγουν αρχεία. Θέλουμε δηλαδή
+# το "make programs" να εκτελεστεί παρόλο που υπάρχει ήδη ένα directory "programs".
 #
-# In order to execute this "Makefile" just type "make"
-#
-
-MOD_DIR = ./modules
-OBJS 	= main.o List.o ArgUtil.o FolderUtil.o StringUtil.o
-SOURCE	= main.c $(MOD_DIR)/LinkedList/List.c $(MOD_DIR)/ArgUtil/ArgUtil.c $(MOD_DIR)/Utils/FolderUtil.c $(MOD_DIR)/Utils/StringUtil.c $(MOD_DIR)/Hash/Hash.c
-HEADER  = List.h ArgUtil.h
-OUT  	= main
-CC	= gcc
-INC_DIR = ./includes
-FLAGS   = -g -c -Wall -I$(INC_DIR)
-
-# -g option enables debugging mode 
-# -c flag generates object code for separate files
-
-$(OUT): $(OBJS)
-	$(CC) -g $(OBJS) -o $@
-
-# create/compile the individual files >>separately<< 
-main.o: main.c
-	$(CC) $(FLAGS) main.c
-
-List.o: $(MOD_DIR)/LinkedList/List.c  
-	$(CC) $(FLAGS) $(MOD_DIR)/LinkedList/List.c
-
-ArgUtil.o: $(MOD_DIR)/Utils/ArgUtil.c 
-	$(CC) $(FLAGS) $(MOD_DIR)/Utils/ArgUtil.c
-
-FolderUtil.o: $(MOD_DIR)/Utils/FolderUtil.c
-	$(CC) $(FLAGS) $(MOD_DIR)/Utils/FolderUtil.c
-
-StringUtil.o: $(MOD_DIR)/Utils/StringUtil.c
-	$(CC) $(FLAGS) $(MOD_DIR)/Utils/StringUtil.c
-
-Hash.o: $(MOD_DIR)/Hash/Hash.c
-	$(CC) $(FLAGS) $(MOD_DIR)/Hash/Hash.c
-
-
-# clean house
-clean:
-	rm -f $(OBJS) $(OUT)
-
-# do a bit of accounting
-count:
-	wc $(SOURCE) $(HEADER)
+.PHONY: programs tests lib run run-programs run-tests clean

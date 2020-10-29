@@ -1,4 +1,4 @@
-#include "hashes.h"
+#include "Hashes.h"
 
 unsigned int h1(const char* str, unsigned int length)  //RSHash
 {

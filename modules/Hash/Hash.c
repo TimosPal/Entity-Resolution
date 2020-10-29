@@ -44,7 +44,7 @@ void Hash_Add(Hash* hash,void* key,void* value){
     List *bucketItems = &(hash->buckets[index]);
 
     KeyValuePair *kvp = KeyValuePair_Create(key, value);
-    List_Append(&bucketItems, kvp); 
+    List_Append(bucketItems, kvp); 
 }
 
 void Hash_Destroy(Hash hash){

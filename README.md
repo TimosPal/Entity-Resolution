@@ -1,5 +1,13 @@
-Ονόματα Συμμετεχόντων:
+Contributors:
 
-1) Παλαιολόγος Τιμόθεος ΑΜ: 1115201700112
+1) Palaiologos Timotheos AM: 1115201700112
 
-2) Δεσίπρης Γεώργιος ΑΜ: 1115201700030
+2) Desipris Georgios AM: 1115201700030
+
+INFORMATION:
+
+Folder structure and makefile inspiration from @chatzikoko has been used for automation of unit testing.
+
+UNIT TESTING LIBRARY acutest.h USED.
+
+
