@@ -1,6 +1,8 @@
 #ifndef LIST_H
 #define LIST_H
 
+#include <stdbool.h>
+
 typedef struct Node {
     struct Node* next;
     void* value;
@@ -17,7 +19,7 @@ void List_Init(List* list); //Creates an empty list.
 
 void List_AddValue(List* list, void* value, int index); //Adds a node at index.
 void List_Append(List* list, void* value); //Appends a node at the end of the list.
-void List_Remove(List* list, int index); //Remove a node at index.
+bool List_Remove(List* list, int index); //Remove a node at index.
 void List_Destroy(List* list); //Destroy the list by freeing allocated nodes.
 void List_FreeValues(List list,void (*freeMethod)(void*)); //Frees allocated memory for the node's values. Does NOT free the nodes.
 

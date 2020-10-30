@@ -51,7 +51,10 @@ void List_Append(List* list, void* value) {
 	list->size++;
 }
 
-void List_Remove(List* list, int index) {
+bool List_Remove(List* list, int index) {
+	if ( list->head == NULL ){
+		return false;;
+	}
 	Node* temp = list->head;
 	list->size--;
 
@@ -73,6 +76,8 @@ void List_Remove(List* list, int index) {
 			list->tail = temp;
 		}
 	}
+	
+	return true;
 }
 
 Node* List_GetNode(List list, int index) {

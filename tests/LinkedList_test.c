@@ -1,5 +1,6 @@
 #include "LinkedList.h"
 #include "acutest.h"
+#include <stdbool.h>
 
 void test_init(){
     List list;
@@ -105,6 +106,21 @@ void test_remove(){
     TEST_ASSERT(*(int*)List_GetValue(list, index) == nextNodeValue);
 
     List_Destroy(&list);
+
+    /* edge cases */
+    List_Init(&list);
+
+    /* remove head */
+    bool flag = List_Remove(&list, 0);
+    TEST_ASSERT(list.size == 0);
+    TEST_ASSERT(flag == false);
+    
+
+    /* remove another one */
+    flag = List_Remove(&list, 5);
+    TEST_ASSERT(list.size == 0);
+    TEST_ASSERT(flag == false);
+
     free(array);
 }
 
