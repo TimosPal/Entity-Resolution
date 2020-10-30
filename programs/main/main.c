@@ -5,7 +5,6 @@
 #include "Item.h"
 #include "JsonParser.h"
 
-/* TODO: struct for hashtable pair(item, clique) */
 /* TODO: Read Dataset W and edit hashtable accordingly */
 
 int main(int argc, char* argv[]){
@@ -13,11 +12,6 @@ int main(int argc, char* argv[]){
     // -f should contain the path to the folder containing the websites folders.
     char *websitesFolderPath;
     IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-f", &websitesFolderPath), "arg -f is missing or has no value")
-
-    /* List of all the items, in order to be able to free them in the end */
-    List items;
-    List_Init(&items);
-
 
     // Open folder from -f (should contain more folder with names of websites)
     List websiteFolders;
@@ -48,8 +42,6 @@ int main(int argc, char* argv[]){
 
             /* Create item and insert into items list */
             Item* item = Item_Create(itemID, GetJsonPairs(jsonFilePath));
-            List_Append(&items, item);
-
             /* TODO: also insert into hashtable */
 
             currItem = currItem->next;

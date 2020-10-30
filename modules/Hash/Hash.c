@@ -11,7 +11,7 @@ KeyValuePair* KeyValuePair_Create(void* key, void* value){
     return kvp;
 }
 
-void Hash_Init(Hash* hash, int bucketSize, unsigned int (*hashFunction)(void*,int), bool (*cmpFunction)(void*, void*)) {
+void Hash_Init(Hash* hash, int bucketSize, unsigned int (*hashFunction)(void*, unsigned int), bool (*cmpFunction)(void*, void*)) {
     hash->bucketSize = bucketSize; // size of the array.
     hash->hashFunction = hashFunction; // used in get.
     hash->cmpFunction = cmpFunction; // used in get.

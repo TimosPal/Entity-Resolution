@@ -11,3 +11,10 @@ Item* Item_Create(char* id, List specs){
     item->specs = specs;
     return item;
 }
+
+void Item_Free(void* item){
+    Item* itm = (Item*)item;
+    free(itm->id);
+    List_FreeValues(itm->specs,free);
+    List_Destroy(&itm->specs);
+}

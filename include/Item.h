@@ -9,5 +9,6 @@ typedef struct Item {
 }Item;
 
 Item* Item_Create(char* id, List specs);
+void Item_Free(void* item);
 
 #endif

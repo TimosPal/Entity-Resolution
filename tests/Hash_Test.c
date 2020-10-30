@@ -5,7 +5,7 @@ bool Compare_Int(void* a,void* b){
     return *((int*)a) == *((int*)b);
 }
 
-unsigned int SimpleHash(void* val,int size){
+unsigned int SimpleHash(void* val, unsigned int size){
     return 0;
 }
 
