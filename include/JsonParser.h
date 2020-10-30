@@ -10,6 +10,7 @@ typedef struct ValuePair {
     char* rightVal;
 }ValuePair;
 
+void ValuePair_Free(void* value);
 char* GetStringBetweenQuotes(FILE* fp);
 List GetJsonPairs(char* filePath);
 

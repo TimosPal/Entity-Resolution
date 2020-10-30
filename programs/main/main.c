@@ -58,7 +58,7 @@ int main(int argc, char* argv[]){
             /* Create item and insert into items list */
             Item* item = Item_Create(itemID, GetJsonPairs(jsonFilePath));
             /* TODO: make bucket size dynamic */
-            CliqueGroup_Add(&cliqueGroup, itemID, strlen(itemID), item);
+            CliqueGroup_Add(&cliqueGroup, itemID, strlen(itemID)+1, item);
 
             currItem = currItem->next;
         }

@@ -105,6 +105,7 @@ void List_FreeValues(List list, void (*subFree)(void*)){
 	Node* currNode = list.head;
 	while(currNode != NULL){
 		subFree(currNode->value);
+
 		currNode = currNode->next;
 	}
 }

@@ -3,10 +3,15 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+void ValuePair_Free(void* value){
+    ValuePair* vp = (ValuePair*)value;
+    free(vp->leftVal);
+    free(vp->rightVal);
+    free(vp);
+}
+
 char* GetStringBetweenQuotes(FILE* fp){
     /* NOTE: fp starts after " */
-    //FILE* savedfp = fp; // save starting position of fp for the copy into the buffer later on
-    
     bool hasReadBS = false; // has read backslash (to ignore ")
     
     int stringLength = 0;
