@@ -2,7 +2,7 @@
 #include "acutest.h"
 #include <stdbool.h>
 
-void Test_init(){
+void Test_Init(){
     List list;
     List_Init(&list);
 
@@ -11,7 +11,7 @@ void Test_init(){
     TEST_ASSERT(list.size == 0);
 }
 
-void Test_insert(){
+void Test_Insert(){
     List list;
     List_Init(&list);
 
@@ -46,7 +46,27 @@ void Test_insert(){
     free(array);
 }
 
-void Test_remove(){
+void Test_Merge(){
+    List list1;
+    List_Init(&list1);
+    List list2;
+    List_Init(&list2);
+
+    int a = 10;
+    int b = 20;
+    List_Append(&list1, &a);
+    List_Append(&list2,&b);
+
+    List list3 = List_Merge(list1,list2);
+    TEST_ASSERT(list3.size == 2);
+    TEST_ASSERT(*(int*)list3.head->value == 10);
+    TEST_ASSERT(*(int*)list3.tail->value == 20);
+
+    List_Destroy(&list1);
+    List_Destroy(&list2);
+}
+
+void Test_Remove(){
     List list;
     List_Init(&list);
 
@@ -121,15 +141,14 @@ void Test_remove(){
     TEST_ASSERT(list.size == 0);
     TEST_ASSERT(flag == false);
 
+    List_Destroy(&list);
     free(array);
 }
 
-
-
-
 TEST_LIST = {
-    { "LinkedList_test_init",   Test_init },
-    { "LinkedList_test_insert", Test_insert},
-    { "LinkedList_test_remove", Test_remove},
+    { "LinkedList_test_init",   Test_Init },
+    { "LinkedList_test_insert", Test_Insert},
+    { "LinkedList_test_remove", Test_Remove},
+    { "LinkedList_test_merge", Test_Merge},
     { NULL, NULL }
 };
