@@ -1,6 +1,5 @@
 /.vscode
 *.o
-main
 cmake-build-debug
 CMakeLists.txt
 .idea
