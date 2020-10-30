@@ -24,5 +24,6 @@ void List_FreeValues(List list,void (*freeMethod)(void*)); //Frees allocated mem
 List List_Merge(List *list1, List* list2); // Merges 2 existing lists into a new list and returns it
 
 Node* List_GetNode(List list, int index); //Get Node at index.
+void* List_GetValue(List list, int index); //Get value of Node at index.
 
 #endif  

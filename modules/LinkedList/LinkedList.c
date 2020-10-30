@@ -83,6 +83,14 @@ Node* List_GetNode(List list, int index) {
 	return temp;
 }
 
+void* List_GetValue(List list, int index) {
+	Node* temp = list.head;
+	for (int i = 0; i < index; i++)
+		temp = temp->next;
+	
+	return temp->value;
+}
+
 void List_FreeValues(List list, void (*subFree)(void*)){
 	Node* currNode = list.head;
 	while(currNode != NULL){
