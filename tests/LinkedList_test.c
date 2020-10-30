@@ -2,7 +2,7 @@
 #include "acutest.h"
 #include <stdbool.h>
 
-void test_init(){
+void Test_init(){
     List list;
     List_Init(&list);
 
@@ -11,7 +11,7 @@ void test_init(){
     TEST_ASSERT(list.size == 0);
 }
 
-void test_insert(){
+void Test_insert(){
     List list;
     List_Init(&list);
 
@@ -46,7 +46,7 @@ void test_insert(){
     free(array);
 }
 
-void test_remove(){
+void Test_remove(){
     List list;
     List_Init(&list);
 
@@ -128,8 +128,8 @@ void test_remove(){
 
 
 TEST_LIST = {
-    { "LinkedList_test_init", test_init },
-    { "LinkedList_test_insert", test_insert},
-    { "LinkedList_test_remove", test_remove},
+    { "LinkedList_test_init",   Test_init },
+    { "LinkedList_test_insert", Test_insert},
+    { "LinkedList_test_remove", Test_remove},
     { NULL, NULL }
 };

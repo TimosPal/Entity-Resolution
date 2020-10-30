@@ -4,6 +4,7 @@
 # Υλοποιήσεις μέσω dynamic array: LinkedList
 #
 LinkedList_test_OBJS = LinkedList_test.o $(MODULES)/LinkedList/LinkedList.o
+Hash_test_OBJS = Hash_test.o $(MODULES)/Hash/Hash.o $(MODULES)/LinkedList/LinkedList.o
 
 
 # Ο βασικός κορμός του Makefile
