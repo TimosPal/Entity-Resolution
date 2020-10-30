@@ -1,5 +1,7 @@
 /.vscode
 *.o
+*.d
+ER.a
 cmake-build-debug
 CMakeLists.txt
 .idea

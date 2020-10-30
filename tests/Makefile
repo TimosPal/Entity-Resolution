@@ -3,8 +3,8 @@
 
 # Υλοποιήσεις μέσω dynamic array: LinkedList
 #
-LinkedList_test_OBJS = LinkedList_test.o $(MODULES)/LinkedList/LinkedList.o
-Hash_test_OBJS = Hash_test.o $(MODULES)/Hash/Hash.o $(MODULES)/LinkedList/LinkedList.o
+LinkedList_Test_OBJS = LinkedList_Test.o $(MODULES)/LinkedList/LinkedList.o
+Hash_Test_OBJS = Hash_Test.o $(MODULES)/Hash/Hash.o $(MODULES)/LinkedList/LinkedList.o
 
 
 # Ο βασικός κορμός του Makefile

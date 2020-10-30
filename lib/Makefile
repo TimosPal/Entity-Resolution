@@ -5,7 +5,7 @@ ER.a_OBJS =						\
 	$(MODULES)/Hash/Hash.o			\
 	$(MODULES)/Utils/ArgUtil.o		\
 	$(MODULES)/Utils/FolderUtil.o	\
-	$(MODULES)/Utils/Item.o			\
+	$(MODULES)/Item/Item.o			\
 	$(MODULES)/Utils/JsonParser.o	\
 	$(MODULES)/Utils/StringUtil.o
 
