@@ -64,6 +64,7 @@ void Test_Merge(){
 
     List_Destroy(&list1);
     List_Destroy(&list2);
+    List_Destroy(&list3);
 }
 
 void Test_Remove(){

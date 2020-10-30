@@ -7,6 +7,7 @@ ER.a_OBJS =						\
 	$(MODULES)/Utils/FolderUtil.o	\
 	$(MODULES)/Item/Item.o			\
 	$(MODULES)/Utils/JsonParser.o	\
+	$(MODULES)/CliqueGroup/CliqueGroup.o \
 	$(MODULES)/Utils/StringUtil.o
 
 # Ο βασικός κορμός του Makefile

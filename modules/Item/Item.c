@@ -1,7 +1,6 @@
 #include "Item.h"
 
 #include <stdlib.h>
-
 #include "StringUtil.h"
 
 Item* Item_Create(char* id, List specs){

@@ -1,11 +1,16 @@
 #include "Hash.h"
 #include "acutest.h"
 
+typedef struct KeyValuePair{
+    void* key;
+    void* value;
+}KeyValuePair;
+
 bool Compare_Int(void* a,void* b){
     return *((int*)a) == *((int*)b);
 }
 
-unsigned int SimpleHash(void* val, unsigned int size){
+unsigned int SimpleHash(const void* val, unsigned int size){
     return 0;
 }
 
@@ -60,6 +65,7 @@ void Test_Add() {
     TEST_ASSERT(Hash_Add(&hash,key2,sizeof(int),val) == false);
 
     free(key);
+    free(key2);
     free(val);
 
     Hash_Destroy(hash);

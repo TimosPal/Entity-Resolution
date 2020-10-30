@@ -1,7 +1,9 @@
 #include "Hashes.h"
 
-unsigned int RSHash(const char* str, unsigned int length)  //RSHash
+unsigned int RSHash(const void* s, unsigned int length)  //RSHash
 {
+   const char* str = (const char*)s;
+
    unsigned int b    = 378551;
    unsigned int a    = 63689;
    unsigned int hash = 0;
@@ -15,8 +17,10 @@ unsigned int RSHash(const char* str, unsigned int length)  //RSHash
 
    return hash;
 }
-unsigned int SDBMHash(const char* str, unsigned int length) //SDBMHash
+unsigned int SDBMHash(const void* s, unsigned int length) //SDBMHash
 {
+   const char* str = (const char*)s;
+
    unsigned int hash = 0;
    unsigned int i    = 0;
 
@@ -28,8 +32,10 @@ unsigned int SDBMHash(const char* str, unsigned int length) //SDBMHash
    return hash;
 }
 
-unsigned int APHash(const char* str, unsigned int length) //APHash
+unsigned int APHash(const void* s, unsigned int length) //APHash
 {
+   const char* str = (const char*)s;
+
    unsigned int hash = 0xAAAAAAAA;
    unsigned int i    = 0;
 

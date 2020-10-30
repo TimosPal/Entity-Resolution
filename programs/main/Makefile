@@ -4,7 +4,7 @@
 main_OBJS		= main.o $(LIB)/ER.a
 
 # Ορίσματα που χρησιμοποιούνται από το make run
-main_ARGS = -f ../../Datasets/camera_specs/2013_camera_specs
+main_ARGS = -f ../../Datasets/camera_specs/2013_camera_specs -b 1024
 
 # Ο βασικός κορμός του Makefile
 include ../../common.mk

@@ -14,6 +14,11 @@ void List_Destroy(List* list) {
 		List_Remove(list, 0);
 }
 
+void List_Free(void* value){
+	List* list = (List*)value;
+	List_Destroy(list);
+}
+
 void List_AddValue(List* list, void* value, int index) {
 	Node* newNode = malloc(sizeof(Node));
 	newNode->value = value;
