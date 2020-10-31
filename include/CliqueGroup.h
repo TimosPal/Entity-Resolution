@@ -11,11 +11,12 @@ typedef struct CliqueGroup{
     List cliques;
 } CliqueGroup;
 
-
 void CliqueGroup_Init(CliqueGroup* cg, int bucketSize,unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*));
 void CliqueGroup_Destroy(CliqueGroup cg);
 void CliqueGroup_FreeValues(CliqueGroup cg, void (*subFree)(void*));
-bool CliqueGroup_Add(CliqueGroup* cg, void* key, int keysize, void* value);
+
+bool CliqueGroup_Add(CliqueGroup* cg, void* key, int keySize, void* value);
+bool CliqueGroup_Update(CliqueGroup* cg, void* key1, int keySize1, void* key2, int keySize2);
 
 
 #endif

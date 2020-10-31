@@ -13,6 +13,9 @@
 
 #include "Item.h"
 
+/* It is assumed that the json and csv files MUST be correct in format and values
+ * so no extra error checking is done on said files , they are parsed right away. */
+
 /* TODO: Read Dataset W and edit hashtable accordingly */
 
 int main(int argc, char* argv[]){
@@ -77,6 +80,7 @@ int main(int argc, char* argv[]){
     }
 
     // Update cliqueGroup with dataSetW.
+    // We apply the simple logic that for items a,b,c : if a == b and b == c then a == c.
     FILE* dataSetFile = fopen(dataSetWPath, "r");
     IF_ERROR_MSG(dataSetFile == NULL, "-w file not found")
 
@@ -87,6 +91,11 @@ int main(int argc, char* argv[]){
         char* similarityString = (char*)values.head->next->next->value;
         int similarity;
         StringToInt(similarityString,&similarity);
+
+        // If the 2 items are similar we merge the cliques.
+        if(similarity == 1) {
+            CliqueGroup_Update(&cliqueGroup, id1, (int) strlen(id1) + 1, id2, (int) strlen(id2) + 1);
+        }
 
         List_FreeValues(values, free);
     }

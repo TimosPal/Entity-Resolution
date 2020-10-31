@@ -6,6 +6,7 @@
 typedef struct ItemCliquePair {
     void* item;
     List* clique;
+    Node* cliqueParentNode;
 }ItemCliquePair;
 
 ItemCliquePair* ItemCliquePair_New(void* item){
@@ -43,6 +44,7 @@ bool CliqueGroup_Add(CliqueGroup* cg, void* key, int keySize, void* value){
     Hash_Add(&(cg->hash), key, keySize, icp);
 
     List_Append(&(cg->cliques), icp->clique); //append the clique into the list of cliques
+    icp->cliqueParentNode = cg->cliques.tail;
 
     return true;
 }
@@ -64,4 +66,39 @@ void CliqueGroup_FreeValues(CliqueGroup cg, void (*subFree)(void*)){
         List_FreeValues(*(List*)(tempNode->value), subFree);
         tempNode = tempNode->next;
     }
+}
+
+bool CliqueGroup_Update(CliqueGroup* cg, void* key1, int keySize1, void* key2, int keySize2){
+    ItemCliquePair* icp1 = Hash_GetValue(cg->hash, key1, keySize1);
+    if(icp1 == NULL)
+        return false;
+    ItemCliquePair* icp2 = Hash_GetValue(cg->hash, key2, keySize2);
+    if(icp2 == NULL)
+        return false;
+
+    // If both icps point to the same list then they are already in the same clique.
+    // So no further changes should be made.
+    if(icp1->clique == icp2->clique)
+        return true;
+
+    List* mergedCliques = malloc(sizeof(List));
+    *mergedCliques = List_Merge(*icp1->clique,*icp2->clique);
+    List_Append(&cg->cliques, mergedCliques);
+
+    // Testing.
+    icp1->cliqueParentNode->value = NULL;
+    icp2->cliqueParentNode->value = NULL;
+
+    icp1->cliqueParentNode = cg->cliques.tail;
+    icp2->cliqueParentNode = cg->cliques.tail;
+
+    List_Destroy(icp1->clique);
+    free(icp1->clique);
+    List_Destroy(icp2->clique);
+    free(icp2->clique);
+
+    icp1->clique = mergedCliques;
+    icp2->clique = mergedCliques;
+
+    return true;
 }
