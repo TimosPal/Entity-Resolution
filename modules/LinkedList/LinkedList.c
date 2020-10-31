@@ -91,37 +91,36 @@ bool List_RemoveNode(List* list, Node* node){
 	if ( list->head == NULL ){
 		return false;
 	}
-	Node* temp = list->head;
 
 	bool found = false;
-	while(temp!= node){
+	Node* temp = list->head;
+	Node* old = NULL;
+	while(temp != NULL){
+	    if(temp == node){
+		    found = true;
+	        break;
+	    }
+	    old = temp;
 		temp = temp->next;
 	}
+	if(!found)
+	    return false;
 
-	if(!found){
-		return false;
+	if(old == NULL){
+	    // we remove head node.
+	    list->head = list->head->next;
+	    if(list->head == NULL){
+	        list->tail = NULL;
+	    }
+	}else{
+	    old->next = temp->next;
+	    if(temp->next == NULL){
+	        list->tail = old;
+	    }
 	}
 
-	Node* old = temp->next;
-	temp->next = old->next;
-	free(old);
+	list->size--;
 
-
-	if (temp == list->head){
-		list->head = temp->next;
-	}
-
-	if (temp->next == NULL) {
-		list->tail = temp;
-	}
-
-	(list->size)--;
-
-	if (list->size == 0){
-		list->head = NULL;
-		list->tail = NULL;
-	}
-	
 	return true;
 }
 
