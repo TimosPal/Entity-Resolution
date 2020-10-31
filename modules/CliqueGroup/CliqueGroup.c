@@ -86,16 +86,17 @@ bool CliqueGroup_Update(CliqueGroup* cg, void* key1, int keySize1, void* key2, i
     List_Append(&cg->cliques, mergedCliques);
 
     // Testing.
-    icp1->cliqueParentNode->value = NULL;
-    icp2->cliqueParentNode->value = NULL;
+    List_RemoveNode(&cg->cliques, icp1->cliqueParentNode);
+    List_RemoveNode(&cg->cliques, icp2->cliqueParentNode);
+    
 
     icp1->cliqueParentNode = cg->cliques.tail;
     icp2->cliqueParentNode = cg->cliques.tail;
 
     List_Destroy(icp1->clique);
-    free(icp1->clique);
+    //free(icp1->clique);
     List_Destroy(icp2->clique);
-    free(icp2->clique);
+    //free(icp2->clique);
 
     icp1->clique = mergedCliques;
     icp2->clique = mergedCliques;

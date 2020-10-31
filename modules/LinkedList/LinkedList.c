@@ -87,6 +87,44 @@ bool List_Remove(List* list, int index) {
 	return true;
 }
 
+bool List_RemoveNode(List* list, Node* node){
+	if ( list->head == NULL ){
+		return false;
+	}
+	Node* temp = list->head;
+
+	bool found = false;
+	while(temp!= node){
+		temp = temp->next;
+	}
+
+	if(!found){
+		return false;
+	}
+
+	Node* old = temp->next;
+	temp->next = old->next;
+	free(old);
+
+
+	if (temp == list->head){
+		list->head = temp->next;
+	}
+
+	if (temp->next == NULL) {
+		list->tail = temp;
+	}
+
+	(list->size)--;
+
+	if (list->size == 0){
+		list->head = NULL;
+		list->tail = NULL;
+	}
+	
+	return true;
+}
+
 Node* List_GetNode(List list, int index) {
 	Node* temp = list.head;
 	for (int i = 0; i < index; i++)

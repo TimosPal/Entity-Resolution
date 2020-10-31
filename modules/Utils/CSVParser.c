@@ -7,8 +7,13 @@
 
 bool CSV_GetLine(FILE* fp,List* values){
     char buffer[BUFFER_SIZE];
-    int result = fscanf(fp, "%s\n", buffer);
+    char result = fscanf(fp, "%s\n", buffer);
+    
+    if (result == EOF){
+        return false;
+    }
+    
     *values = StringSplit(buffer, ",");
 
-    return (result != EOF) ? true : false;
+    return true;
 }

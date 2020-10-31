@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 void StringReplaceChar(char* str, char old, char new){
     char *charPtr = strchr(str, old);

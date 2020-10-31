@@ -85,10 +85,13 @@ int main(int argc, char* argv[]){
     IF_ERROR_MSG(dataSetFile == NULL, "-w file not found")
 
     List values;
+    CSV_GetLine(dataSetFile, &values); // get rid of columns
+    List_FreeValues(values, free);
     while(CSV_GetLine(dataSetFile, &values)) {
         char* id1 = (char*)values.head->value;
         char* id2 = (char*)values.head->next->value;
         char* similarityString = (char*)values.head->next->next->value;
+        //printf("%s : %s : %s\n", id1, id2, similarityString);
         int similarity;
         StringToInt(similarityString,&similarity);
 
