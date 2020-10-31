@@ -5,10 +5,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "ArgUtil.h"
-#include "FolderUtil.h"
-#include "StringUtil.h"
-
 #define BUFFER_SIZE 256
 #define EXIT_ERROR_CODE 1
 

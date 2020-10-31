@@ -1,8 +1,9 @@
-//
-// Created by Tim on 31/10/2020.
-//
-
 #ifndef CSVPARSER_H
 #define CSVPARSER_H
 
-#endif //CSVPARSER_H
+#include "LinkedList.h"
+#include <stdio.h>
+
+bool CSV_GetLine(FILE* fp,List* values);
+
+#endif

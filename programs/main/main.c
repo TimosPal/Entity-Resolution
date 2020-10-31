@@ -1,13 +1,17 @@
-#include <regex.h>
-#include <sys/types.h>
 #include <string.h>
 
 #include "Util.h"
-#include "Item.h"
-#include "JsonParser.h"
-#include "CliqueGroup.h"
-#include "Hashes.h"
+#include "ArgUtil.h"
+#include "FolderUtil.h"
 #include "StringUtil.h"
+
+#include "JSONParser.h"
+#include "CSVParser.h"
+
+#include "Hashes.h"
+#include "CliqueGroup.h"
+
+#include "Item.h"
 
 /* TODO: Read Dataset W and edit hashtable accordingly */
 
@@ -16,6 +20,9 @@ int main(int argc, char* argv[]){
     // -f should contain the path to the folder containing the websites folders.
     char *websitesFolderPath;
     IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-f", &websitesFolderPath), "arg -f is missing or has no value")
+
+    char *dataSetWPath;
+    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-w", &dataSetWPath), "arg -w is missing or has no value")
 
     // -b is the bucketsize
     int bucketSize;
@@ -68,6 +75,23 @@ int main(int argc, char* argv[]){
         List_FreeValues(currItems,free);
         List_Destroy(&currItems);
     }
+
+    // Update cliqueGroup with dataSetW.
+    FILE* dataSetFile = fopen(dataSetWPath, "r");
+    IF_ERROR_MSG(dataSetFile == NULL, "-w file not found")
+
+    List values;
+    while(CSV_GetLine(dataSetFile, &values)) {
+        char* id1 = (char*)values.head->value;
+        char* id2 = (char*)values.head->next->value;
+        char* similarityString = (char*)values.head->next->next->value;
+        int similarity;
+        StringToInt(similarityString,&similarity);
+
+        List_FreeValues(values, free);
+    }
+
+    fclose(dataSetFile);
 
     /* Deletes items ONLY(within cliques list(which has more lists in it)) */
     CliqueGroup_FreeValues(cliqueGroup, Item_Free);

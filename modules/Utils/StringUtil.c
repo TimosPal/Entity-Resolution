@@ -15,7 +15,7 @@ List StringSplit(char* str, char* token){
     char* currWord;
     currWord = strtok(str, token);
     while(currWord != NULL){
-        List_Append(&temp,currWord);
+        List_Append(&temp, NewString(currWord));
         currWord = strtok(NULL, token);
     }
 

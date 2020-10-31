@@ -6,7 +6,8 @@ ER.a_OBJS =						\
 	$(MODULES)/Utils/ArgUtil.o		\
 	$(MODULES)/Utils/FolderUtil.o	\
 	$(MODULES)/Item/Item.o			\
-	$(MODULES)/Utils/JsonParser.o	\
+	$(MODULES)/Utils/JSONParser.o	\
+	$(MODULES)/Utils/CSVParser.o    \
 	$(MODULES)/CliqueGroup/CliqueGroup.o \
 	$(MODULES)/Utils/StringUtil.o
 

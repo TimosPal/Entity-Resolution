@@ -5,7 +5,7 @@
 #include "LinkedList.h"
 #include "Item.h"
 #include "Hash.h"
-#include "JsonParser.h"
+#include "JSONParser.h"
 
 #include <stdbool.h>
 

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "StringUtil.h"
 
-#include "JsonParser.h"
+#include "JSONParser.h"
 
 Item* Item_Create(char* id, List specs){
     // Only the Id should be allocated to the heap.
