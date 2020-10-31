@@ -18,4 +18,5 @@ void Item_Free(void* item){
     free(itm->id);
     List_FreeValues(itm->specs,ValuePair_Free);
     List_Destroy(&itm->specs);
+    free(item);
 }

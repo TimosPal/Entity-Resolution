@@ -10,8 +10,9 @@ void List_Init(List* list) {
 }
 
 void List_Destroy(List* list) {
-	while (list->head != NULL)
+	while (list->head != NULL){
 		List_Remove(list, 0);
+	}
 }
 
 void List_Free(void* value){
@@ -61,7 +62,7 @@ bool List_Remove(List* list, int index) {
 		return false;;
 	}
 	Node* temp = list->head;
-	list->size--;
+	(list->size)--;
 
 	if (index == 0) {
 		list->head = list->head->next;
@@ -82,6 +83,7 @@ bool List_Remove(List* list, int index) {
 		}
 	}
 	
+
 	return true;
 }
 

@@ -10,6 +10,7 @@ typedef struct ItemCliquePair {
 
 ItemCliquePair* ItemCliquePair_New(void* item){
     ItemCliquePair* pair = malloc(sizeof(ItemCliquePair)); //value of the KeyValuePair struct
+
     pair->clique = malloc(sizeof(List)); //malloc list for the clique of the pair
     List_Init(pair->clique); 
 
@@ -24,7 +25,8 @@ void ItemCliquePair_Free(void* value){
     ItemCliquePair* icp = (ItemCliquePair*)value;
     
     List_Destroy((List*)icp->clique);
-    free(icp->clique);
+    List_Free(icp->clique); // THIS BECAME LIST_FREE FROM FREE
+    //free(icp->clique); // MISTAKE
     free(icp);
 }
 
@@ -49,14 +51,14 @@ bool CliqueGroup_Add(CliqueGroup* cg, void* key, int keySize, void* value){
 void CliqueGroup_Destroy(CliqueGroup cg){
     Hash_FreeValues(cg.hash, ItemCliquePair_Free);
     Hash_Destroy(cg.hash);
-    List_FreeValues(cg.cliques, List_Free);
+    List_FreeValues(cg.cliques, free); // THIS BECAME FREE FROM LIST_FREE
     List_Destroy(&(cg.cliques));
 }
 
 void CliqueGroup_FreeValues(CliqueGroup cg, void (*subFree)(void*)){
     Node* tempNode = cg.cliques.head;
     while (tempNode != NULL){
-        List_FreeValues(*(List*)tempNode->value, subFree);
+        List_FreeValues(*(List*)(tempNode->value), subFree);
         tempNode = tempNode->next;
     }
 }
