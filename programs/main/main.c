@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
 
         // Open each item inside the current website folder.
         List currItems;
-        IF_ERROR_MSG(!GetFolderItems(websitePath, &currItems), "failed to open/close website folder") //NOTE list could be avoided
+        IF_ERROR_MSG(!GetFolderItems(websitePath, &currItems), "failed to open/close website folder")
 
         /* Create Nodes from the list of Json file names */
         Node* currItem = currItems.head;
@@ -69,6 +69,7 @@ int main(int argc, char* argv[]){
         List_Destroy(&currItems);
     }
 
+    /* Deletes items ONLY(within cliques list(which has more lists in it)) */
     CliqueGroup_FreeValues(cliqueGroup, Item_Free);
     CliqueGroup_Destroy(cliqueGroup);
 

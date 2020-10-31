@@ -5,6 +5,7 @@
 #include "LinkedList.h"
 #include <stdbool.h>
 
+/* NOTE: this structure supposes that cliques list is a list of lists */
 typedef struct CliqueGroup{
     Hash hash;
     List cliques;

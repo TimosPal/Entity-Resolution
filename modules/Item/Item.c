@@ -13,7 +13,7 @@ Item* Item_Create(char* id, List specs){
     return item;
 }
 
-void Item_Free(void* item){
+void Item_Free(void* item){ // frees item id and spec list
     Item* itm = (Item*)item;
     free(itm->id);
     List_FreeValues(itm->specs,ValuePair_Free);

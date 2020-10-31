@@ -15,9 +15,13 @@ void CliqueGroup_Test_Add(){
     CliqueGroup cg;
     CliqueGroup_Init(&cg, 10, RSHash, StringCmp);
 
-    char itemID[10] = "test_id";
-    Item* item = Item_Create("", GetJsonPairs(INPUT_FILE));
-    CliqueGroup_Add(&cg, itemID, strlen(itemID)+1, item);
+    char item1ID[10] = "test_id1";
+    Item* item1 = Item_Create(item1ID, GetJsonPairs(INPUT_FILE));
+    CliqueGroup_Add(&cg, item1ID, strlen(item1ID)+1, item1);
+
+    char item2ID[10] = "test_id2";
+    Item* item2 = Item_Create(item2ID, GetJsonPairs(INPUT_FILE));
+    CliqueGroup_Add(&cg, item2ID, strlen(item2ID)+1, item2);
 
     /* cliques list is not empty */
     TEST_ASSERT(cg.cliques.size > 0);

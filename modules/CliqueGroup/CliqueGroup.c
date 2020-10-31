@@ -25,8 +25,7 @@ void ItemCliquePair_Free(void* value){
     ItemCliquePair* icp = (ItemCliquePair*)value;
     
     List_Destroy((List*)icp->clique);
-    List_Free(icp->clique); // THIS BECAME LIST_FREE FROM FREE
-    //free(icp->clique); // MISTAKE
+    free(icp->clique);
     free(icp);
 }
 
@@ -49,13 +48,17 @@ bool CliqueGroup_Add(CliqueGroup* cg, void* key, int keySize, void* value){
 }
 
 void CliqueGroup_Destroy(CliqueGroup cg){
+    /* Frees the entire structure */
+
+    /* free hash (including the lists inside cliques list) */
     Hash_FreeValues(cg.hash, ItemCliquePair_Free);
     Hash_Destroy(cg.hash);
-    List_FreeValues(cg.cliques, free); // THIS BECAME FREE FROM LIST_FREE
+    /* Delete cliques list */
     List_Destroy(&(cg.cliques));
 }
 
 void CliqueGroup_FreeValues(CliqueGroup cg, void (*subFree)(void*)){
+    /* For every list in cliques list, frees values in them */
     Node* tempNode = cg.cliques.head;
     while (tempNode != NULL){
         List_FreeValues(*(List*)(tempNode->value), subFree);
