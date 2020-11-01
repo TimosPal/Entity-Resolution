@@ -18,6 +18,7 @@ void List_Destroy(List* list) {
 void List_Free(void* value){
 	List* list = (List*)value;
 	List_Destroy(list);
+	free(list);
 }
 
 void List_AddValue(List* list, void* value, int index) {
@@ -119,7 +120,9 @@ bool List_RemoveNode(List* list, Node* node){
 	    }
 	}
 
-	list->size--;
+	free(temp);
+
+	(list->size)--;
 
 	return true;
 }
@@ -149,19 +152,34 @@ void List_FreeValues(List list, void (*subFree)(void*)){
 	}
 }
 
+bool List_ValueExists(List list, void* value){
+	Node* temp = list.head;
+	while (temp != NULL){
+		if (temp->value == value){
+			return true;
+		}
+		temp = temp->next;
+	}
+	return false;
+}
+
 List List_Merge(List list1, List list2){
 	List newList;
 	List_Init(&newList);
 
 	Node* temp1 = list1.head;
 	while(temp1 != NULL){
-		List_Append(&newList, temp1->value);
+		if (!List_ValueExists(newList, temp1->value)){
+			List_Append(&newList, temp1->value);
+		}
 		temp1 = temp1->next;
 	}
 
 	Node* temp2 = list2.head;
 	while(temp2 != NULL){
-		List_Append(&newList, temp2->value);
+		if (!List_ValueExists(newList, temp2->value)){
+			List_Append(&newList, temp2->value);
+		}
 		temp2 = temp2->next;
 	}
 

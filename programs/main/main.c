@@ -16,7 +16,7 @@
 /* It is assumed that the json and csv files MUST be correct in format and values
  * so no extra error checking is done on said files , they are parsed right away. */
 
-/* TODO: Read Dataset W and edit hashtable accordingly */
+/* TODO: Join instead of Merge, Double Linked List */
 
 int main(int argc, char* argv[]){
     // Get the flags from argv.
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]){
             /* Create item and insert into items list */
             Item* item = Item_Create(itemID, GetJsonPairs(jsonFilePath));
             /* TODO: make bucket size dynamic */
-            CliqueGroup_Add(&cliqueGroup, itemID, strlen(itemID)+1, item);
+            CliqueGroup_Add(&cliqueGroup, item->id, strlen(itemID)+1, item);
 
             currItem = currItem->next;
         }
@@ -87,6 +87,7 @@ int main(int argc, char* argv[]){
     List values;
     CSV_GetLine(dataSetFile, &values); // get rid of columns
     List_FreeValues(values, free);
+    List_Destroy(&values);
     while(CSV_GetLine(dataSetFile, &values)) {
         char* id1 = (char*)values.head->value;
         char* id2 = (char*)values.head->next->value;
@@ -101,9 +102,13 @@ int main(int argc, char* argv[]){
         }
 
         List_FreeValues(values, free);
+        List_Destroy(&values);
     }
 
     fclose(dataSetFile);
+
+    /* Print Output Results */
+    CliqueGroup_PrintIdentical(&cliqueGroup, Item_Print);
 
     /* Deletes items ONLY(within cliques list(which has more lists in it)) */
     CliqueGroup_FreeValues(cliqueGroup, Item_Free);

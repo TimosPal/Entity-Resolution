@@ -21,6 +21,7 @@ void List_AddValue(List* list, void* value, int index); //Adds a node at index.
 void List_Append(List* list, void* value); //Appends a node at the end of the list.
 bool List_Remove(List* list, int index); //Remove a node at index.
 bool List_RemoveNode(List* list, Node* node); //Remove the specific node
+bool List_ValueExists(List list, void* value);
 void List_Destroy(List* list); //Destroy the list by freeing allocated nodes.
 void List_Free(void* value);
 void List_FreeValues(List list,void (*freeMethod)(void*)); //Frees allocated memory for the node's values. Does NOT free the nodes.

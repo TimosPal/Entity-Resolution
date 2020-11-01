@@ -10,5 +10,6 @@ typedef struct Item {
 
 Item* Item_Create(char* id, List specs);
 void Item_Free(void* item);
+void Item_Print(void* item);
 
 #endif

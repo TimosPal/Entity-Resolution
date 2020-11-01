@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 typedef struct ItemCliquePair {
     void* item;
     List* clique;
@@ -15,9 +16,9 @@ ItemCliquePair* ItemCliquePair_New(void* item){
     pair->clique = malloc(sizeof(List)); //malloc list for the clique of the pair
     List_Init(pair->clique); 
 
-    List_Append(pair->clique, item); //append the item to the clique(starting state)
-
     pair->item = item;
+
+    List_Append(pair->clique, pair); //append the pair to the clique(starting state)
 
     return pair;
 }
@@ -25,13 +26,11 @@ ItemCliquePair* ItemCliquePair_New(void* item){
 void ItemCliquePair_Free(void* value){
     ItemCliquePair* icp = (ItemCliquePair*)value;
     
-    List_Destroy((List*)icp->clique);
-    free(icp->clique);
     free(icp);
 }
 
 void CliqueGroup_Init(CliqueGroup* cg, int bucketSize,unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*)){
-    Hash_Init(&cg->hash, bucketSize, hashFunction,cmpFunction);
+    Hash_Init(&cg->hash, bucketSize, hashFunction, cmpFunction);
     List_Init(&cg->cliques);
 }
 
@@ -50,21 +49,28 @@ bool CliqueGroup_Add(CliqueGroup* cg, void* key, int keySize, void* value){
 }
 
 void CliqueGroup_Destroy(CliqueGroup cg){
-    /* Frees the entire structure */
+    /* Frees the entire structure (not the values)*/
 
-    /* free hash (including the lists inside cliques list) */
+    /* destroy hash and free ItemCliquePairs(not the items, just the struct)*/
     Hash_FreeValues(cg.hash, ItemCliquePair_Free);
     Hash_Destroy(cg.hash);
-    /* Delete cliques list */
+    /* Delete lists inside cliques list and destroy cliques list(which is on stack so no free) */
+    List_FreeValues(cg.cliques, List_Free);
     List_Destroy(&(cg.cliques));
 }
 
 void CliqueGroup_FreeValues(CliqueGroup cg, void (*subFree)(void*)){
-    /* For every list in cliques list, frees values in them */
-    Node* tempNode = cg.cliques.head;
-    while (tempNode != NULL){
-        List_FreeValues(*(List*)(tempNode->value), subFree);
-        tempNode = tempNode->next;
+    /* Free all items in every list in cliques list*/
+    Node* tempNode1 = cg.cliques.head;
+    while (tempNode1 != NULL){
+        List* insideList = (List*)(tempNode1->value);
+        Node* tempNode2 = insideList->head;
+        while (tempNode2 != NULL){
+            ItemCliquePair* icp = (ItemCliquePair*)(tempNode2->value);
+            subFree(icp->item);
+            tempNode2 = tempNode2->next;
+        }
+        tempNode1 = tempNode1->next;
     }
 }
 
@@ -78,28 +84,80 @@ bool CliqueGroup_Update(CliqueGroup* cg, void* key1, int keySize1, void* key2, i
 
     // If both icps point to the same list then they are already in the same clique.
     // So no further changes should be made.
-    if(icp1->clique == icp2->clique)
+    if(icp1->clique == icp2->clique){
         return true;
+    }
 
     List* mergedCliques = malloc(sizeof(List));
-    *mergedCliques = List_Merge(*icp1->clique,*icp2->clique);
+    List_Init(mergedCliques);
+
+    /* save old parent nodes to remove them from the cliques list later on, since they will be changed in MergeCliques*/
+    Node* oldParentNode1 = icp1->cliqueParentNode;
+    Node* oldParentNode2 = icp2->cliqueParentNode;
+    /* save old cliques to destroy them after the merge and append is complete */
+    List* oldClique1 = icp1->clique;
+    List* oldClique2 = icp2->clique;
+
     List_Append(&cg->cliques, mergedCliques);
+    CliqueGroup_MergeCliques(mergedCliques, *icp1->clique,*icp2->clique, cg->cliques.tail);
 
-    // Testing.
-    List_RemoveNode(&cg->cliques, icp1->cliqueParentNode);
-    List_RemoveNode(&cg->cliques, icp2->cliqueParentNode);
+
+    /* remove the old parent nodes from the cliques list */
+    List_RemoveNode(&cg->cliques, oldParentNode1);
+    List_RemoveNode(&cg->cliques, oldParentNode2);
     
+    /* destroy the old cliques */
+    List_Destroy(oldClique1);
+    List_Destroy(oldClique2);
 
-    icp1->cliqueParentNode = cg->cliques.tail;
-    icp2->cliqueParentNode = cg->cliques.tail;
-
-    List_Destroy(icp1->clique);
-    //free(icp1->clique);
-    List_Destroy(icp2->clique);
-    //free(icp2->clique);
-
-    icp1->clique = mergedCliques;
-    icp2->clique = mergedCliques;
+    /* free the old cliques */
+    free(oldClique1);
+    free(oldClique2);
 
     return true;
+}
+
+void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
+    Node* out = cg->cliques.head;
+    while (out != NULL){
+        List* inList = (List*)(out->value);
+        if (inList->size > 1){
+            Node* in = inList->head;
+            printf("IDENTICAL ITEMS BELOW:\n");
+            while (in != NULL){
+                ItemCliquePair* icp = (ItemCliquePair*)(in->value);
+                Print(icp->item);
+                in = in->next;
+            }
+            printf("END OF IDENTICAL ITEMS\n\n");
+        }
+        out = out->next;
+    }
+}
+
+void CliqueGroup_MergeCliques(List* newList, List list1, List list2, Node* cliqueParentNode){
+    List_Init(newList);
+
+	Node* temp1 = list1.head;
+	while(temp1 != NULL){
+		if (!List_ValueExists(*newList, temp1->value)){
+            ItemCliquePair* icp = (ItemCliquePair*)(temp1->value);
+            icp->clique = newList;
+            icp->cliqueParentNode = cliqueParentNode;
+			List_Append(newList, icp);
+		}
+		temp1 = temp1->next;
+	}
+
+	Node* temp2 = list2.head;
+	while(temp2 != NULL){
+		if (!List_ValueExists(*newList, temp2->value)){
+            ItemCliquePair* icp = (ItemCliquePair*)(temp2->value);
+            icp->clique = newList;
+            icp->cliqueParentNode = cliqueParentNode;
+			List_Append(newList, icp);
+		}
+		temp2 = temp2->next;
+	}
+
 }

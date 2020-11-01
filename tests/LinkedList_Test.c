@@ -46,6 +46,24 @@ void Test_Insert(){
     free(array);
 }
 
+void Test_ValueExist(){
+    List list;
+    List_Init(&list);
+
+    int a = 10;
+    int b = 20;
+    int c = 30;
+
+    List_Append(&list, &a);
+    List_Append(&list,&b);
+
+    TEST_ASSERT(List_ValueExists(list, &a) == true);
+    TEST_ASSERT(List_ValueExists(list, &b) == true);
+    TEST_ASSERT(List_ValueExists(list, &c) == false);
+
+    List_Destroy(&list);
+}
+
 void Test_Merge(){
     List list1;
     List_Init(&list1);
@@ -150,6 +168,7 @@ TEST_LIST = {
     { "LinkedList_test_init",   Test_Init },
     { "LinkedList_test_insert", Test_Insert},
     { "LinkedList_test_remove", Test_Remove},
+    { "LinkedList_test_value_exist", Test_ValueExist},
     { "LinkedList_test_merge", Test_Merge},
     { NULL, NULL }
 };
