@@ -140,23 +140,19 @@ void CliqueGroup_MergeCliques(List* newList, List list1, List list2, Node* cliqu
 
 	Node* temp1 = list1.head;
 	while(temp1 != NULL){
-		if (!List_ValueExists(*newList, temp1->value)){
-            ItemCliquePair* icp = (ItemCliquePair*)(temp1->value);
-            icp->clique = newList;
-            icp->cliqueParentNode = cliqueParentNode;
-			List_Append(newList, icp);
-		}
+        ItemCliquePair* icp = (ItemCliquePair*)(temp1->value);
+        icp->clique = newList;
+        icp->cliqueParentNode = cliqueParentNode;
+        List_Append(newList, icp);
 		temp1 = temp1->next;
 	}
 
 	Node* temp2 = list2.head;
 	while(temp2 != NULL){
-		if (!List_ValueExists(*newList, temp2->value)){
-            ItemCliquePair* icp = (ItemCliquePair*)(temp2->value);
-            icp->clique = newList;
-            icp->cliqueParentNode = cliqueParentNode;
-			List_Append(newList, icp);
-		}
+        ItemCliquePair* icp = (ItemCliquePair*)(temp2->value);
+        icp->clique = newList;
+        icp->cliqueParentNode = cliqueParentNode;
+        List_Append(newList, icp);
 		temp2 = temp2->next;
 	}
 
