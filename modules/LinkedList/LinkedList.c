@@ -27,9 +27,13 @@ void List_AddValue(List* list, void* value, int index) {
 	list->size++;
 
 	if (index == 0) {
-		if (list->head == NULL)
-			list->tail = newNode;
+		if (list->head == NULL) {
+            list->tail = newNode;
+        } else {
+            list->head->prev = newNode;
+        }
 
+		newNode->prev = NULL;
 		newNode->next = list->head;
 		list->head = newNode;
 	} else {
@@ -37,6 +41,7 @@ void List_AddValue(List* list, void* value, int index) {
 		for (int i = 0; i < index - 1; i++)
 			temp = temp->next;
 
+		newNode->prev = temp;
 		newNode->next = temp->next;
 		temp->next = newNode;
 
@@ -50,17 +55,20 @@ void List_Append(List* list, void* value) {
 	newNode->value = value;
 	newNode->next = NULL;
 
-	if (list->head == NULL)
-		list->head = newNode;
-	else
-		list->tail->next = newNode;
+	if (list->head == NULL) {
+        list->head = newNode;
+        newNode->prev = NULL;
+    } else {
+        list->tail->next = newNode;
+        newNode->prev = list->tail;
+    }
 	list->tail = newNode;
 	list->size++;
 }
 
 bool List_Remove(List* list, int index) {
 	if ( list->head == NULL ){
-		return false;;
+		return false;
 	}
 	Node* temp = list->head;
 	(list->size)--;
@@ -69,8 +77,11 @@ bool List_Remove(List* list, int index) {
 		list->head = list->head->next;
 		free(temp);
 
-		if (list->head == NULL)
-			list->tail = NULL;
+		if (list->head == NULL) {
+            list->tail = NULL;
+        }else{
+		    list->head->prev = NULL;
+		}
 	} else {
 		for (int i = 0; i < index - 1; i++)
 			temp = temp->next;
@@ -81,6 +92,8 @@ bool List_Remove(List* list, int index) {
 
 		if (temp->next == NULL) {
 			list->tail = temp;
+		}else{
+		    temp->next->prev = temp;
 		}
 	}
 	
@@ -89,38 +102,9 @@ bool List_Remove(List* list, int index) {
 }
 
 bool List_RemoveNode(List* list, Node* node){
-	if ( list->head == NULL ){
-		return false;
-	}
-
-	bool found = false;
-	Node* temp = list->head;
-	Node* old = NULL;
-	while(temp != NULL){
-	    if(temp == node){
-		    found = true;
-	        break;
-	    }
-	    old = temp;
-		temp = temp->next;
-	}
-	if(!found)
-	    return false;
-
-	if(old == NULL){
-	    // we remove head node.
-	    list->head = list->head->next;
-	    if(list->head == NULL){
-	        list->tail = NULL;
-	    }
-	}else{
-	    old->next = temp->next;
-	    if(temp->next == NULL){
-	        list->tail = old;
-	    }
-	}
-
-	free(temp);
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
+    free(node);
 
 	(list->size)--;
 

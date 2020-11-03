@@ -16,7 +16,8 @@
 /* It is assumed that the json and csv files MUST be correct in format and values
  * so no extra error checking is done on said files , they are parsed right away. */
 
-/* TODO: Join instead of Merge, Double Linked List */
+/* TODO: Double Linked List */
+/* TODO: JSON arrays */
 
 int main(int argc, char* argv[]){
     // Get the flags from argv.
