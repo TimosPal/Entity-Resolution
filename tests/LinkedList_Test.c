@@ -29,6 +29,10 @@ void Test_Insert(){
         TEST_ASSERT(list.tail->value == array+i);
     }
 
+    TEST_ASSERT(list.head->prev == NULL); // first node prev is null.
+    TEST_ASSERT(list.head->next->prev == list.head); // first two nodes are connected correctly.
+    TEST_ASSERT(list.head->next->next->prev == list.head->next); // second and third nodes are connected correctly.
+
     for(int i = 0; i < size; i++){
         /* values must match */
         TEST_ASSERT(*(int*)List_GetValue(list, i) == i);
@@ -97,6 +101,10 @@ void Test_Remove(){
         List_Append(&list, array+i); // append a node to list with value i (malloc'd above)
     }
 
+    List_AddValue(&list, &array[0],0); // append a node to list with value i (malloc'd above)
+    List_Remove(&list, 0);
+    TEST_ASSERT(list.head->prev == NULL); // head prev should still be null.
+
     for(int i = 0; i < size; i++){
         /* Head value should be i */
         TEST_ASSERT(*(int*)list.head->value == i);
@@ -159,6 +167,25 @@ void Test_Remove(){
     flag = List_Remove(&list, 5);
     TEST_ASSERT(list.size == 0);
     TEST_ASSERT(flag == false);
+
+
+    for(int i = 0; i < 3; i++) {
+        List_Append(&list,NULL);
+    }
+    Node* a = list.head;
+    Node* b = a->next;
+    Node* c = b->next;
+    List_RemoveNode(&list,b);
+    TEST_ASSERT(list.tail == c);
+    TEST_ASSERT(c->prev == a);
+
+    List_RemoveNode(&list,c);
+    TEST_ASSERT(a->next == NULL);
+    TEST_ASSERT(list.tail == a);
+
+    List_RemoveNode(&list,a);
+    TEST_ASSERT(list.head == NULL);
+    TEST_ASSERT(list.tail == NULL);
 
     List_Destroy(&list);
     free(array);

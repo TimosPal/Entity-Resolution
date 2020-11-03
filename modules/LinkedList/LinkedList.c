@@ -102,8 +102,18 @@ bool List_Remove(List* list, int index) {
 }
 
 bool List_RemoveNode(List* list, Node* node){
-    node->prev->next = node->next;
-    node->next->prev = node->prev;
+    if(node->next == NULL){ // we remove the last node.
+        list->tail = node->prev;
+    }else{
+        node->next->prev = node->prev;
+    }
+
+    if(node->prev == NULL){ // we remove the first node.
+        list->head = node->next;
+    }else{
+        node->prev->next = node->next;
+    }
+
     free(node);
 
 	(list->size)--;
