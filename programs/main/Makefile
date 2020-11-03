@@ -5,7 +5,7 @@ main_OBJS		= main.o $(LIB)/ER.a
 
 # Ορίσματα που χρησιμοποιούνται από το make run
 # ../../Datasets/sigmod_medium_labelled_dataset.csv
-main_ARGS = -f ../../Datasets/camera_specs/2013_camera_specs -b 1024 -w ../../Datasets/sigmod_large_labelled_dataset.csv
+main_ARGS = -f ../../Datasets/camera_specs/2013_camera_specs -w ../../Datasets/sigmod_large_labelled_dataset.csv
 
 # Ο βασικός κορμός του Makefile
 include ../../common.mk

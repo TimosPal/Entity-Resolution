@@ -16,10 +16,33 @@
 /* It is assumed that the json and csv files MUST be correct in format and values
  * so no extra error checking is done on said files , they are parsed right away. */
 
-/* TODO: Double Linked List */
-/* TODO: JSON arrays */
+int CalculateBucketSize(char* websitesFolderPath){
+    int bucketSize = 0;
+    List websiteFolders;
+    IF_ERROR_MSG(!GetFolderItems(websitesFolderPath, &websiteFolders), "failed to open/close base folder")
+    Node* currWebsiteFolder = websiteFolders.head;
+    while(currWebsiteFolder != NULL){
+        char websitePath[BUFFER_SIZE];
+        sprintf(websitePath,"%s/%s",websitesFolderPath,(char*)(currWebsiteFolder->value));
+        List currItems;
+        IF_ERROR_MSG(!GetFolderItems(websitePath, &currItems), "failed to open/close website folder")
+        bucketSize += currItems.size;
+
+        currWebsiteFolder = currWebsiteFolder->next;
+        List_FreeValues(currItems,free);
+        List_Destroy(&currItems);
+    }
+    bucketSize = (int)((float)bucketSize * 1.3f); // NOTE: good size = #keys * 1.3
+
+    List_FreeValues(websiteFolders,free);
+    List_Destroy(&websiteFolders);
+
+    return bucketSize;
+}
 
 int main(int argc, char* argv[]){
+    /* --- Arguments --------------------------------------------------------------------------*/
+
     // Get the flags from argv.
     // -f should contain the path to the folder containing the websites folders.
     char *websitesFolderPath;
@@ -31,9 +54,17 @@ int main(int argc, char* argv[]){
     // -b is the bucketsize
     int bucketSize;
     char *bucketSizeStr;
-    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-b", &bucketSizeStr), "arg -b is missing or has no value")
-    IF_ERROR_MSG(!StringToInt(bucketSizeStr, &bucketSize), "Bucket Size should be a number")
+    // If -b is not provided we estimate a good size by counting the number of files.
+    // We know each file is equivalent to hash key.
+    if(FindArgAfterFlag(argv, argc, "-b", &bucketSizeStr)) {
+        IF_ERROR_MSG(!StringToInt(bucketSizeStr, &bucketSize), "Bucket Size should be a number")
+    }else{
+        // We estimated the size based on the files number.
+        bucketSize = CalculateBucketSize(websitesFolderPath);
+        //printf("------------- %d -------------\n",bucketSize);
+    }
 
+    /* --- Json / Clique_adds -----------------------------------------------------------------*/
 
     // Open folder from -f (should contain more folder with names of websites)
     List websiteFolders;
@@ -80,6 +111,8 @@ int main(int argc, char* argv[]){
         List_Destroy(&currItems);
     }
 
+    /* --- CSV / Clique_Updates ---------------------------------------------------------------*/
+
     // Update cliqueGroup with dataSetW.
     // We apply the simple logic that for items a,b,c : if a == b and b == c then a == c.
     FILE* dataSetFile = fopen(dataSetWPath, "r");
@@ -93,7 +126,6 @@ int main(int argc, char* argv[]){
         char* id1 = (char*)values.head->value;
         char* id2 = (char*)values.head->next->value;
         char* similarityString = (char*)values.head->next->next->value;
-        //printf("%s : %s : %s\n", id1, id2, similarityString);
         int similarity;
         StringToInt(similarityString,&similarity);
 

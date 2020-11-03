@@ -136,6 +136,7 @@ void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
 }
 
 void CliqueGroup_MergeCliques(List* newList, List list1, List list2, Node* cliqueParentNode){
+    // TODO: make merging faster and call half the updates on the pointers.
     List_Init(newList);
 
 	Node* temp1 = list1.head;
