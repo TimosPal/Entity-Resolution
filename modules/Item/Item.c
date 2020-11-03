@@ -22,5 +22,5 @@ void Item_Free(void* item){ // frees item id and spec list
 }
 
 void Item_Print(void* item){
-    printf("%s\n", ((Item*)item)->id);
+    printf("%s", ((Item*)item)->id);
 }

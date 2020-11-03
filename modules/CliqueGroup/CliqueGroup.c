@@ -118,20 +118,32 @@ bool CliqueGroup_Update(CliqueGroup* cg, void* key1, int keySize1, void* key2, i
 }
 
 void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
-    Node* out = cg->cliques.head;
-    while (out != NULL){
-        List* inList = (List*)(out->value);
-        if (inList->size > 1){
-            Node* in = inList->head;
-            printf("IDENTICAL ITEMS BELOW:\n");
-            while (in != NULL){
-                ItemCliquePair* icp = (ItemCliquePair*)(in->value);
-                Print(icp->item);
-                in = in->next;
+    Node* currClique = cg->cliques.head;
+    while (currClique != NULL){
+        // Printing each clique.
+        List* currCliqueItems = (List*)(currClique->value);
+        if (currCliqueItems->size > 1){ // Only printing cliques that contain 2+ items.
+
+            // Print each similar pair.
+            Node* currItemA = currCliqueItems->head;
+            while (currItemA != NULL){
+                Node* currItemB = currItemA->next;
+                while(currItemB != NULL) {
+                    ItemCliquePair *icpA = (ItemCliquePair *) (currItemA->value);
+                    ItemCliquePair *icpB = (ItemCliquePair *) (currItemB->value);
+
+                    Print(icpA->item);
+                    printf(" ");
+                    Print(icpB->item);
+                    printf("\n");
+
+                    currItemB = currItemB->next;
+                }
+                currItemA = currItemA->next;
             }
-            printf("END OF IDENTICAL ITEMS\n\n");
+
         }
-        out = out->next;
+        currClique = currClique->next;
     }
 }
 
