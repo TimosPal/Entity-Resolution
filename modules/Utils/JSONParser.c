@@ -6,13 +6,14 @@
 
 void ValuePair_Init(ValuePair* vp){
     vp->leftVal = NULL;
-    vp->rightVal = NULL;
+    List_Init(&vp->rightVals);
 }
 
 void ValuePair_Free(void* value){ // frees value pairs
     ValuePair* vp = (ValuePair*)value;
     free(vp->leftVal);
-    free(vp->rightVal);
+    List_FreeValues(vp->rightVals,free);
+    List_Destroy(&vp->rightVals);
     free(vp);
 }
 
@@ -67,7 +68,8 @@ List GetJsonPairs(char* filePath){
 
                 makeNew = false; // next loop we fill this pair
             }else{ // if we are filling the previous pair
-                ((ValuePair*)(pairs.tail->value))->rightVal = str;
+                List* l = &((ValuePair*)(pairs.tail->value))->rightVals;
+                List_Append(l,str);
 
                 makeNew = true; // next loop we make a new pair
             }

@@ -7,7 +7,7 @@
 
 typedef struct ValuePair {
     char* leftVal;
-    char* rightVal;
+    List rightVals; // Can have multiple values if it's a json array.
 }ValuePair;
 
 void ValuePair_Free(void* value);
