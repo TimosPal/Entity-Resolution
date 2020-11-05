@@ -44,7 +44,6 @@ char* GetStringBetweenQuotes(FILE* fp){
 
 List GetJsonPairs(char* filePath){
     /* NOTE: Assume json format is correct */
-    /* TODO: Make it work for arrays as a spec [ ] */
     /* Open file */
     FILE* fp = fopen(filePath, "r");
     
@@ -53,10 +52,9 @@ List GetJsonPairs(char* filePath){
 
     char c;
     bool makeNew = true;
-    int count = 0;
+    bool inArray = false;
     while ((c = getc(fp)) != EOF){  // while no EOF
         if (c == '"'){
-            count++;
             char* str = GetStringBetweenQuotes(fp);
             
             if (makeNew){ // if a new ValuePair for the list node should be made
@@ -71,8 +69,13 @@ List GetJsonPairs(char* filePath){
                 List* l = &((ValuePair*)(pairs.tail->value))->rightVals;
                 List_Append(l,str);
 
-                makeNew = true; // next loop we make a new pair
+                makeNew = (inArray) ? false : true; // next loop we make a new pair if we aren't inside an array.
             }
+        }else if(c == '['){
+            inArray = true;
+        }else if(c == ']'){
+            inArray = false;
+            makeNew = true;
         }
     }
 
