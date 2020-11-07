@@ -3,13 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
-typedef struct ItemCliquePair {
-    void* item;
-    List* clique;
-    Node* cliqueParentNode;
-}ItemCliquePair;
-
 ItemCliquePair* ItemCliquePair_New(void* item){
     ItemCliquePair* pair = malloc(sizeof(ItemCliquePair)); //value of the KeyValuePair struct
 

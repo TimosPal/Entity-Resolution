@@ -5,6 +5,12 @@
 #include "LinkedList.h"
 #include <stdbool.h>
 
+typedef struct ItemCliquePair {
+    void* item;
+    List* clique;
+    Node* cliqueParentNode;
+}ItemCliquePair;
+
 /* NOTE: this structure supposes that cliques list is a list of lists */
 typedef struct CliqueGroup{
     Hash hash;
