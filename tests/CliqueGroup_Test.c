@@ -106,7 +106,7 @@ void CliqueGroup_Test_Merge_Cliques(){
 }
 
 TEST_LIST = {
-    { "CliqueGroup_test_add",   CliqueGroup_Test_Add },
-    { "CliqueGroup_test_merge_cliques", CliqueGroup_Test_Merge_Cliques },
+    { "CliqueGroup_Test_add",   CliqueGroup_Test_Add },
+    { "CliqueGroup_Test_merge_cliques", CliqueGroup_Test_Merge_Cliques },
     { NULL, NULL }
 };

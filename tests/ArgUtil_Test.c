@@ -2,7 +2,7 @@
 
 #include "ArgUtil.h"
 
-void ArgUtil_test_FindFlagIndex(){
+void ArgUtil_Test_FindFlagIndex(){
     char* argv[] = { "prog" , "nothing" ,"-test" , "value"};
     int index = -1;
     int argc = sizeof(argv) / sizeof(char*);
@@ -11,7 +11,7 @@ void ArgUtil_test_FindFlagIndex(){
     TEST_ASSERT(FindFlagIndex(argv,argc,"not_found",&index) == false);
 }
 
-void ArgUtil_test_FindArgAfterFlag(){
+void ArgUtil_Test_FindArgAfterFlag(){
     char* argv[] = { "prog" , "nothing" ,"-test" , "value" , "-f"};
     int argc = sizeof(argv) / sizeof(char*);
     char* val = "";
@@ -21,7 +21,7 @@ void ArgUtil_test_FindArgAfterFlag(){
 }
 
 TEST_LIST = {
-        { "ArgUtil_test_FindFlagIndex",    ArgUtil_test_FindFlagIndex },
-        { "ArgUtil_test_FindArgAfterFlag", ArgUtil_test_FindArgAfterFlag },
+        { "ArgUtil_Test_FindFlagIndex",    ArgUtil_Test_FindFlagIndex },
+        { "ArgUtil_Test_FindArgAfterFlag", ArgUtil_Test_FindArgAfterFlag },
         { NULL, NULL }
 };

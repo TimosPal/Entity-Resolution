@@ -2,7 +2,7 @@
 #include "acutest.h"
 #include <stdbool.h>
 
-void Test_Init(){
+void LinkedList_Test_Init(){
     List list;
     List_Init(&list);
 
@@ -11,7 +11,7 @@ void Test_Init(){
     TEST_ASSERT(list.size == 0);
 }
 
-void Test_Insert(){
+void LinkedList_Test_Insert(){
     List list;
     List_Init(&list);
 
@@ -50,7 +50,7 @@ void Test_Insert(){
     free(array);
 }
 
-void Test_ValueExist(){
+void LinkedList_Test_ValueExist(){
     List list;
     List_Init(&list);
 
@@ -68,7 +68,7 @@ void Test_ValueExist(){
     List_Destroy(&list);
 }
 
-void Test_Merge(){
+void LinkedList_Test_Merge(){
     List list1;
     List_Init(&list1);
     List list2;
@@ -89,7 +89,7 @@ void Test_Merge(){
     List_Destroy(&list3);
 }
 
-void Test_Remove(){
+void LinkedList_Test_Remove(){
     List list;
     List_Init(&list);
 
@@ -192,10 +192,10 @@ void Test_Remove(){
 }
 
 TEST_LIST = {
-    { "LinkedList_test_init",   Test_Init },
-    { "LinkedList_test_insert", Test_Insert},
-    { "LinkedList_test_remove", Test_Remove},
-    { "LinkedList_test_value_exist", Test_ValueExist},
-    { "LinkedList_test_merge", Test_Merge},
+    { "LinkedList_Test_init",        LinkedList_Test_Init },
+    { "LinkedList_Test_insert",      LinkedList_Test_Insert},
+    { "LinkedList_Test_remove",      LinkedList_Test_Remove},
+    { "LinkedList_Test_value_exist", LinkedList_Test_ValueExist},
+    { "LinkedList_Test_merge",       LinkedList_Test_Merge},
     { NULL, NULL }
 };

@@ -14,7 +14,7 @@ unsigned int SimpleHash(const void* val, unsigned int size){
     return 0;
 }
 
-void Test_Init() {
+void Hash_Test_Init() {
     Hash hash;
     Hash_Init(&hash,100,SimpleHash,Compare_Int);
 
@@ -25,7 +25,7 @@ void Test_Init() {
     Hash_Destroy(hash);
 }
 
-void Test_GetValue() {
+void Hash_Test_GetValue() {
     Hash hash;
     Hash_Init(&hash,100,SimpleHash,Compare_Int);
     int* key = malloc(sizeof(int));
@@ -42,7 +42,7 @@ void Test_GetValue() {
     Hash_Destroy(hash);
 }
 
-void Test_Add() {
+void Hash_Test_Add() {
     Hash hash;
     Hash_Init(&hash,100,SimpleHash,Compare_Int);
     int* key = malloc(sizeof(int));
@@ -72,8 +72,8 @@ void Test_Add() {
 }
 
 TEST_LIST = {
-        { "Hash_test_Init", Test_Init },
-        { "Hash_test_Add", Test_Add},
-        { "Hash_test_GetValue", Test_GetValue},
+        { "Hash_Test_Init",     Hash_Test_Init },
+        { "Hash_Test_Add",      Hash_Test_Add},
+        { "Hash_Test_GetValue", Hash_Test_GetValue},
         { NULL, NULL }
 };
