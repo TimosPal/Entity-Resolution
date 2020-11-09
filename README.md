@@ -1,41 +1,56 @@
-Contributors:
+###Concept : 
+We read various json files , we add them to a custom data structure called
+CliqueGroup , by reading a csv file we update said structure by merging cliques
+of similar items together.
+Eg : if a == b and b == c then a == c.
 
-1) Palaiologos Timotheos AM: 1115201700112
 
-2) Desipris Georgios AM: 1115201700030
-
-INFORMATION:
-
-How to compile: 
-    make (compile)
-    make run (compile and run all the tests, arguments are in programs folder Makefile)
-    make valgrind (same but with valgrind)
+###How to compile / Makefile usage :
+If run through make , the arguments used are defined in the main's 
+Makefile located in programs/main
+ 
+    make (compiles everything , can be run from programs/main afterwards)
+    make run (run all the tests and the programs)
+    make run-programs (run only the programs)
+    make run-tests (run only the tests)
+    make valgrind (run all the tests and the programs with valgrind)
+    make valgrind-tests (run only the tests with valgrind)
+    make valgrind-programs (run only the programs with valgrind)
     make clean (delete everything made by the Makefiles)
 
+###Argument flags :
+    -f : the folder which contains the folders with the jsons files.
+    -b : size of HashTable array used in cliqueGroup
+    -w : path to the datasetW csv file
 
-Argument flags:
-    -f filename (the folder which contains the e-commerce sites folders)
-    -b number (size of HashTable array)
-    -w datasetWPath (path to the datasetW.csv)
+###Data structured used :
 
-DATA STRUCTURES USED:
+-   List: Generic double linked List. We need a double linked list to have O(1)
+    removal of Nodes inside cliqueGroup.
 
-List: Simple generic double linked List used. We need a double linked list to have O(1) removal of Nodes.
+-   HashTable: Generic HashTable using an array of lists (each list representing
+    the entire bucket). Each list contains KeyValue pairs.
 
-HashTable: Generic HashTable using an array of lists (each list representing the entire bucket). Each list contains KeyValue pairs.
+-   CliqueGroup: Custom Structure containing a HashTable and a List of 
+    Lists (which contains all the cliques). Used to Add items in cliques
+    (e.g when reading all the jsons) and updating the cliques (e.g when reading the csv file).
 
-CliqueGroup: Custom Structure containing a HashTable and a List of Lists(which contains all the cliques). Used to Add items in cliques(first step, e.g when reading all the jsons) and updating the cliques(e.g when reading the csv).
+    The internal list is needed in order to have a list of all the cliques, so we can traverse the 
+    items (and cliques) in order.
+    
+    This structure uses ItemCliquePairs (both in the hashtable and the list), a struct which has 
+    a clique(list) pointer and an item pointer.
+    
+    We can find an item in O(1) complexity through the hashtable and the clique it belongs to (since 
+    it is included in the ItemCliquePair). Finding if two items belong to the same clique is 
+    also O(1) by comparing the clique addresses.
+    
+    Clique Merging is essentially a List Merge but the pointers of the ItemCliquePairs are all 
+    updated so it is done in O(N).
 
-The list is needed in order to have a list of all the cliques, so we can traverse the items(and cliques) in order, something that can't be done using a hashtable structure.
+###External libraries :
+- acutest.h , used for unit testing
 
-This structure uses ItemCliquePairs(both in the hashtable and the list), a struct which has a clique(list) pointer and an item pointer.
-
-Using this structure, we can find an item in O(1) and the clique it belongs to(since it is included in the ItemCliquePair).
-So, finding if 2 items belong to the same clique is O(1) and doing anything to every item would be O(N) using the List of cliques(something which is hard with only a hachtable).
-
-Clique Merging is essentially a List Merge but the pointers of the ItemCliquePairs are all updated so it is done in O(N).
-
-
-UNIT TESTING LIBRARY acutest.h USED.
-
-
+###Contributors :
+- Palaiologos Timotheos AM: 1115201700112
+- Desipris Georgios AM: 1115201700030
