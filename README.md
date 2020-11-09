@@ -1,11 +1,11 @@
-###Concept : 
+### Concept : 
 We read various json files , we add them to a custom data structure called
 CliqueGroup , by reading a csv file we update said structure by merging cliques
 of similar items together.
 Eg : if a == b and b == c then a == c.
 
 
-###How to compile / Makefile usage :
+### How to compile / Makefile usage :
 If run through make , the arguments used are defined in the main's 
 Makefile located in programs/main
  
@@ -18,12 +18,12 @@ Makefile located in programs/main
     make valgrind-programs (run only the programs with valgrind)
     make clean (delete everything made by the Makefiles)
 
-###Argument flags :
+### Argument flags :
     -f : the folder which contains the folders with the jsons files.
     -b : size of HashTable array used in cliqueGroup
     -w : path to the datasetW csv file
 
-###Data structured used :
+### Data structured used :
 
 -   List: Generic double linked List. We need a double linked list to have O(1)
     removal of Nodes inside cliqueGroup.
@@ -48,9 +48,9 @@ Makefile located in programs/main
     Clique Merging is essentially a List Merge but the pointers of the ItemCliquePairs are all 
     updated so it is done in O(N).
 
-###External libraries :
+### External libraries :
 - acutest.h , used for unit testing
 
-###Contributors :
+### Contributors :
 - Palaiologos Timotheos AM: 1115201700112
 - Desipris Georgios AM: 1115201700030
