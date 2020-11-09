@@ -84,6 +84,7 @@ bool CliqueGroup_Update(CliqueGroup* cg, void* key1, int keySize1, void* key2, i
     List* mergedCliques = malloc(sizeof(List));
     List_Init(mergedCliques);
 
+    /* NOTE: this is why we need the parent node in the ItemCliquePair(to remove the nodes from cliques list) */
     /* save old parent nodes to remove them from the cliques list later on, since they will be changed in MergeCliques*/
     Node* oldParentNode1 = icp1->cliqueParentNode;
     Node* oldParentNode2 = icp2->cliqueParentNode;
@@ -141,6 +142,7 @@ void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
 }
 
 void CliqueGroup_MergeCliques(List* newList, List list1, List list2, Node* cliqueParentNode){
+    /* merges 2 cliques into one and changes all the pointers of the ItemCliquePairs to the correct ones */
     // TODO: make merging faster and call half the updates on the pointers.
     List_Init(newList);
 
