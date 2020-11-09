@@ -13,7 +13,6 @@ void ArgUtil_test_FindFlagIndex(){
 
 void ArgUtil_test_FindArgAfterFlag(){
     char* argv[] = { "prog" , "nothing" ,"-test" , "value" , "-f"};
-    int index = -1;
     int argc = sizeof(argv) / sizeof(char*);
     char* val = "";
     FindArgAfterFlag(argv,argc,"-test",&val);
