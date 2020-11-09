@@ -10,14 +10,24 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: make run
-      run: make run CFLAGS=-fPIC
+    - name: make run-tests
+      run: make run-tests CFLAGS=-fPIC
 
-    - name: make valgrind
+    - name: make run-programs
+      run: make run-programs CFLAGS=-fPIC
+
+    - name: make valgrind-tests
       if: matrix.os == 'ubuntu-16.04'
       run: |
         sudo apt install valgrind
-        make valgrind CFLAGS=-fPIC
+        make valgrind-tests CFLAGS=-fPIC
+
+    - name: make valgrind-programs
+      if: matrix.os == 'ubuntu-16.04'
+      run: |
+        sudo apt install valgrind
+        make valgrind-programs CFLAGS=-fPIC
+        
     - name: Upload
       if: startsWith(github.event.ref, 'refs/tags/v')
       uses: actions/upload-artifact@v2
