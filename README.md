@@ -20,7 +20,7 @@ Makefile located in programs/main
 
 ### Argument flags :
     -f : the folder which contains the folders with the jsons files.
-    -b : size of HashTable array used in cliqueGroup
+    -b : size of HashTable array used in cliqueGroup (optional)
     -w : path to the datasetW csv file
 
 ### Data structured used :
