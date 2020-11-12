@@ -95,7 +95,11 @@ void CliqueGroup_Test_Merge_Cliques(){
     CliqueGroup_MergeCliques(mergedCliques, *icp1->clique,*icp2->clique, NULL/*doesn't matter in this test*/); //merge cliques frees no memory
 
     /* test and see if new clique has both items */
-    //TODO
+    ItemCliquePair* newCliqueFirstItem = mergedCliques->head->value;
+    ItemCliquePair* newCliqueSecondItem = mergedCliques->tail->value;
+
+    TEST_ASSERT(newCliqueFirstItem == icp1);
+    TEST_ASSERT(newCliqueSecondItem == icp2);
 
 
     /* free memory */
