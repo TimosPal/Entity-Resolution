@@ -84,7 +84,7 @@ void HandleData_X(char* websitesFolderPath,int bucketSize,CliqueGroup* cliqueGro
         while(currItem != NULL){
             /* The json relative file path
             i.e ../../Datasets/camera_specs/2013_camera_specs/www.walmart.com/767.json */
-            char jsonFilePath[BUFFER_SIZE];
+            char jsonFilePath[2*BUFFER_SIZE];
             sprintf(jsonFilePath,"%s/%s",websitePath,(char*)(currItem->value));
 
             char itemID[BUFFER_SIZE]; /*format:  website//idNumber */
