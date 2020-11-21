@@ -88,7 +88,7 @@ void CliqueGroup_FreeValues(CliqueGroup cg, void (*subFree)(void*)){
     }
 }
 
-bool CliqueGroup_Update(CliqueGroup* cg, void* key1, int keySize1, void* key2, int keySize2){
+bool CliqueGroup_Update_Similar(CliqueGroup* cg, void* key1, int keySize1, void* key2, int keySize2){
     ItemCliquePair* icp1 = Hash_GetValue(cg->hash, key1, keySize1);
     if(icp1 == NULL)
         return false;
@@ -119,14 +119,25 @@ bool CliqueGroup_Update(CliqueGroup* cg, void* key1, int keySize1, void* key2, i
     /* remove the old parent nodes from the cliques list */
     List_RemoveNode(&cg->cliques, oldParentNode1);
     List_RemoveNode(&cg->cliques, oldParentNode2);
-    
-    /* destroy the old cliques */
-    List_Destroy(&oldClique1->similar);
-    List_Destroy(&oldClique2->similar);
 
     /* free the old cliques */
-    free(oldClique1);
-    free(oldClique2);
+    Clique_Free(oldClique1);
+    Clique_Free(oldClique2);
+
+    return true;
+}
+
+bool CliqueGroup_Update_NonSimilar(CliqueGroup* cg, void* key1, int keySize1, void* key2, int keySize2) {
+    ItemCliquePair* icp1 = Hash_GetValue(cg->hash, key1, keySize1);
+    if(icp1 == NULL)
+        return false;
+    ItemCliquePair* icp2 = Hash_GetValue(cg->hash, key2, keySize2);
+    if(icp2 == NULL)
+        return false;
+
+    // We take care of duplicates after CliqueGroup_Finalize.
+    List_Append(&icp1->clique->nonSimilar, icp2);
+    List_Append(&icp2->clique->nonSimilar, icp1);
 
     return true;
 }
@@ -182,5 +193,7 @@ void CliqueGroup_MergeCliques(Clique* newClique, Clique clique1, Clique clique2,
         List_Append(&newClique->similar, icp);
 		temp2 = temp2->next;
 	}
+
+	newClique->nonSimilar = List_Merge(clique1.nonSimilar, clique2.nonSimilar);
 
 }

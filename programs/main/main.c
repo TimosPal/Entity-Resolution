@@ -132,7 +132,9 @@ void HandleData_W(char* dataSetWPath,CliqueGroup* cliqueGroup){
 
         // If the 2 items are similar we merge the cliques.
         if(similarity == 1) {
-            CliqueGroup_Update(cliqueGroup, id1, (int) strlen(id1) + 1, id2, (int) strlen(id2) + 1);
+            CliqueGroup_Update_Similar(cliqueGroup, id1, (int) strlen(id1) + 1, id2, (int) strlen(id2) + 1);
+        }else if(similarity == 0){
+            CliqueGroup_Update_NonSimilar(cliqueGroup, id1, (int) strlen(id1) + 1, id2, (int) strlen(id2) + 1);
         }
 
         List_FreeValues(values, free);
