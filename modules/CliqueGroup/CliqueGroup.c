@@ -6,12 +6,11 @@
 ItemCliquePair* ItemCliquePair_New(void* item){
     ItemCliquePair* pair = malloc(sizeof(ItemCliquePair)); //value of the KeyValuePair struct
 
-    pair->clique = malloc(sizeof(List)); //malloc list for the clique of the pair
-    List_Init(pair->clique); 
+    pair->clique = Clique_New();
 
     pair->item = item;
 
-    List_Append(pair->clique, pair); //append the pair to the clique(starting state)
+    List_Append(&pair->clique->similar, pair);
 
     return pair;
 }
@@ -20,6 +19,28 @@ void ItemCliquePair_Free(void* value){
     ItemCliquePair* icp = (ItemCliquePair*)value;
     
     free(icp);
+}
+
+Clique* Clique_New(){
+    Clique* clique = malloc(sizeof(Clique));
+
+    List_Init(&clique->similar);
+    List_Init(&clique->nonSimilar);
+    clique->nonSimilarHash = NULL; //set as NULL because we won't create and populate it yet
+
+    return clique;
+}
+
+void Clique_Free(void* value){
+    Clique* clique = (Clique*)value;
+
+    List_Destroy(&clique->similar);
+    List_Destroy(&clique->nonSimilar);
+    if (clique->nonSimilarHash){
+        Hash_Destroy(*(clique->nonSimilarHash));
+    }
+
+    free(clique);
 }
 
 void CliqueGroup_Init(CliqueGroup* cg, int bucketSize,unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*)){
@@ -48,7 +69,7 @@ void CliqueGroup_Destroy(CliqueGroup cg){
     Hash_FreeValues(cg.hash, ItemCliquePair_Free);
     Hash_Destroy(cg.hash);
     /* Delete lists inside cliques list and destroy cliques list(which is on stack so no free) */
-    List_FreeValues(cg.cliques, List_Free);
+    List_FreeValues(cg.cliques, Clique_Free);
     List_Destroy(&(cg.cliques));
 }
 
@@ -81,16 +102,15 @@ bool CliqueGroup_Update(CliqueGroup* cg, void* key1, int keySize1, void* key2, i
         return true;
     }
 
-    List* mergedCliques = malloc(sizeof(List));
-    List_Init(mergedCliques);
+    Clique* mergedCliques = Clique_New();
 
     /* NOTE: this is why we need the parent node in the ItemCliquePair(to remove the nodes from cliques list) */
     /* save old parent nodes to remove them from the cliques list later on, since they will be changed in MergeCliques*/
     Node* oldParentNode1 = icp1->cliqueParentNode;
     Node* oldParentNode2 = icp2->cliqueParentNode;
     /* save old cliques to destroy them after the merge and append is complete */
-    List* oldClique1 = icp1->clique;
-    List* oldClique2 = icp2->clique;
+    Clique* oldClique1 = icp1->clique;
+    Clique* oldClique2 = icp2->clique;
 
     List_Append(&cg->cliques, mergedCliques);
     CliqueGroup_MergeCliques(mergedCliques, *icp1->clique,*icp2->clique, cg->cliques.tail);
@@ -101,8 +121,8 @@ bool CliqueGroup_Update(CliqueGroup* cg, void* key1, int keySize1, void* key2, i
     List_RemoveNode(&cg->cliques, oldParentNode2);
     
     /* destroy the old cliques */
-    List_Destroy(oldClique1);
-    List_Destroy(oldClique2);
+    List_Destroy(&oldClique1->similar);
+    List_Destroy(&oldClique2->similar);
 
     /* free the old cliques */
     free(oldClique1);
@@ -141,26 +161,25 @@ void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
     }
 }
 
-void CliqueGroup_MergeCliques(List* newList, List list1, List list2, Node* cliqueParentNode){
+void CliqueGroup_MergeCliques(Clique* newClique, Clique clique1, Clique clique2, Node* cliqueParentNode){
     /* merges 2 cliques into one and changes all the pointers of the ItemCliquePairs to the correct ones */
     // TODO: make merging faster and call half the updates on the pointers.
-    List_Init(newList);
 
-	Node* temp1 = list1.head;
+	Node* temp1 = clique1.similar.head;
 	while(temp1 != NULL){
         ItemCliquePair* icp = (ItemCliquePair*)(temp1->value);
-        icp->clique = newList;
+        icp->clique = newClique;
         icp->cliqueParentNode = cliqueParentNode;
-        List_Append(newList, icp);
+        List_Append(&newClique->similar, icp);
 		temp1 = temp1->next;
 	}
 
-	Node* temp2 = list2.head;
+	Node* temp2 = clique2.similar.head;
 	while(temp2 != NULL){
         ItemCliquePair* icp = (ItemCliquePair*)(temp2->value);
-        icp->clique = newList;
+        icp->clique = newClique;
         icp->cliqueParentNode = cliqueParentNode;
-        List_Append(newList, icp);
+        List_Append(&newClique->similar, icp);
 		temp2 = temp2->next;
 	}
 

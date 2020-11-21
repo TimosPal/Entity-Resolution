@@ -89,22 +89,22 @@ void CliqueGroup_Test_Merge_Cliques(){
     /* icp2 shouldn't be NULL */
     TEST_ASSERT(icp2 != NULL);
 
-    List* mergedCliques = malloc(sizeof(List));
-    List_Init(mergedCliques);
+    Clique* mergedCliques = malloc(sizeof(Clique));
+    List_Init(&mergedCliques->similar);
 
     CliqueGroup_MergeCliques(mergedCliques, *icp1->clique,*icp2->clique, NULL/*doesn't matter in this test*/); //merge cliques frees no memory
 
     /* test and see if new clique has both items */
-    ItemCliquePair* newCliqueFirstItem = mergedCliques->head->value;
-    ItemCliquePair* newCliqueSecondItem = mergedCliques->tail->value;
+    ItemCliquePair* newCliqueFirstItem = mergedCliques->similar.head->value;
+    ItemCliquePair* newCliqueSecondItem = mergedCliques->similar.tail->value;
 
     TEST_ASSERT(newCliqueFirstItem == icp1);
     TEST_ASSERT(newCliqueSecondItem == icp2);
 
 
     /* free memory */
-    List_Destroy(mergedCliques);
-    free(mergedCliques);
+    List_Destroy(&mergedCliques->similar);
+    free(&mergedCliques->similar);
     CliqueGroup_FreeValues(cg, Item_Free);
     CliqueGroup_Destroy(cg);
 }
