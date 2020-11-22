@@ -1,1 +1,4 @@
 
+[submodule "dependencies/acutest"]
+	path = dependencies/acutest
+	url = https://github.com/mity/acutest.git
