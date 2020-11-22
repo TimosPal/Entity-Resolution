@@ -1,4 +1,5 @@
 #include <string.h>
+#include <tensorflow/c/c_api.h>
 
 #include "Util.h"
 #include "ArgUtil.h"
