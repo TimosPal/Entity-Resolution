@@ -35,6 +35,7 @@
 MY_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 MODULES := $(MY_PATH)modules
 INCLUDE := $(MY_PATH)include
+INCLUDE_ACU := $(MY_PATH)Dependencies/acutest/include
 LIB		:= $(MY_PATH)lib
 
 # Compiler options
@@ -46,7 +47,7 @@ LIB		:= $(MY_PATH)lib
 #
 # Το override επιτρέπει την προσθήκη επιπλέον παραμέτρων από τη γραμμή εντολών: make CFLAGS=...
 #
-override CFLAGS += -g -Wall -MMD -I$(INCLUDE)
+override CFLAGS += -g -Wall -MMD -I$(INCLUDE) -I$(INCLUDE_ACU)
 
 # Linker options
 #   -lm        Link με τη math library
