@@ -4,6 +4,9 @@ CliqueGroup , by reading a csv file we update said structure by merging cliques
 of similar items together.
 Eg : if a == b and b == c then a == c.
 
+We also create "negative" connections between non similar items.
+Eg : if a == b and b != c then a != c
+
 
 ### How to compile / Makefile usage :
 If run through make , the arguments used are defined in the main's 
@@ -47,6 +50,10 @@ Makefile located in programs/main
     
     Clique Merging is essentially a List Merge but the pointers of the ItemCliquePairs are all 
     updated so it is done in O(N).
+    
+    Clique_Finalize has to be called after all the items are added so possible duplicates are removed
+    from the Clique non-smimilar lists. Inside the clique structure a hash is updated with the appropriate
+    non-similar cliques keys for easier O(1) access. 
 
 ### External libraries :
 - acutest.h , used for unit testing
