@@ -38,6 +38,7 @@ void Clique_Free(void* value){
     List_Destroy(&clique->nonSimilar);
     if (clique->nonSimilarHash){
         Hash_Destroy(*(clique->nonSimilarHash));
+        free(clique->nonSimilarHash);
     }
 
     free(clique);
@@ -46,6 +47,7 @@ void Clique_Free(void* value){
 void CliqueGroup_Init(CliqueGroup* cg, int bucketSize,unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*)){
     Hash_Init(&cg->hash, bucketSize, hashFunction, cmpFunction);
     List_Init(&cg->cliques);
+    cg->finalizeNeeded = false;
 }
 
 bool CliqueGroup_Add(CliqueGroup* cg, void* key, int keySize, void* value){
@@ -89,6 +91,8 @@ void CliqueGroup_FreeValues(CliqueGroup cg, void (*subFree)(void*)){
 }
 
 bool CliqueGroup_Update_Similar(CliqueGroup* cg, void* key1, int keySize1, void* key2, int keySize2){
+    cg->finalizeNeeded = true;
+
     ItemCliquePair* icp1 = Hash_GetValue(cg->hash, key1, keySize1);
     if(icp1 == NULL)
         return false;
@@ -128,6 +132,8 @@ bool CliqueGroup_Update_Similar(CliqueGroup* cg, void* key1, int keySize1, void*
 }
 
 bool CliqueGroup_Update_NonSimilar(CliqueGroup* cg, void* key1, int keySize1, void* key2, int keySize2) {
+    cg->finalizeNeeded = true;
+   
     ItemCliquePair* icp1 = Hash_GetValue(cg->hash, key1, keySize1);
     if(icp1 == NULL)
         return false;
@@ -176,24 +182,68 @@ void CliqueGroup_MergeCliques(Clique* newClique, Clique clique1, Clique clique2,
     /* merges 2 cliques into one and changes all the pointers of the ItemCliquePairs to the correct ones */
     // TODO: make merging faster and call half the updates on the pointers.
 
+    //for clique1
 	Node* temp1 = clique1.similar.head;
 	while(temp1 != NULL){
         ItemCliquePair* icp = (ItemCliquePair*)(temp1->value);
         icp->clique = newClique;
         icp->cliqueParentNode = cliqueParentNode;
         List_Append(&newClique->similar, icp);
-		temp1 = temp1->next;
+
+		temp1 = temp1->next; //next
 	}
 
+    //for clique2
 	Node* temp2 = clique2.similar.head;
 	while(temp2 != NULL){
         ItemCliquePair* icp = (ItemCliquePair*)(temp2->value);
         icp->clique = newClique;
         icp->cliqueParentNode = cliqueParentNode;
         List_Append(&newClique->similar, icp);
-		temp2 = temp2->next;
+
+		temp2 = temp2->next; //next
 	}
 
 	newClique->nonSimilar = List_Merge(clique1.nonSimilar, clique2.nonSimilar);
 
 }
+
+bool pointercmp(void* value1, void* value2){
+    return (*(Clique**)value1 == *(Clique**)value2);
+}
+
+void CliqueGroup_Finalize(CliqueGroup cg){ //this should run after the CliqueGroup is updated (however many times)
+    cg.finalizeNeeded = false;
+
+    List* cliques = &cg.cliques; // list of all cliques
+
+    //for all cliques
+    Node* cliqueNode = cliques->head;
+    while(cliqueNode != NULL){
+        //for each clique
+        Clique* clique = (Clique*)cliqueNode->value;
+        Node* icpNode = clique->nonSimilar.head;
+        Hash* tempHash = malloc(sizeof(Hash));
+        //create hash to help with removing icps with the same cliques
+        Hash_Init(tempHash, clique->similar.size * 3, cg.hash.hashFunction, pointercmp);
+        while(icpNode != NULL){
+            ItemCliquePair* icp = (ItemCliquePair*)icpNode->value;
+            bool existsInHash = Hash_GetValue(*tempHash, &icp->clique, sizeof(icp->clique));
+
+            if (!existsInHash){
+                Hash_Add(tempHash, &icp->clique, sizeof(icp->clique), icp);
+            }else{
+                Node* icpNext = icpNode->next;
+                List_RemoveNode(&clique->nonSimilar, icpNode);
+                icpNode = icpNext;
+                continue;
+            }
+
+            icpNode = icpNode->next; //next icp
+        }
+        clique->nonSimilarHash = tempHash;
+
+        cliqueNode = cliqueNode->next; //next clique
+    }
+}
+

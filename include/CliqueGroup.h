@@ -21,6 +21,7 @@ typedef struct ItemCliquePair {
 typedef struct CliqueGroup{
     Hash hash;
     List cliques;
+    bool finalizeNeeded;
 }CliqueGroup;
 
 
@@ -34,6 +35,7 @@ void CliqueGroup_MergeCliques(Clique* newClique, Clique clique1, Clique clique2,
 bool CliqueGroup_Add(CliqueGroup* cg, void* key, int keySize, void* value);
 bool CliqueGroup_Update_Similar(CliqueGroup* cg, void* key1, int keySize1, void* key2, int keySize2);
 bool CliqueGroup_Update_NonSimilar(CliqueGroup* cg, void* key1, int keySize1, void* key2, int keySize2);
+void CliqueGroup_Finalize(CliqueGroup cg);
 
 ItemCliquePair* ItemCliquePair_New(void* item);
 void ItemCliquePair_Free(void* value);

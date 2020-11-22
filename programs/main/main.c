@@ -142,6 +142,9 @@ void HandleData_W(char* dataSetWPath,CliqueGroup* cliqueGroup){
     }
 
     fclose(dataSetFile);
+
+    //Finalize
+    CliqueGroup_Finalize(*cliqueGroup);
 }
 
 int main(int argc, char* argv[]){
