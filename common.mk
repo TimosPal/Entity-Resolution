@@ -35,7 +35,7 @@
 MY_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 MODULES := $(MY_PATH)modules
 INCLUDE := $(MY_PATH)include
-INCLUDE_ACU := $(MY_PATH)Dependencies/acutest/include
+INCLUDE_ACU := $(MY_PATH)dependencies/acutest/include
 LIB		:= $(MY_PATH)lib
 
 # Compiler options
