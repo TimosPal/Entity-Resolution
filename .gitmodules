@@ -1,6 +1,1 @@
-[submodule "acutest"]
-	path = acutest
-	url = https://github.com/mity/acutest.git
-[submodule "Dependencies/acutest"]
-	path = Dependencies/acutest
-	url = https://github.com/mity/acutest.git
+
