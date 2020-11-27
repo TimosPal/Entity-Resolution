@@ -167,7 +167,7 @@ int main(int argc, char* argv[]){
 
     /* --- Print results ----------------------------------------------------------------------*/
 
-    CliqueGroup_PrintIdentical(&cliqueGroup, Item_Print);
+    //CliqueGroup_PrintIdentical(&cliqueGroup, Item_Print);
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 
