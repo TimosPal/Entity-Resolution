@@ -6,9 +6,9 @@
 #include <stdbool.h>
 
 typedef struct Clique{
+    Hash* nonSimilarHash;
     List similar;
     List nonSimilar;
-    Hash* nonSimilarHash;
 }Clique;
 
 typedef struct ItemCliquePair {

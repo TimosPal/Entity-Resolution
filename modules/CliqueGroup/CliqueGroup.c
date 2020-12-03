@@ -79,7 +79,8 @@ void CliqueGroup_FreeValues(CliqueGroup cg, void (*subFree)(void*)){
     /* Free all items in every list in cliques list*/
     Node* tempNode1 = cg.cliques.head;
     while (tempNode1 != NULL){
-        List* insideList = (List*)(tempNode1->value);
+        Clique* insideClique = (Clique*)(tempNode1->value);
+        List* insideList = &insideClique->similar;
         Node* tempNode2 = insideList->head;
         while (tempNode2 != NULL){
             ItemCliquePair* icp = (ItemCliquePair*)(tempNode2->value);
@@ -149,14 +150,15 @@ bool CliqueGroup_Update_NonSimilar(CliqueGroup* cg, void* key1, int keySize1, vo
 }
 
 void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
-    Node* currClique = cg->cliques.head;
-    while (currClique != NULL){
+ Node* currCliqueNode = cg->cliques.head;
+    while (currCliqueNode != NULL){
         // Printing each clique.
-        List* currCliqueItems = (List*)(currClique->value);
-        if (currCliqueItems->size > 1){ // Only printing cliques that contain 2+ items.
+        Clique* currClique = (Clique*)(currCliqueNode->value);
+        List currCliqueList = currClique->similar;
+        if (currCliqueList.size > 1){ // Only printing cliques that contain 2+ items.
 
             // Print each similar pair.
-            Node* currItemA = currCliqueItems->head;
+            Node* currItemA = currCliqueList.head;
             while (currItemA != NULL){
                 Node* currItemB = currItemA->next;
                 while(currItemB != NULL) {
@@ -174,7 +176,7 @@ void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
             }
 
         }
-        currClique = currClique->next;
+        currCliqueNode = currCliqueNode->next;
     }
 }
 

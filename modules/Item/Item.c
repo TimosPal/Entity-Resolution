@@ -24,3 +24,30 @@ void Item_Free(void* item){ // frees item id and spec list
 void Item_Print(void* item){
     printf("%s", ((Item*)item)->id);
 }
+
+List* Item_Preprocess(Item* item, Hash stopwords){
+    List* words = malloc(sizeof(List));
+    List_Init(words);
+
+    List specs = item->specs;
+    Node* valuePairNode = specs.head;
+
+    while(valuePairNode != NULL){
+        ValuePair* valuePair = (ValuePair*)valuePairNode->value;
+        List rightVals = valuePair->rightVals;
+
+        Node* valNode = rightVals.head;
+        while(valNode != NULL){
+            List strings = StringPreprocess(valNode->value, stopwords);
+            if (strings.size != 0){
+                List_Join(words, &strings);
+            }
+
+            valNode = valNode->next;
+        }
+
+        valuePairNode = valuePairNode->next; 
+    }
+
+    return words;
+}

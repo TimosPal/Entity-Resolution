@@ -27,11 +27,12 @@ void CliqueGroup_Test_Add(){
     TEST_ASSERT(cg.cliques.head->value != NULL);
 
     /* cliques head is not NULL */
-    TEST_ASSERT(((List*)(cg.cliques.head->value))->head != NULL);
-    List* clique1 = ((List*)(cg.cliques.head->value));
+    Clique* clique1 = (Clique*)(cg.cliques.head->value);
+    List list1 = clique1->similar;
+    TEST_ASSERT(list1.head!= NULL);
 
     /* see if item1 is correctly inserted */
-    TEST_ASSERT(((ItemCliquePair*)(clique1->head->value))->item == item1);
+    TEST_ASSERT(((ItemCliquePair*)(list1.head->value))->item == item1);
 
 
     /* insert item2 */
@@ -46,11 +47,12 @@ void CliqueGroup_Test_Add(){
     TEST_ASSERT(cg.cliques.head->next->value != NULL);
 
     /* cliques head is not NULL */
-    TEST_ASSERT(((List*)(cg.cliques.head->next->value))->head != NULL);
-    List* clique2 = ((List*)(cg.cliques.tail->value));
+    Clique* clique2 = (Clique*)(cg.cliques.head->next->value);
+    List list2 = (clique2->similar);
+    TEST_ASSERT(list2.head != NULL);
 
     /* see if item2 is correctly inserted */
-    TEST_ASSERT(((ItemCliquePair*)(clique2->head->value))->item == item2);
+    TEST_ASSERT(((ItemCliquePair*)(list2.head->value))->item == item2);
 
 
     /* free memory */
@@ -75,7 +77,7 @@ void CliqueGroup_Test_Merge_Cliques(){
     Item* item2 = Item_Create(item2ID, GetJsonPairs(INPUT_FILE));
     CliqueGroup_Add(&cg, item2ID, strlen(item2ID)+1, item2);
 
-    /* this is the sexond clique */
+    /* this is the second clique */
     //List* clique2 = ((List*)(cg.cliques.tail->value));
 
 
@@ -89,7 +91,7 @@ void CliqueGroup_Test_Merge_Cliques(){
     /* icp2 shouldn't be NULL */
     TEST_ASSERT(icp2 != NULL);
 
-    Clique* mergedCliques = malloc(sizeof(Clique));
+    Clique* mergedCliques = Clique_New();
     List_Init(&mergedCliques->similar);
 
     CliqueGroup_MergeCliques(mergedCliques, *icp1->clique,*icp2->clique, NULL/*doesn't matter in this test*/); //merge cliques frees no memory
@@ -103,8 +105,7 @@ void CliqueGroup_Test_Merge_Cliques(){
 
 
     /* free memory */
-    List_Destroy(&mergedCliques->similar);
-    free(&mergedCliques->similar);
+    Clique_Free(mergedCliques);
     CliqueGroup_FreeValues(cg, Item_Free);
     CliqueGroup_Destroy(cg);
 }

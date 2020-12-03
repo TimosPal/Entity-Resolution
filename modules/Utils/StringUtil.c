@@ -84,3 +84,45 @@ void RemoveFileExtension(char* str){
 
     return;
 }
+
+char* StringToLower(char* str){
+    char* newStr = NewString(str);
+
+    int i = 0;
+    while(newStr[i] != '\0'){
+        if (newStr[i] >= 'A' && newStr[i] <= 'Z'){
+            newStr[i] += 'a' - 'A';
+        }
+
+        i++;
+    }
+
+    return newStr;
+}
+
+List StringPreprocess(char* str, Hash stopwords){
+    char* newStr = NewString(str);
+    List words = StringSplit(newStr, " ");
+
+    Node* temp = words.head;
+    //preprocess the specific words
+    while(temp != NULL){
+        //remove stopwords
+        temp->value = StringToLower((char*)temp->value);
+        printf("%s\n", (char*)temp->value);
+        
+        if (Hash_GetValue(stopwords, temp->value, strlen((char*)(temp->value))+1)){
+            Node* nextNode = temp->next;
+            free(temp->value);
+            List_RemoveNode(&words, temp);
+            temp = nextNode;
+            continue;
+        }
+        
+        temp = temp->next;
+    }
+
+    free(newStr);
+
+    return words;
+}

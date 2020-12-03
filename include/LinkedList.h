@@ -26,6 +26,7 @@ bool List_ValueExists(List list, void* value);
 void List_Destroy(List* list); //Destroy the list by freeing allocated nodes.
 void List_Free(void* value);
 void List_FreeValues(List list,void (*freeMethod)(void*)); //Frees allocated memory for the node's values. Does NOT free the nodes.
+void List_Join(List* list1, List* list2);
 
 List List_Merge(List list1, List list2); // Merges 2 existing lists into a new list and returns it
 

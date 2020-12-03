@@ -47,12 +47,12 @@ LIB		:= $(MY_PATH)lib
 #
 # Το override επιτρέπει την προσθήκη επιπλέον παραμέτρων από τη γραμμή εντολών: make CFLAGS=...
 #
-override CFLAGS += -g -Wall -MMD -I$(INCLUDE) -I$(INCLUDE_ACU) -I/usr/local/include
+override CFLAGS += -g -Wall -MMD -I$(INCLUDE) -I$(INCLUDE_ACU)
 
 # Linker options
 #   -lm        Link με τη math library
 #
-LDFLAGS += -fuse-ld=gold -lm -ltensorflow -L/usr/local/lib
+LDFLAGS += -lm 
 
 # Αν στα targets με τα οποία έχει κληθεί το make (μεταβλητή MAKECMDGOALS) υπάρχει κάποιο
 # coverage*, τότε προσθέτουμε το --coverage στα compile & link flags

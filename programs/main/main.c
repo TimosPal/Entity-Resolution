@@ -1,5 +1,5 @@
 #include <string.h>
-#include <tensorflow/c/c_api.h>
+#include <assert.h>
 
 #include "Util.h"
 #include "ArgUtil.h"
@@ -95,6 +95,7 @@ void HandleData_X(char* websitesFolderPath,int bucketSize,CliqueGroup* cliqueGro
 
             /* Create item and insert into items list */
             Item* item = Item_Create(itemID, GetJsonPairs(jsonFilePath));
+            //item-
             CliqueGroup_Add(cliqueGroup, item->id, (int)strlen(itemID)+1, item);
 
             currItem = currItem->next;
@@ -148,6 +149,54 @@ void HandleData_W(char* dataSetWPath,CliqueGroup* cliqueGroup){
     CliqueGroup_Finalize(*cliqueGroup);
 }
 
+Hash CreateStopwordHash(char* fileStr){
+    FILE* fp = fopen(fileStr, "r");
+    assert(fp != NULL);
+
+    Hash stopwords;
+    Hash_Init(&stopwords, DEFAULT_HASH_SIZE, RSHash, StringCmp);
+
+    char buffer[BUFFER_SIZE];
+    while(fscanf(fp, "%s", buffer) != EOF){
+        Hash_Add(&stopwords, buffer, strlen(buffer)+1, "-");
+    }
+
+    fclose(fp);
+
+    return stopwords;
+}
+
+Hash CreateProcessedItems(CliqueGroup cg){
+    Hash itemProcessedWords;
+    Hash_Init(&itemProcessedWords, cg.hash.bucketSize, cg.hash.hashFunction, cg.hash.cmpFunction);
+
+    Hash stopwords = CreateStopwordHash(STOPWORDS_FILE);
+
+    Node* currCliqueNode = cg.cliques.head;
+    while (currCliqueNode != NULL){
+        Clique* currClique = (Clique*)(currCliqueNode->value);
+        List currCliqueList = currClique->similar;
+
+        Node* currIcpNode = currCliqueList.head;
+        while(currIcpNode != NULL){
+            ItemCliquePair* icp = (ItemCliquePair*)(currIcpNode->value);
+            Item* item = icp->item;
+
+            List* itemWords = Item_Preprocess(item, stopwords);
+
+            Hash_Add(&itemProcessedWords, item->id, strlen(item->id)+1, &itemWords);
+
+            currIcpNode = currIcpNode->next;
+        }
+
+        currCliqueNode = currCliqueNode->next;
+    }
+
+    Hash_Destroy(stopwords);
+
+    return itemProcessedWords;
+}
+
 int main(int argc, char* argv[]){
     /* --- Arguments --------------------------------------------------------------------------*/
 
@@ -168,6 +217,10 @@ int main(int argc, char* argv[]){
     /* --- Print results ----------------------------------------------------------------------*/
 
     //CliqueGroup_PrintIdentical(&cliqueGroup, Item_Print);
+
+    /* --- Create processed words for items ---------------------------------------------------*/
+
+    Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 

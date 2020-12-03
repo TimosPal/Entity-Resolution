@@ -179,3 +179,17 @@ List List_Merge(List list1, List list2){
 
 	return newList;
 }
+
+void List_Join(List* list1, List* list2){
+	if (list1->tail == NULL){
+		*list1 = *list2;
+	}else{
+		list1->tail->next = list2->head;
+		list1->tail = list2->tail;
+		list1->size += list2->size;
+	}
+		
+    list2->size = 0;
+    list2->tail = NULL;
+    list2->head = NULL;
+}

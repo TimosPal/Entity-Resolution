@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "LinkedList.h"
+#include "Hash.h"
 
 typedef struct ValuePair {
     char* leftVal;
