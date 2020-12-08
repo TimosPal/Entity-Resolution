@@ -3,5 +3,6 @@
 *.d
 ER.a
 cmake-build-debug
+Small_DataSet
 CMakeLists.txt
 .idea
