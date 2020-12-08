@@ -57,7 +57,6 @@ Makefile located in programs/main
 
 ### External libraries :
 - acutest.h , used for unit testing
-- Tensorflow API for C is needed for the compilation ( found at: https://www.tensorflow.org/install/lang_c )
 
 ### Contributors :
 - Palaiologos Timotheos AM: 1115201700112
