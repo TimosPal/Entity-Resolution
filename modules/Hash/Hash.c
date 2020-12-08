@@ -4,10 +4,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-typedef struct KeyValuePair{
-    void* key;
-    void* value;
-}KeyValuePair;
 
 KeyValuePair* KeyValuePair_New(void* key, int size, void* value){
     KeyValuePair* kvp = malloc(sizeof(KeyValuePair));

@@ -1,5 +1,6 @@
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 #include "Util.h"
 #include "ArgUtil.h"
@@ -222,9 +223,9 @@ void InsertCliqueWordsToDict(Clique clique, Hash* dictionary, Hash processedWord
             int keySize = strlen(currWord) + 1;
 
             if(!Hash_GetValue(currCliqueWordsInserted,currWord,keySize)){
-                int* count = Hash_GetValue(*dictionary,currWord,keySize);
+                double* count = Hash_GetValue(*dictionary,currWord,keySize);
                 if(!count){
-                    count = malloc(sizeof(int));
+                    count = malloc(sizeof(double));
                     *count = 1;
                     Hash_Add(dictionary,currWord,keySize,count);
                 }else{
@@ -264,7 +265,43 @@ Hash CreateDictionary(Clique clique, Hash processedWords){
     return dictionary;
 }
 
+int GetNumberOfItems(Clique* clique){
+    /* Calculates the number of items in the
+     * similar and non similar cliques.
+     * Helper function for TF. */
 
+    int sum = clique->similar.size;
+
+    Node* currNonSimilarCliqueNode = clique->nonSimilar.head;
+    while(currNonSimilarCliqueNode != NULL){
+        Clique* currNonSimilarClique = ((ItemCliquePair*)currNonSimilarCliqueNode->value)->clique;
+
+        sum += currNonSimilarClique->similar.size;
+
+        currNonSimilarCliqueNode = currNonSimilarCliqueNode->next;
+    }
+
+    return sum;
+}
+
+Hash CreateIDF(Clique clique, Hash proccesedWords, int dimensionLimit){
+    // Calculated IDF value for current dictionary.
+    Hash dictionary = CreateDictionary(clique, proccesedWords);
+
+    int numberOfItems = GetNumberOfItems(&clique);
+
+    Node* currWordCountNode  = dictionary.keyValuePairs.head;
+    while(currWordCountNode != NULL){
+        double* val = ((KeyValuePair*)currWordCountNode->value)->value;
+        //*val = log(numberOfItems / *val);
+
+        printf("noi %d count %f\n",numberOfItems,*val);
+
+        currWordCountNode = currWordCountNode->next;
+    }
+
+    // Remove small frequencies for smaller dimensionality.
+}
 
 int main(int argc, char* argv[]){
     /* --- Arguments --------------------------------------------------------------------------*/
@@ -290,7 +327,7 @@ int main(int argc, char* argv[]){
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    //CreateDictionary(*(Clique*)cliqueGroup.cliques.head->value,itemProcessedWords);
+    CreateIDF(*(Clique*)cliqueGroup.cliques.head->value,itemProcessedWords,0);
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 

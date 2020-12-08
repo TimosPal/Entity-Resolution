@@ -15,6 +15,11 @@ typedef struct Hash {
     int bucketSize;
 } Hash;
 
+typedef struct KeyValuePair{
+    void* key;
+    void* value;
+}KeyValuePair;
+
 
 void Hash_Init(Hash* hash, int bucketSize, unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*));
 void* Hash_GetValue(Hash hash,void* key,int keySize); //Returns a value based on a key.
