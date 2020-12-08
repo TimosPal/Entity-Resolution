@@ -203,6 +203,69 @@ Hash CreateProcessedItems(CliqueGroup cg){
     return itemProcessedWords;
 }
 
+void InsertCliqueWordsToDict(Clique clique, Hash* dictionary, Hash processedWords){
+    /* For every item in the clique, inserts every one of its unique words to the dictionary,
+     * or increments the counter if it already exists
+     * This is a helper function for TF_IDF */
+
+    Node* currItemNode = clique.similar.head;
+    while(currItemNode != NULL){
+        Hash currCliqueWordsInserted;
+        Hash_Init(&currCliqueWordsInserted,DEFAULT_HASH_SIZE,RSHash,StringCmp);
+
+        Item* currItem = ((ItemCliquePair*)currItemNode->value)->item;
+
+        List* words = Hash_GetValue(processedWords,currItem->id,strlen(currItem->id) + 1);
+        Node* currWordNode = words->head;
+        while(currWordNode != NULL){
+            char* currWord = currWordNode->value;
+            int keySize = strlen(currWord) + 1;
+
+            if(!Hash_GetValue(currCliqueWordsInserted,currWord,keySize)){
+                int* count = Hash_GetValue(*dictionary,currWord,keySize);
+                if(!count){
+                    count = malloc(sizeof(int));
+                    *count = 1;
+                    Hash_Add(dictionary,currWord,keySize,count);
+                }else{
+                    (*count)++;
+                }
+
+                Hash_Add(&currCliqueWordsInserted,currWord,keySize,"-");
+            }
+
+            currWordNode = currWordNode->next;
+        }
+
+        Hash_Destroy(currCliqueWordsInserted);
+
+        currItemNode = currItemNode->next;
+    }
+}
+
+Hash CreateDictionary(Clique clique, Hash processedWords){
+    /* Creates a dictionary of all the unique words for every item
+     * that is correlated to this clique. */
+
+    Hash dictionary;
+    Hash_Init(&dictionary,DEFAULT_HASH_SIZE,RSHash,StringCmp);
+
+    InsertCliqueWordsToDict(clique,&dictionary,processedWords);
+    List nonSimilarCliques = clique.nonSimilar;
+
+    Node* currNonSimilarCliqueNode = nonSimilarCliques.head;
+    while(currNonSimilarCliqueNode != NULL){
+        Clique* currNonSimilarClique = ((ItemCliquePair*)currNonSimilarCliqueNode->value)->clique;
+        InsertCliqueWordsToDict(*currNonSimilarClique,&dictionary,processedWords);
+
+        currNonSimilarCliqueNode = currNonSimilarCliqueNode->next;
+    }
+
+    return dictionary;
+}
+
+
+
 int main(int argc, char* argv[]){
     /* --- Arguments --------------------------------------------------------------------------*/
 
@@ -227,6 +290,7 @@ int main(int argc, char* argv[]){
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
+    //CreateDictionary(*(Clique*)cliqueGroup.cliques.head->value,itemProcessedWords);
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 

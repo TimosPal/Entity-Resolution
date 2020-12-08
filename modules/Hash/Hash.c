@@ -24,6 +24,7 @@ void Hash_Init(Hash* hash, int bucketSize, unsigned int (*hashFunction)(const vo
     hash->hashFunction = hashFunction; // used in get.
     hash->cmpFunction = cmpFunction; // used in get.
     hash->buckets = malloc(bucketSize * sizeof(List));
+    List_Init(&hash->keyValuePairs);
 
     for(int i = 0; i < bucketSize; i++)
         List_Init(&hash->buckets[i]);
@@ -58,6 +59,8 @@ bool Hash_Add(Hash* hash,void* key,int keySize,void* value){
     KeyValuePair *kvp = KeyValuePair_New(key, keySize, value);
     List_Append(bucketItems, kvp);
 
+    List_Append(&hash->keyValuePairs,kvp);
+
     return true;
 }
 
@@ -73,6 +76,8 @@ void Hash_Destroy(Hash hash){
         List_FreeValues(*list, KeyValuePair_Free);
         List_Destroy(list);
     }
+
+    List_Destroy(&hash.keyValuePairs);
 
     free(hash.buckets);
 }

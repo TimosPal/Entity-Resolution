@@ -7,6 +7,7 @@
 
 typedef struct Hash {
     List* buckets;
+    List keyValuePairs;
 
     unsigned int (*hashFunction)(const void*, unsigned int);
     bool (*cmpFunction)(void*,void*);
