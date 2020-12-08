@@ -32,7 +32,7 @@ bool StringToInt(char* str,int* value){
 }
 
 char* NewString(char* str){
-    char* newStr = malloc(strlen(str) + 1);
+    char* newStr = malloc((strlen(str) + 1)*sizeof(char));
     strcpy(newStr,str);
     return newStr;
 }
@@ -86,31 +86,31 @@ void RemoveFileExtension(char* str){
 }
 
 char* StringToLower(char* str){
-    char* newStr = NewString(str);
-
     int i = 0;
-    while(newStr[i] != '\0'){
-        if (newStr[i] >= 'A' && newStr[i] <= 'Z'){
-            newStr[i] += 'a' - 'A';
+    while(str[i] != '\0'){
+        if (str[i] >= 'A' && str[i] <= 'Z'){
+            str[i] += 'a' - 'A';
         }
 
         i++;
     }
 
-    return newStr;
+    return str;
 }
 
 List StringPreprocess(char* str, Hash stopwords){
     char* newStr = NewString(str);
     List words = StringSplit(newStr, " ");
+    free(newStr);
 
     Node* temp = words.head;
     //preprocess the specific words
     while(temp != NULL){
         //remove stopwords
-        temp->value = StringToLower((char*)temp->value);
-        printf("%s\n", (char*)temp->value);
+        StringToLower((char*)temp->value);
+        //printf("%s\n", (char*)temp->value);
         
+        //delete words that are in stopwords
         if (Hash_GetValue(stopwords, temp->value, strlen((char*)(temp->value))+1)){
             Node* nextNode = temp->next;
             free(temp->value);
@@ -122,7 +122,6 @@ List StringPreprocess(char* str, Hash stopwords){
         temp = temp->next;
     }
 
-    free(newStr);
 
     return words;
 }

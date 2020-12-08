@@ -166,6 +166,12 @@ Hash CreateStopwordHash(char* fileStr){
     return stopwords;
 }
 
+void WordList_Free(void* val){
+    List_FreeValues(*(List*)val, free);
+    List_Destroy(val);
+    free(val);
+}
+
 Hash CreateProcessedItems(CliqueGroup cg){
     Hash itemProcessedWords;
     Hash_Init(&itemProcessedWords, cg.hash.bucketSize, cg.hash.hashFunction, cg.hash.cmpFunction);
@@ -184,7 +190,7 @@ Hash CreateProcessedItems(CliqueGroup cg){
 
             List* itemWords = Item_Preprocess(item, stopwords);
 
-            Hash_Add(&itemProcessedWords, item->id, strlen(item->id)+1, &itemWords);
+            Hash_Add(&itemProcessedWords, item->id, strlen(item->id)+1, itemWords);
 
             currIcpNode = currIcpNode->next;
         }
@@ -224,6 +230,9 @@ int main(int argc, char* argv[]){
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 
+    Hash_FreeValues(itemProcessedWords, WordList_Free);
+    Hash_Destroy(itemProcessedWords);
+    
     CliqueGroup_FreeValues(cliqueGroup, Item_Free);
     CliqueGroup_Destroy(cliqueGroup);
 

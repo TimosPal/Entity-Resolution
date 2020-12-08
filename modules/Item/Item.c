@@ -40,8 +40,10 @@ List* Item_Preprocess(Item* item, Hash stopwords){
         while(valNode != NULL){
             List strings = StringPreprocess(valNode->value, stopwords);
             if (strings.size != 0){
-                List_Join(words, &strings);
+                List_Join(words, &strings); //left join
             }
+            List_FreeValues(strings, free);
+            List_Destroy(&strings);
 
             valNode = valNode->next;
         }
