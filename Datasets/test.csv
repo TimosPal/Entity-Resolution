@@ -1,4 +1,2 @@
 left_spec_id,right_spec_id,label
-www.garricks.com.au//31,www.ebay.com//53278,0
-www.garricks.com.au//31,www.ebay.com//58782,0
-www.ebay.com//53278,www.ebay.com//58782,1
+test_eshop//1,test_eshop//2,1

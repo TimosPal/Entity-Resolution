@@ -293,7 +293,7 @@ Hash CreateIDF(Clique clique, Hash proccesedWords, int dimensionLimit){
     Node* currWordCountNode  = dictionary.keyValuePairs.head;
     while(currWordCountNode != NULL){
         double* val = ((KeyValuePair*)currWordCountNode->value)->value;
-        //*val = log(numberOfItems / *val);
+        *val = log(numberOfItems / *val);
 
         printf("noi %d count %f\n",numberOfItems,*val);
 
@@ -301,6 +301,8 @@ Hash CreateIDF(Clique clique, Hash proccesedWords, int dimensionLimit){
     }
 
     // Remove small frequencies for smaller dimensionality.
+    
+    return dictionary;
 }
 
 int main(int argc, char* argv[]){
@@ -327,9 +329,12 @@ int main(int argc, char* argv[]){
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    CreateIDF(*(Clique*)cliqueGroup.cliques.head->value,itemProcessedWords,0);
+    Hash dictionary = CreateIDF(*(Clique*)cliqueGroup.cliques.tail->value,itemProcessedWords,0);
 
     /* --- Clean up ---------------------------------------------------------------------------*/
+
+    Hash_FreeValues(dictionary, free);
+    Hash_Destroy(dictionary);
 
     Hash_FreeValues(itemProcessedWords, WordList_Free);
     Hash_Destroy(itemProcessedWords);

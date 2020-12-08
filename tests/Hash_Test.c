@@ -1,11 +1,6 @@
 #include "Hash.h"
 #include "acutest.h"
 
-typedef struct KeyValuePair{
-    void* key;
-    void* value;
-}KeyValuePair;
-
 bool Compare_Int(void* a,void* b){
     return *((int*)a) == *((int*)b);
 }
