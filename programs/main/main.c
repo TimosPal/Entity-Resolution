@@ -13,6 +13,8 @@
 #include "CliqueGroup.h"
 
 #include "Item.h"
+#include "TF-IDF.h"
+#include "Tuple.h"
 
 /* It is assumed that the json and csv files have proper formatting and appropriate values ,
  * so no extra error checking is done. */
@@ -232,7 +234,7 @@ int main(int argc, char* argv[]){
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 
-    Hash_FreeValues(dictionary, free);
+    Hash_FreeValues(dictionary, Tuple_Free);
     Hash_Destroy(dictionary);
 
     Hash_FreeValues(itemProcessedWords, WordList_Free);

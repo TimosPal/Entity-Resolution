@@ -10,7 +10,8 @@ ER.a_OBJS =						\
 	$(MODULES)/Utils/CSVParser.o    \
 	$(MODULES)/CliqueGroup/CliqueGroup.o \
 	$(MODULES)/Utils/StringUtil.o \
-	$(MODULES)/TF-IDF/TF-IDF.o
+	$(MODULES)/TF-IDF/TF-IDF.o \
+	$(MODULES)/Tuple/Tuple.o
 
 # Ο βασικός κορμός του Makefile
 include ../common.mk
