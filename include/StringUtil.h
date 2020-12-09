@@ -2,6 +2,7 @@
 #define CUSTOM_STRING_FUNCTIONS_H
 
 #include <stdbool.h>
+#include <string.h>
 
 #include "LinkedList.h"
 #include "Hash.h"
