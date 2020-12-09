@@ -180,6 +180,21 @@ List List_Merge(List list1, List list2){
 	return newList;
 }
 
+void** List_ToArray(List list){
+	Node* currPair = list.head;
+    void** array = malloc(list.size * sizeof(void*));
+    int iter = 0;
+
+    while(currPair != NULL){
+        array[iter] = currPair->value;
+
+        currPair = currPair->next;
+        iter++;
+    }
+
+	return array;
+}
+
 void List_Join(List* list1, List* list2){
 	if (list1->tail == NULL){
 		*list1 = *list2;

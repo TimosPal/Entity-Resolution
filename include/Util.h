@@ -12,4 +12,9 @@
 
 #define IF_ERROR_MSG(x,msg) { if(x) {fprintf(stderr,"ERROR : %s.\n",msg); exit(EXIT_ERROR_CODE); } }
 
+typedef struct Tuple{
+    void* value1;
+    void* value2;
+}Tuple;
+
 #endif

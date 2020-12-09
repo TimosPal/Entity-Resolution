@@ -284,6 +284,8 @@ int GetNumberOfItems(Clique* clique){
     return sum;
 }
 
+
+
 Hash CreateIDF(Clique clique, Hash proccesedWords, int dimensionLimit){
     // Calculated IDF value for current dictionary.
     Hash dictionary = CreateDictionary(clique, proccesedWords);
@@ -302,7 +304,32 @@ Hash CreateIDF(Clique clique, Hash proccesedWords, int dimensionLimit){
 
     // Remove small frequencies for smaller dimensionality.
     
-    return dictionary;
+    // If no trimming is possible
+    if (dimensionLimit >= dictionary.keyValuePairs.size || dimensionLimit == -1){
+        return dictionary;
+    }
+
+    // Convert List to Array
+    KeyValuePair** kvpArray = List_ToArray(dictionary.keyValuePairs);
+    
+    //Sorting the array based on IDF values
+
+
+    //Now Trim
+    Hash trimmedDictionary;
+    Hash_Init(&trimmedDictionary,DEFAULT_HASH_SIZE,RSHash,StringCmp);
+
+    for (int i = 0; i < dimensionLimit; i++){
+        Tuple* double_index = malloc(sizeof(Tuple));
+        int* index = malloc(sizeof(int));
+
+        Hash_Add(&trimmedDictionary, kvpArray[i]->key, strlen(kvpArray[i]->key) + 1, kvpArray[i]->value);
+    }
+
+    Hash_FreeValues(dictionary, free);
+    Hash_Destroy(dictionary);
+
+    return trimmedDictionary;
 }
 
 int main(int argc, char* argv[]){
@@ -329,7 +356,8 @@ int main(int argc, char* argv[]){
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    Hash dictionary = CreateIDF(*(Clique*)cliqueGroup.cliques.tail->value,itemProcessedWords,0);
+    Hash dictionary = CreateIDF(*(Clique*)cliqueGroup.cliques.tail->value, itemProcessedWords, 1000);
+    printf("Dictionary Size is %d\n", dictionary.keyValuePairs.size);
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 
