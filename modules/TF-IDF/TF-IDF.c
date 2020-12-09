@@ -11,7 +11,7 @@
 void InsertCliqueWordsToDict(Clique clique, Hash* dictionary, Hash processedWords){
     /* For every item in the clique, inserts every one of its unique words to the dictionary,
      * or increments the counter if it already exists
-     * This is a helper function for TF_IDF */
+     * This is a helper function for TF_IDF_Calculate */
 
     Node* currItemNode = clique.similar.head;
     while(currItemNode != NULL){
@@ -102,7 +102,7 @@ int IDF_Index_Cmp(const void* value1, const void* value2){
     }
 }
 
-Hash CreateIDF(Clique clique, Hash proccesedWords, int dimensionLimit){
+Hash IDF_Calculate(Clique clique, Hash proccesedWords, int dimensionLimit){
     // Calculated IDF value for current dictionary.
     Hash dictionary = CreateDictionary(clique, proccesedWords);
 
@@ -150,7 +150,9 @@ Hash CreateIDF(Clique clique, Hash proccesedWords, int dimensionLimit){
     return trimmedDictionary;
 }
 
-double* TF_IDF(Hash dictionary, List processedWords){
+double* TF_IDF_Calculate(Hash dictionary, List processedWords){
+    /* Calculates a tfidf vector for said Word list based on
+     * the given dictionary */
     int vectorSize = dictionary.keyValuePairs.size;
 
     double* vector = calloc(vectorSize, sizeof(double));

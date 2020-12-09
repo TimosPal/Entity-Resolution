@@ -229,7 +229,7 @@ int main(int argc, char* argv[]){
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    Hash dictionary = CreateIDF(*(Clique*)cliqueGroup.cliques.tail->value, itemProcessedWords, 1000);
+    Hash dictionary = IDF_Calculate(*(Clique *) cliqueGroup.cliques.tail->value, itemProcessedWords, 1000);
     printf("Dictionary Size is %d\n", dictionary.keyValuePairs.size);
 
     /* --- Clean up ---------------------------------------------------------------------------*/
