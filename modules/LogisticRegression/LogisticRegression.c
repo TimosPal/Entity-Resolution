@@ -37,7 +37,7 @@ double* GradientVector(double* weights, double bWeight, double** xVals, double* 
     return vector;
 }
 
-void LogisticRegression_Init(LogisticRegression* model,double bWeight,double** xVals,double* yVals,int width, int height){
+void LogisticRegression_Init(LogisticRegression* model, double bWeight, double** xVals, double* yVals, int width, int height){
     model->bWeight = bWeight;
 
     model->xVals = xVals;
@@ -46,7 +46,17 @@ void LogisticRegression_Init(LogisticRegression* model,double bWeight,double** x
     model->height = height;
     model->width = width;
 
+    //setting the starting weights
     model->weights = calloc(width, sizeof(double));
+}
+
+void LogisticRegression_Destroy(LogisticRegression model){
+    free(model.weights);
+    free(model.yVals);
+    for(int i = 0; i < model.height; i++){
+        free(model.xVals[i]);
+    }
+    free(model.xVals);
 }
 
 void LogisticRegression_Train(LogisticRegression* model, double learningRate, double terminationValue){
@@ -59,14 +69,20 @@ void LogisticRegression_Train(LogisticRegression* model, double learningRate, do
                 model->xVals,
                 model->yVals,
                 model->height,
-                model->width);
+                model->width
+        );
 
+        double* newW = malloc(model->width * sizeof(double));
         for (int i = 0; i < model->width; ++i) {
-            double prevWi = model->weights[i];
-            model->weights[i] -= learningRate * gradientVector[i];
+            newW[i] = model->weights[i] - learningRate * gradientVector[i];
 
-            if(model->weights[i] - prevWi < terminationValue)
-                shouldTrain = false;
+            // double dist = EuclideanDistance(newW, model->weights, model->width);
+            // if(dist < terminationValue){
+            //     shouldTrain = false;
+            // }
+
+            free(model->weights);
+            model->weights = newW;
         }
 
         free(gradientVector);

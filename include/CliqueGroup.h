@@ -6,12 +6,14 @@
 #include <stdbool.h>
 
 typedef struct Clique{
+    unsigned int id;
     Hash* nonSimilarHash;
     List similar;
     List nonSimilar;
 }Clique;
 
 typedef struct ItemCliquePair {
+    unsigned int id;
     void* item;
     Clique* clique;
     Node* cliqueParentNode;
@@ -43,5 +45,6 @@ void ItemCliquePair_Free(void* value);
 Clique* Clique_New();
 void Clique_Free(void* value);
 
+List Clique_GetCorrelatedIcps(Clique clique);
 
 #endif

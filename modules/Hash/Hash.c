@@ -44,7 +44,7 @@ void* Hash_GetValue(Hash hash,void* key,int keySize){
     return NULL;
 }
 
-bool Hash_Add(Hash* hash,void* key,int keySize,void* value){
+bool Hash_Add(Hash* hash, void* key, int keySize, void* value){
     void* val = Hash_GetValue(*hash, key, keySize);
     if(val != NULL)
         return false;

@@ -12,4 +12,7 @@ typedef struct LogisticRegression {
     int height;
 } LogisticRegression;
 
+void LogisticRegression_Init(LogisticRegression* model,double bWeight,double** xVals,double* yVals,int width, int height);
+void LogisticRegression_Destroy(LogisticRegression model);
+
 #endif

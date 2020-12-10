@@ -15,6 +15,7 @@
 #include "Item.h"
 #include "TF-IDF.h"
 #include "Tuple.h"
+#include "CliqueModel.h"
 
 /* It is assumed that the json and csv files have proper formatting and appropriate values ,
  * so no extra error checking is done. */
@@ -62,6 +63,7 @@ void ParseArgs(int argc, char* argv[], char **websitesFolderPath,char **dataSetW
         *bucketSize = CalculateBucketSize(*websitesFolderPath);
         //printf("------------- %d -------------\n",bucketSize);
     }
+    printf("BUCKET SIZE IS %d\n", *bucketSize);
 }
 
 void HandleData_X(char* websitesFolderPath,int bucketSize,CliqueGroup* cliqueGroup){
@@ -174,6 +176,8 @@ void WordList_Free(void* val){
     free(val);
 }
 
+/* Creates all processed items at once because they will 
+ *be needed many times when creating the models*/
 Hash CreateProcessedItems(CliqueGroup cg){
     Hash itemProcessedWords;
     Hash_Init(&itemProcessedWords, cg.hash.bucketSize, cg.hash.hashFunction, cg.hash.cmpFunction);
@@ -188,11 +192,10 @@ Hash CreateProcessedItems(CliqueGroup cg){
         Node* currIcpNode = currCliqueList.head;
         while(currIcpNode != NULL){
             ItemCliquePair* icp = (ItemCliquePair*)(currIcpNode->value);
-            Item* item = icp->item;
 
-            List* itemWords = Item_Preprocess(item, stopwords);
+            List* itemWords = Item_Preprocess(icp->item, stopwords);
 
-            Hash_Add(&itemProcessedWords, item->id, strlen(item->id)+1, itemWords);
+            Hash_Add(&itemProcessedWords, &icp->id, sizeof(icp->id), itemWords);
 
             currIcpNode = currIcpNode->next;
         }
@@ -203,6 +206,31 @@ Hash CreateProcessedItems(CliqueGroup cg){
     Hash_Destroy(stopwords);
 
     return itemProcessedWords;
+}
+
+/* Creates models for all the cliques in the cliqueGroup */
+CliqueModel* CreateModels(CliqueGroup cliqueGroup, Hash itemProcessedWords){
+    CliqueModel* cliqueModels = malloc(cliqueGroup.cliques.size * sizeof(CliqueModel));
+
+    Node* currCliqueNode = cliqueGroup.cliques.head;
+    int index = 0;
+    while(currCliqueNode != NULL){
+        Clique* clique = (Clique*)currCliqueNode->value;
+        CliqueModel_Init(&cliqueModels[index], *clique, itemProcessedWords);
+
+        index++;
+        currCliqueNode = currCliqueNode->next;
+    }
+
+    return cliqueModels;
+}
+
+void DestroyModels(CliqueModel* cliqueModels, int size){
+    for (int i = 0; i < size; i++){
+        CliqueModel_Destroy(&cliqueModels[i]);
+    }
+
+    free(cliqueModels);
 }
 
 int main(int argc, char* argv[]){
@@ -229,16 +257,15 @@ int main(int argc, char* argv[]){
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    Hash dictionary = IDF_Calculate(*(Clique *) cliqueGroup.cliques.tail->value, itemProcessedWords, 1000);
-    printf("Dictionary Size is %d\n", dictionary.keyValuePairs.size);
+    CliqueModel* models = CreateModels(cliqueGroup, itemProcessedWords);
 
+    printf("ALL GOOD\n");
     /* --- Clean up ---------------------------------------------------------------------------*/
 
-    Hash_FreeValues(dictionary, Tuple_Free);
-    Hash_Destroy(dictionary);
+    DestroyModels(models, cliqueGroup.cliques.size);
 
-    Hash_FreeValues(itemProcessedWords, WordList_Free);
-    Hash_Destroy(itemProcessedWords);
+     Hash_FreeValues(itemProcessedWords, WordList_Free);
+     Hash_Destroy(itemProcessedWords);
     
     CliqueGroup_FreeValues(cliqueGroup, Item_Free);
     CliqueGroup_Destroy(cliqueGroup);

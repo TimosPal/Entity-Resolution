@@ -1,8 +1,8 @@
 #include "TF-IDF.h"
 
+#include <assert.h>
 #include <math.h>
 
-#include "Item.h"
 #include "Util.h"
 #include "Hashes.h"
 #include "StringUtil.h"
@@ -18,9 +18,9 @@ void InsertCliqueWordsToDict(Clique clique, Hash* dictionary, Hash processedWord
         Hash currCliqueWordsInserted;
         Hash_Init(&currCliqueWordsInserted,DEFAULT_HASH_SIZE,RSHash,StringCmp);
 
-        Item* currItem = ((ItemCliquePair*)currItemNode->value)->item;
+        ItemCliquePair* icp = (ItemCliquePair*)currItemNode->value;
 
-        List* words = Hash_GetValue(processedWords,currItem->id,strlen(currItem->id) + 1);
+        List* words = Hash_GetValue(processedWords, &icp->id, sizeof(icp->id));
         Node* currWordNode = words->head;
         while(currWordNode != NULL){
             char* currWord = currWordNode->value;
@@ -31,7 +31,7 @@ void InsertCliqueWordsToDict(Clique clique, Hash* dictionary, Hash processedWord
                 if(!count){
                     count = malloc(sizeof(double));
                     *count = 1;
-                    Hash_Add(dictionary,currWord,keySize,count);
+                    Hash_Add(dictionary, currWord, keySize, count);
                 }else{
                     (*count)++;
                 }
@@ -55,13 +55,13 @@ Hash CreateDictionary(Clique clique, Hash processedWords){
     Hash dictionary;
     Hash_Init(&dictionary,DEFAULT_HASH_SIZE,RSHash,StringCmp);
 
-    InsertCliqueWordsToDict(clique,&dictionary,processedWords);
+    InsertCliqueWordsToDict(clique, &dictionary, processedWords);
     List nonSimilarCliques = clique.nonSimilar;
 
     Node* currNonSimilarCliqueNode = nonSimilarCliques.head;
     while(currNonSimilarCliqueNode != NULL){
         Clique* currNonSimilarClique = ((ItemCliquePair*)currNonSimilarCliqueNode->value)->clique;
-        InsertCliqueWordsToDict(*currNonSimilarClique,&dictionary,processedWords);
+        InsertCliqueWordsToDict(*currNonSimilarClique, &dictionary, processedWords);
 
         currNonSimilarCliqueNode = currNonSimilarCliqueNode->next;
     }
@@ -163,9 +163,9 @@ double* TF_IDF_Calculate(Hash dictionary, List processedWords){
     while(currWordNode != NULL){
         int keySize = strlen(currWordNode->value)+1;
         Tuple* double_index_tuple = (Tuple*) Hash_GetValue(dictionary, currWordNode->value, keySize);
-        int index = *(int*)double_index_tuple->value2;
-
-        if(double_index_tuple){
+        //if word is in dictionary
+        if (double_index_tuple){
+            int index = *(int*)double_index_tuple->value2;
             vector[index]++;
         }
 

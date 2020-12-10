@@ -4,9 +4,14 @@
 #include <stdio.h>
 
 ItemCliquePair* ItemCliquePair_New(void* item){
+    static unsigned int id = 0;
+
     ItemCliquePair* pair = malloc(sizeof(ItemCliquePair)); //value of the KeyValuePair struct
 
     pair->clique = Clique_New();
+    
+    //set auto-incrementing id
+    pair->id = id++;
 
     pair->item = item;
 
@@ -22,8 +27,11 @@ void ItemCliquePair_Free(void* value){
 }
 
 Clique* Clique_New(){
+    static unsigned int id = 0;
+
     Clique* clique = malloc(sizeof(Clique));
 
+    clique->id = id++;
     List_Init(&clique->similar);
     List_Init(&clique->nonSimilar);
     clique->nonSimilarHash = NULL; //set as NULL because we won't create and populate it yet
@@ -247,5 +255,34 @@ void CliqueGroup_Finalize(CliqueGroup cg){ //this should run after the CliqueGro
 
         cliqueNode = cliqueNode->next; //next clique
     }
+}
+
+List Clique_GetCorrelatedIcps(Clique clique){
+    List correlated;
+    List_Init(&correlated);
+
+    Node* currIcpNode = clique.similar.head;
+    while(currIcpNode != NULL){
+        ItemCliquePair* icp = (ItemCliquePair*)currIcpNode->value;
+        List_Append(&correlated, icp);
+
+        currIcpNode = currIcpNode->next;
+    }
+
+    currIcpNode = clique.nonSimilar.head;
+    while(currIcpNode != NULL){
+        ItemCliquePair* icp = (ItemCliquePair*)currIcpNode->value;
+        Node* currIcp2Node = icp->clique->similar.head;
+        while(currIcp2Node != NULL){
+            ItemCliquePair* icp2 = (ItemCliquePair*)currIcp2Node->value;
+            List_Append(&correlated, icp2);
+
+            currIcp2Node = currIcp2Node->next;
+        }
+
+        currIcpNode = currIcpNode->next;
+    }
+
+    return correlated;
 }
 
