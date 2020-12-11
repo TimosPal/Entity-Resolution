@@ -12,7 +12,7 @@ typedef struct CliqueModel{
     LogisticRegression logisticRegression;
 }CliqueModel;
 
-void CliqueModel_Init(CliqueModel* cliqueModel, Clique clique, Hash itemProcessedWords);
+void CliqueModel_Init(CliqueModel* cliqueModel, List correlated, Clique clique, Hash itemProcessedWords);
 void CliqueModel_Destroy(CliqueModel* cliqueModel);
 
 #endif

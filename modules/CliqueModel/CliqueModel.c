@@ -9,19 +9,19 @@
 #include "LogisticRegression.h"
 
 
-void CliqueModel_CreateXY(Clique clique, Hash dictionary, Hash itemProcessedWords, double*** x, double** y, int* width, int* height){
-    /* Gets all tf_idf vectors for every icp correlated to the clique */
+/* Gets all tf_idf vectors for every icp correlated to the clique */
+void CliqueModel_CreateXY(List correlated, Clique clique, Hash dictionary, Hash itemProcessedWords, double*** x, double** y, unsigned int* width, unsigned int* height){
 
-    List correlatedIcps = Clique_GetCorrelatedIcps(clique);
+    //Set width and height
+    *width = (unsigned int)dictionary.keyValuePairs.size;
+    *height = (unsigned int)correlated.size;
 
-    *width = dictionary.keyValuePairs.size;
-    *height = correlatedIcps.size;
-
+    //Malloc arrays for X and Y data
     double **vectors = malloc(*width * sizeof(double*));
     double* results = malloc(*height * sizeof(double));
 
     int index = 0;
-    Node* currIcpNode = correlatedIcps.head;
+    Node* currIcpNode = correlated.head;
     while (currIcpNode != NULL){
         ItemCliquePair* icp = (ItemCliquePair*)currIcpNode->value;
         List* processedWords = Hash_GetValue(itemProcessedWords, &icp->id, sizeof(icp->id));
@@ -40,31 +40,30 @@ void CliqueModel_CreateXY(Clique clique, Hash dictionary, Hash itemProcessedWord
 
     *x = vectors;
     *y = results;
-
-    //Cleanup
-    List_Destroy(&correlatedIcps);
-
 }
 
-void CliqueModel_Init(CliqueModel* cliqueModel, Clique clique, Hash itemProcessedWords){
-    cliqueModel->dictionary = IDF_Calculate(clique, itemProcessedWords, DICTIONARY_TRIM_VALUE);
-    printf("Dictionary Size is %d\n", cliqueModel->dictionary.keyValuePairs.size);
+void CliqueModel_Init(CliqueModel* cliqueModel, List correlated, Clique clique, Hash itemProcessedWords){
+    //Calculate IDF and insert it into the dictionary
+    cliqueModel->dictionary = IDF_Calculate(correlated, itemProcessedWords, DICTIONARY_TRIM_VALUE);
 
-    //calculate tf_idf ( the X of the model )
-    int width, height;
+    //Calculate tf_idf ( the X of the model )
+    unsigned int width, height;
     double** x;
     double* y;
+    CliqueModel_CreateXY(correlated, clique, cliqueModel->dictionary, itemProcessedWords, &x, &y, &width, &height);
 
-    CliqueModel_CreateXY(clique, cliqueModel->dictionary, itemProcessedWords, &x, &y, &width, &height);
-
-    //now logistic regression
+    //Now logistic regression
     LogisticRegression logisticRegression;
     LogisticRegression_Init(&logisticRegression, 0, x, y, width, height);
-    //set the logisticRegression in the cliqueModel
+    //Set the logisticRegression in the cliqueModel
     cliqueModel->logisticRegression = logisticRegression;
 
-    //train
+    //Train
+    printf("Dictionary Size is %d, XY training size is %u\n", cliqueModel->dictionary.keyValuePairs.size, cliqueModel->logisticRegression.height);
+    LogisticRegression_Train(&cliqueModel->logisticRegression, 0.000001, 0.000001);
 
+    //Cleanup
+    List_Destroy(&correlated);
 }
 
 void CliqueModel_Destroy(CliqueModel* cliqueModel){

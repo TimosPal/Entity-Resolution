@@ -8,85 +8,83 @@
 #include "StringUtil.h"
 #include "Tuple.h"
 
-void InsertCliqueWordsToDict(Clique clique, Hash* dictionary, Hash processedWords){
+void InsertIcpWordsToDict(ItemCliquePair icp, Hash* dictionary, Hash processedWords){
     /* For every item in the clique, inserts every one of its unique words to the dictionary,
      * or increments the counter if it already exists
      * This is a helper function for TF_IDF_Calculate */
 
-    Node* currItemNode = clique.similar.head;
-    while(currItemNode != NULL){
-        Hash currCliqueWordsInserted;
-        Hash_Init(&currCliqueWordsInserted,DEFAULT_HASH_SIZE,RSHash,StringCmp);
+    //Assisting Hash to not increment counters 2 times for the same words, prevents duplicating
+    Hash currCliqueWordsInserted;
+    Hash_Init(&currCliqueWordsInserted,DEFAULT_HASH_SIZE,RSHash,StringCmp);
 
-        ItemCliquePair* icp = (ItemCliquePair*)currItemNode->value;
+    //Get the list of words for the specific icp
+    List* words = Hash_GetValue(processedWords, &icp.id, sizeof(icp.id));
 
-        List* words = Hash_GetValue(processedWords, &icp->id, sizeof(icp->id));
-        Node* currWordNode = words->head;
-        while(currWordNode != NULL){
-            char* currWord = currWordNode->value;
-            int keySize = (int)strlen(currWord) + 1;
+    //For each word in the list
+    Node* currWordNode = words->head;
+    while(currWordNode != NULL){
+        char* currWord = currWordNode->value;
+        int keySize = (int)strlen(currWord) + 1;
 
-            if(!Hash_GetValue(currCliqueWordsInserted,currWord,keySize)){
-                double* count = Hash_GetValue(*dictionary,currWord,keySize);
-                if(!count){
-                    count = malloc(sizeof(double));
-                    *count = 1;
-                    Hash_Add(dictionary, currWord, keySize, count);
-                }else{
-                    (*count)++;
-                }
-
-                Hash_Add(&currCliqueWordsInserted,currWord,keySize,"-");
+        //If it has not yet been counted for this word list(meaning it is included 2 or more times in the list)
+        if(!Hash_GetValue(currCliqueWordsInserted,currWord,keySize)){
+            double* count = Hash_GetValue(*dictionary,currWord,keySize);
+            //If it is has not been found in any other icps, malloc it and increment
+            if(!count){
+                count = malloc(sizeof(double));
+                *count = 1;
+                Hash_Add(dictionary, currWord, keySize, count);
+            }else{ //just increment
+                (*count)++;
             }
 
-            currWordNode = currWordNode->next;
+            //Add it to assisting hash so we will not increment it again(uniquely increment word counts)
+            Hash_Add(&currCliqueWordsInserted,currWord,keySize,"-");
         }
 
-        Hash_Destroy(currCliqueWordsInserted);
-
-        currItemNode = currItemNode->next;
+        currWordNode = currWordNode->next;
     }
+
+    Hash_Destroy(currCliqueWordsInserted);
 }
 
-Hash CreateDictionary(Clique clique, Hash processedWords){
+Hash CreateDictionary(List correlated, Hash processedWords){
     /* Creates a dictionary of all the unique words for every item
      * that is correlated to this clique. */
 
     Hash dictionary;
     Hash_Init(&dictionary,DEFAULT_HASH_SIZE,RSHash,StringCmp);
 
-    InsertCliqueWordsToDict(clique, &dictionary, processedWords);
-    List nonSimilarCliques = clique.nonSimilar;
+    //Insert unique words to dict for each icp correlated to the clique
+    Node* currIcpNode = correlated.head;
+    while(currIcpNode != NULL){
+        ItemCliquePair icp = *(ItemCliquePair*)currIcpNode->value;
+        InsertIcpWordsToDict(icp, &dictionary, processedWords);
 
-    Node* currNonSimilarCliqueNode = nonSimilarCliques.head;
-    while(currNonSimilarCliqueNode != NULL){
-        Clique* currNonSimilarClique = ((ItemCliquePair*)currNonSimilarCliqueNode->value)->clique;
-        InsertCliqueWordsToDict(*currNonSimilarClique, &dictionary, processedWords);
-
-        currNonSimilarCliqueNode = currNonSimilarCliqueNode->next;
+        currIcpNode = currIcpNode->next;
     }
 
     return dictionary;
 }
 
-int GetNumberOfItems(Clique* clique){
-    /* Calculates the number of items in the
-     * similar and non similar cliques.
-     * Helper function for TF. */
+// int GetNumberOfItems(Clique* clique){
+//     /* Calculates the number of items in the
+//      * similar and non similar cliques.
+//      * Helper function for TF. */
 
-    int sum = clique->similar.size;
+//     int sum = clique->similar.size;
 
-    Node* currNonSimilarCliqueNode = clique->nonSimilar.head;
-    while(currNonSimilarCliqueNode != NULL){
-        Clique* currNonSimilarClique = ((ItemCliquePair*)currNonSimilarCliqueNode->value)->clique;
+//     Node* currNonSimilarCliqueNode = clique->nonSimilar.head;
+//     while(currNonSimilarCliqueNode != NULL){
+//         Clique* currNonSimilarClique = ((ItemCliquePair*)currNonSimilarCliqueNode->value)->clique;
 
-        sum += currNonSimilarClique->similar.size;
+//         sum += currNonSimilarClique->similar.size;
 
-        currNonSimilarCliqueNode = currNonSimilarCliqueNode->next;
-    }
+//         currNonSimilarCliqueNode = currNonSimilarCliqueNode->next;
+//     }
 
-    return sum;
-}
+//     return sum;
+// }
 
 int IDF_Index_Cmp(const void* value1, const void* value2){
     KeyValuePair* kvp1 = *(KeyValuePair**)value1;
@@ -102,11 +100,13 @@ int IDF_Index_Cmp(const void* value1, const void* value2){
     }
 }
 
-Hash IDF_Calculate(Clique clique, Hash proccesedWords, int dimensionLimit){
+Hash IDF_Calculate(List correlated, Hash proccesedWords, int dimensionLimit){
     // Calculated IDF value for current dictionary.
-    Hash dictionary = CreateDictionary(clique, proccesedWords);
 
-    int numberOfItems = GetNumberOfItems(&clique);
+    //Get the dictionary based on those icps
+    Hash dictionary = CreateDictionary(correlated, proccesedWords);
+
+    int numberOfItems = correlated.size;
 
     Node* currWordCountNode  = dictionary.keyValuePairs.head;
     while(currWordCountNode != NULL){
@@ -121,7 +121,7 @@ Hash IDF_Calculate(Clique clique, Hash proccesedWords, int dimensionLimit){
     // Convert List to Array
     KeyValuePair** kvpArray = (KeyValuePair**)List_ToArray(dictionary.keyValuePairs);
 
-    //Sorting the array based on IDF values
+    //Sorting the array based on IDF values(descending)
     qsort(kvpArray, dictionary.keyValuePairs.size, sizeof(KeyValuePair*), IDF_Index_Cmp);
 
     //Now Trim

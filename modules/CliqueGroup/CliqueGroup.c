@@ -158,7 +158,7 @@ bool CliqueGroup_Update_NonSimilar(CliqueGroup* cg, void* key1, int keySize1, vo
 }
 
 void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
- Node* currCliqueNode = cg->cliques.head;
+    Node* currCliqueNode = cg->cliques.head;
     while (currCliqueNode != NULL){
         // Printing each clique.
         Clique* currClique = (Clique*)(currCliqueNode->value);

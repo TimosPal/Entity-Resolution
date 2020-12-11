@@ -63,7 +63,6 @@ void ParseArgs(int argc, char* argv[], char **websitesFolderPath,char **dataSetW
         *bucketSize = CalculateBucketSize(*websitesFolderPath);
         //printf("------------- %d -------------\n",bucketSize);
     }
-    printf("BUCKET SIZE IS %d\n", *bucketSize);
 }
 
 void HandleData_X(char* websitesFolderPath,int bucketSize,CliqueGroup* cliqueGroup){
@@ -216,7 +215,12 @@ CliqueModel* CreateModels(CliqueGroup cliqueGroup, Hash itemProcessedWords){
     int index = 0;
     while(currCliqueNode != NULL){
         Clique* clique = (Clique*)currCliqueNode->value;
-        CliqueModel_Init(&cliqueModels[index], *clique, itemProcessedWords);
+
+        //Get all correlated icps to the clique
+        List correlated = Clique_GetCorrelatedIcps(*clique);
+
+        //Initialize and train the model
+        CliqueModel_Init(&cliqueModels[index], correlated, *clique, itemProcessedWords); //You can error check here with the return value
 
         index++;
         currCliqueNode = currCliqueNode->next;
@@ -264,8 +268,8 @@ int main(int argc, char* argv[]){
 
     DestroyModels(models, cliqueGroup.cliques.size);
 
-     Hash_FreeValues(itemProcessedWords, WordList_Free);
-     Hash_Destroy(itemProcessedWords);
+    Hash_FreeValues(itemProcessedWords, WordList_Free);
+    Hash_Destroy(itemProcessedWords);
     
     CliqueGroup_FreeValues(cliqueGroup, Item_Free);
     CliqueGroup_Destroy(cliqueGroup);
