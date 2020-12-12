@@ -67,25 +67,6 @@ Hash CreateDictionary(List correlated, Hash processedWords){
     return dictionary;
 }
 
-// int GetNumberOfItems(Clique* clique){
-//     /* Calculates the number of items in the
-//      * similar and non similar cliques.
-//      * Helper function for TF. */
-
-//     int sum = clique->similar.size;
-
-//     Node* currNonSimilarCliqueNode = clique->nonSimilar.head;
-//     while(currNonSimilarCliqueNode != NULL){
-//         Clique* currNonSimilarClique = ((ItemCliquePair*)currNonSimilarCliqueNode->value)->clique;
-
-//         sum += currNonSimilarClique->similar.size;
-
-//         currNonSimilarCliqueNode = currNonSimilarCliqueNode->next;
-//     }
-
-//     return sum;
-// }
-
 int IDF_Index_Cmp(const void* value1, const void* value2){
     KeyValuePair* kvp1 = *(KeyValuePair**)value1;
     KeyValuePair* kvp2 = *(KeyValuePair**)value2;
@@ -95,8 +76,10 @@ int IDF_Index_Cmp(const void* value1, const void* value2){
 
     if (idf1 > idf2){
         return -1;
-    }else{
+    }else if(idf1 < idf2){
         return 1;
+    }else{
+        return 0;
     }
 }
 

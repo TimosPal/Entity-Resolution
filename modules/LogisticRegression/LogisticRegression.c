@@ -40,7 +40,7 @@ double PartialDerivative(double* weights, double bWeight, double** xVals, double
 double* GradientVector(double* weights, double bWeight, double** xVals, double* yVals, int height, int width){
     double* vector = malloc(width * sizeof(double));
 
-    for (int i = 0; i < width; ++i) {
+    for (int i = 0; i < width; i++) {
         vector[i] = PartialDerivative(weights, bWeight, xVals, yVals, height, width, i);
     }
 
@@ -58,6 +58,9 @@ void LogisticRegression_Init(LogisticRegression* model, double bWeight, double**
 
     //setting the starting weights
     model->weights = calloc(width, sizeof(double));
+    // for (int i = 0; i < width; i++){
+    //     model->weights[i] = 1.0;
+    // }
 }
 
 void LogisticRegression_Destroy(LogisticRegression model){
@@ -90,7 +93,8 @@ void LogisticRegression_Train(LogisticRegression* model, double learningRate, do
         //Compute Euclidean Distance of the 2 vectors and sets shouldTrain 
         //to false if it is smaller than terminationValue
         double dist = EuclideanDistance(newW, model->weights, model->width);
-        // printf("Distance is %.15f\n", dist);
+        //printf("Distance is %.15f\n", dist);
+        printf("DIFF IS %.15f\n", dist - terminationValue);
         if(dist < terminationValue){
             shouldTrain = false;
         }
@@ -102,6 +106,6 @@ void LogisticRegression_Train(LogisticRegression* model, double learningRate, do
     }
 }
 
-double LogisticRegression_Predict(LogisticRegression* model, double* xVals){
-    return SigmoidFunction(LinearFunction(model->weights,model->bWeight,xVals,model->width));
+double LogisticRegression_Predict(LogisticRegression* model, double* vector){
+    return SigmoidFunction(LinearFunction(model->weights, model->bWeight, vector, model->width));
 }

@@ -219,8 +219,13 @@ CliqueModel* CreateModels(CliqueGroup cliqueGroup, Hash itemProcessedWords){
         //Get all correlated icps to the clique
         List correlated = Clique_GetCorrelatedIcps(*clique);
 
-        //Initialize and train the model
-        CliqueModel_Init(&cliqueModels[index], correlated, *clique, itemProcessedWords); //You can error check here with the return value
+        if (correlated.size > 1){
+            //Initialize and train the model
+            CliqueModel_Init(&cliqueModels[index], correlated, *clique, itemProcessedWords); //You can error check here with the return value
+        }
+
+        //Cleanup
+        List_Destroy(&correlated);
 
         index++;
         currCliqueNode = currCliqueNode->next;

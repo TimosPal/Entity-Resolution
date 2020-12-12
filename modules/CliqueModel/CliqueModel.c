@@ -17,7 +17,7 @@ void CliqueModel_CreateXY(List correlated, Clique clique, Hash dictionary, Hash 
     *height = (unsigned int)correlated.size;
 
     //Malloc arrays for X and Y data
-    double **vectors = malloc(*width * sizeof(double*));
+    double **vectors = malloc(*height * sizeof(double*));
     double* results = malloc(*height * sizeof(double));
 
     int index = 0;
@@ -32,7 +32,7 @@ void CliqueModel_CreateXY(List correlated, Clique clique, Hash dictionary, Hash 
         vectors[index] = vector;
 
         //Y
-        results[index] = (icp->clique->id == clique.id) ?  1 :  0;
+        results[index] = (icp->clique->id == clique.id) ?  1.0 :  0.0;
 
         index++;
         currIcpNode = currIcpNode->next;
@@ -44,7 +44,7 @@ void CliqueModel_CreateXY(List correlated, Clique clique, Hash dictionary, Hash 
 
 void CliqueModel_Init(CliqueModel* cliqueModel, List correlated, Clique clique, Hash itemProcessedWords){
     //Calculate IDF and insert it into the dictionary
-    cliqueModel->dictionary = IDF_Calculate(correlated, itemProcessedWords, DICTIONARY_TRIM_VALUE);
+    cliqueModel->dictionary = IDF_Calculate(correlated, itemProcessedWords, 100);
 
     //Calculate tf_idf ( the X of the model )
     unsigned int width, height;
@@ -60,10 +60,12 @@ void CliqueModel_Init(CliqueModel* cliqueModel, List correlated, Clique clique, 
 
     //Train
     printf("Dictionary Size is %d, XY training size is %u\n", cliqueModel->dictionary.keyValuePairs.size, cliqueModel->logisticRegression.height);
-    LogisticRegression_Train(&cliqueModel->logisticRegression, 0.000001, 0.000001);
+    LogisticRegression_Train(&cliqueModel->logisticRegression, 10, 1);
 
-    //Cleanup
-    List_Destroy(&correlated);
+    for (int i = 0; i < height; i++){
+        double prediction = LogisticRegression_Predict(&cliqueModel->logisticRegression, x[i]);
+        printf("Prediction: %.15f, Actual: %f\n", prediction, y[i]);
+    }
 }
 
 void CliqueModel_Destroy(CliqueModel* cliqueModel){
