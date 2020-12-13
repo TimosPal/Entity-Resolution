@@ -2,7 +2,7 @@
 
 #include <errno.h>
 #include <stdlib.h>
-#include <stdio.h>
+#include <ctype.h>
 
 void StringReplaceChar(char* str, char old, char new){
     char *charPtr = strchr(str, old);
@@ -87,14 +87,85 @@ void RemoveFileExtension(char* str){
 char* StringToLower(char* str){
     int i = 0;
     while(str[i] != '\0'){
-        if (str[i] >= 'A' && str[i] <= 'Z'){
-            str[i] += 'a' - 'A';
-        }
-
+        str[i] = tolower(str[i]);
         i++;
     }
 
     return str;
+}
+
+void RemoveUnicode(char* str){
+    // Checks if str has a unicode substring , only returns the first found.
+
+    int index = 0;
+    int unicodesCounter = 0;
+    bool hasFoundSlash = false;
+    bool hasFoundU = false;
+    while(str[index] != '\0'){
+        if(!hasFoundSlash) { // Haven't found a slash yet
+            if (str[index] == '\\') {
+                hasFoundSlash = true;
+            }
+        }else{
+            if(!hasFoundU) { // Have found slash not U
+                if (str[index] == 'u') {
+                    hasFoundU = true;
+                }else{
+                    hasFoundSlash = false;
+                }
+            }else{ // Have found slash and u
+                if (isxdigit(str[index])) {
+                    unicodesCounter++;
+                    if (unicodesCounter == 4) {
+                        // Replace with spaces.
+                        for (int i = 0; i < 6; ++i) {
+                            str[index - i] = ' ';
+                        }
+
+                        hasFoundSlash = false;
+                        hasFoundU = false;
+                        unicodesCounter = 0;
+                    }
+                } else {
+                    hasFoundSlash = false;
+                    hasFoundU = false;
+                }
+            }
+        }
+
+        index++;
+    }
+}
+
+void RemoveNewLines(char* str){
+    int index = 0;
+    bool hasFoundSlash = false;
+    while(str[index] != '\0'){
+        if(!hasFoundSlash) { // Haven't found a slash yet
+            if (str[index] == '\\') {
+                hasFoundSlash = true;
+            }
+        }else{
+            if(str[index] == 'n'){
+                str[index] = ' ';
+                str[index-1] = ' ';
+                hasFoundSlash = false;
+            }
+        }
+
+        index++;
+    }
+}
+
+void RemovePunctuation(char* str){
+    int index = 0;
+    while(str[index] != '\0'){
+        if(ispunct(str[index])) {
+            str[index] = ' ';
+        }
+
+        index++;
+    }
 }
 
 List StringPreprocess(char* str, Hash stopwords){
@@ -105,10 +176,26 @@ List StringPreprocess(char* str, Hash stopwords){
     Node* temp = words.head;
     //preprocess the specific words
     while(temp != NULL){
-        //remove stopwords
         StringToLower((char*)temp->value);
-        //printf("%s\n", (char*)temp->value);
-        
+        RemoveUnicode(temp->value);
+        RemoveNewLines(temp->value);
+        RemovePunctuation(temp->value);
+
+        // If after the proccessig we found sub words , we add them in the list.
+        List newWords = StringSplit(temp->value, " ");
+        if(newWords.head == NULL){ // temp->value was an empty string.
+            Node* nextNode = temp->next;
+            free(temp->value);
+            List_RemoveNode(&words, temp);
+            temp = nextNode;
+            continue;
+        }
+
+        free(temp->value);
+        temp->value = newWords.head->value;
+        List_Remove(&newWords,0);
+        List_Join(&words,&newWords);
+
         //delete words that are in stopwords
         if (Hash_GetValue(stopwords, temp->value, strlen((char*)(temp->value))+1)){
             Node* nextNode = temp->next;

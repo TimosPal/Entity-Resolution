@@ -200,7 +200,8 @@ void List_Join(List* list1, List* list2){
 		*list1 = *list2;
 	}else{
 		list1->tail->next = list2->head;
-		list1->tail = list2->tail;
+		if(list2->tail != NULL)
+		    list1->tail = list2->tail;
 		list1->size += list2->size;
 	}
 		

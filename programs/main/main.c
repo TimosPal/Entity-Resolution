@@ -13,7 +13,6 @@
 #include "CliqueGroup.h"
 
 #include "Item.h"
-#include "TF-IDF.h"
 #include "Tuple.h"
 #include "CliqueModel.h"
 

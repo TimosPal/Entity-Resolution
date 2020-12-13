@@ -94,7 +94,7 @@ void LogisticRegression_Train(LogisticRegression* model, double learningRate, do
         //to false if it is smaller than terminationValue
         double dist = EuclideanDistance(newW, model->weights, model->width);
         //printf("Distance is %.15f\n", dist);
-        printf("DIFF IS %.15f\n", dist - terminationValue);
+        //printf("DIFF IS %.15f\n", dist - terminationValue);
         if(dist < terminationValue){
             shouldTrain = false;
         }
