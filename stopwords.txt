@@ -1,4 +1,12 @@
+-
+x
 i
+com
+mp
+ft
+ms
+via
+pixels
 me
 my
 myself
@@ -125,4 +133,10 @@ just
 don
 should
 now
-
+please
+visit
+local
+store
+see
+item
+stock

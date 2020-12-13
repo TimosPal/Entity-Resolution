@@ -106,9 +106,9 @@ Hash IDF_Calculate(List correlated, Hash proccesedWords, int dimensionLimit){
 
     //Sorting the array based on IDF values(descending)
     qsort(kvpArray, dictionary.keyValuePairs.size, sizeof(KeyValuePair*), IDF_Index_Cmp);
-    for (int j = 0; j < 100; ++j) {
-        printf("%s \n",kvpArray[j]->key);
-    }
+    // for (int j = 0; j < 100; ++j) {
+    //     printf("%s\n",kvpArray[j]->key);
+    // }
 
     //Now Trim
     Hash trimmedDictionary;

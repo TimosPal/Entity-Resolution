@@ -55,10 +55,10 @@ void List_Append(List* list, void* value) {
 	newNode->value = value;
 	newNode->next = NULL;
 
-	if (list->head == NULL) {
+	if(list->head == NULL){
         list->head = newNode;
         newNode->prev = NULL;
-    } else {
+    }else{
         list->tail->next = newNode;
         newNode->prev = list->tail;
     }
@@ -102,16 +102,16 @@ bool List_Remove(List* list, int index) {
 }
 
 bool List_RemoveNode(List* list, Node* node){
-    if(node->next == NULL){ // we remove the last node.
-        list->tail = node->prev;
-    }else{
-        node->next->prev = node->prev;
-    }
-
     if(node->prev == NULL){ // we remove the first node.
         list->head = node->next;
     }else{
         node->prev->next = node->next;
+    }
+
+    if(node->next == NULL){ // we remove the last node.
+        list->tail = node->prev;
+    }else{
+        node->next->prev = node->prev;
     }
 
     free(node);
@@ -196,12 +196,14 @@ void** List_ToArray(List list){
 }
 
 void List_Join(List* list1, List* list2){
-	if (list1->tail == NULL){
+	if (list1->size == 0){
 		*list1 = *list2;
 	}else{
 		list1->tail->next = list2->head;
-		if(list2->tail != NULL)
+		if(list2->size != 0){
+			list2->head->prev = list1->tail;
 		    list1->tail = list2->tail;
+		}
 		list1->size += list2->size;
 	}
 		

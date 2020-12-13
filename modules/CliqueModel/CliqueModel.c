@@ -44,7 +44,7 @@ void CliqueModel_CreateXY(List correlated, Clique clique, Hash dictionary, Hash 
 
 void CliqueModel_Init(CliqueModel* cliqueModel, List correlated, Clique clique, Hash itemProcessedWords){
     //Calculate IDF and insert it into the dictionary
-    cliqueModel->dictionary = IDF_Calculate(correlated, itemProcessedWords, 100);
+    cliqueModel->dictionary = IDF_Calculate(correlated, itemProcessedWords, 200);
 
     //Calculate tf_idf ( the X of the model )
     unsigned int width, height;

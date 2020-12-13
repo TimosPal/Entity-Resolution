@@ -39,11 +39,7 @@ List* Item_Preprocess(Item* item, Hash stopwords){
         Node* valNode = rightVals.head;
         while(valNode != NULL){
             List strings = StringPreprocess(valNode->value, stopwords);
-            if (strings.size != 0){
-                List_Join(words, &strings); //left join
-            }
-            List_FreeValues(strings, free);
-            List_Destroy(&strings);
+            List_Join(words, &strings); //left join
 
             valNode = valNode->next;
         }
@@ -51,5 +47,14 @@ List* Item_Preprocess(Item* item, Hash stopwords){
         valuePairNode = valuePairNode->next; 
     }
 
+    //printf("ITEM ID: %s\n", item->id);
+    // Node* temp = words->head;
+    // while(temp!=NULL){
+    //     printf("%s\n", temp->value);
+    //     temp = temp->next;
+    // }
+    // printf("\n");
+    // sleep(1);
+    
     return words;
 }

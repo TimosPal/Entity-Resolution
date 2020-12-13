@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 
 void StringReplaceChar(char* str, char old, char new){
     char *charPtr = strchr(str, old);
@@ -160,11 +161,89 @@ void RemoveNewLines(char* str){
 void RemovePunctuation(char* str){
     int index = 0;
     while(str[index] != '\0'){
-        if(ispunct(str[index])) {
+        if(ispunct(str[index]) && str[index] != '.' && str[index] != ',') {
             str[index] = ' ';
         }
 
         index++;
+    }
+}
+
+void RemoveComma(char* str){
+    int index = 0;
+    while(str[index] != '\0'){
+        if(str[index] == ',') {
+            str[index] = ' ';
+        }
+
+        index++;
+    }
+}
+
+void RemoveDot(char* str){
+    int index = 0;
+    while(str[index] != '\0'){
+        if(str[index] == '.') {
+            if (index - 1 >= 0 && !isdigit(str[index - 1])){
+                str[index] = ' ';
+            }
+        }
+
+        index++;
+    }
+}
+
+void RemoveBigNumber(char* str){
+    int index = 0;
+    while(str[index] != '\0'){
+        if(!isdigit(str[index])) {
+            return;
+        }
+
+        index++;
+    }
+
+    if (index > 5){
+        index = 0;
+        while(str[index] != '\0'){
+            str[index] = ' ';
+
+            index++;
+        }
+    }
+}
+
+void RemoveWhiteSpace(char* str){
+    int index = 0;
+    while(str[index] != '\0'){
+        if((isspace(str[index]))) {
+            str[index] = ' ';
+        }
+
+        index++;
+    }
+}
+
+void SplitAndPreprocess(List *words, void (func)(char*)){
+    
+    Node* wordNode = words->head;
+    while(wordNode != NULL){
+        func(wordNode->value);
+
+        List newWords = StringSplit(wordNode->value, " ");
+        if(newWords.size <= 1){
+            List_Destroy(&newWords);
+            wordNode = wordNode->next;
+            continue;
+        }
+
+        List_Join(words, &newWords);
+        
+        Node* tempnode = wordNode->next;
+        free(wordNode->value);
+        List_RemoveNode(words, wordNode);
+
+        wordNode = tempnode;
     }
 }
 
@@ -180,6 +259,9 @@ List StringPreprocess(char* str, Hash stopwords){
         RemoveUnicode(temp->value);
         RemoveNewLines(temp->value);
         RemovePunctuation(temp->value);
+        RemoveComma(temp->value);
+        RemoveDot(temp->value);
+        RemoveBigNumber(temp->value);
 
         // If after the proccessig we found sub words , we add them in the list.
         List newWords = StringSplit(temp->value, " ");
