@@ -161,18 +161,7 @@ void RemoveNewLines(char* str){
 void RemovePunctuation(char* str){
     int index = 0;
     while(str[index] != '\0'){
-        if(ispunct(str[index]) && str[index] != '.' && str[index] != ',') {
-            str[index] = ' ';
-        }
-
-        index++;
-    }
-}
-
-void RemoveComma(char* str){
-    int index = 0;
-    while(str[index] != '\0'){
-        if(str[index] == ',') {
+        if(ispunct(str[index]) && str[index] != '.') {
             str[index] = ' ';
         }
 
@@ -194,56 +183,43 @@ void RemoveDot(char* str){
 }
 
 void RemoveBigNumber(char* str){
+    /* Remove continues digits that are more than 5 */
     int index = 0;
-    while(str[index] != '\0'){
-        if(!isdigit(str[index])) {
-            return;
+    int digits = 0;
+    int counter = 0;
+    bool hasFinished;
+
+    do{
+        hasFinished = str[index] == '\0';
+
+        if(isdigit(str[index])){ // Increment digit and char counters.
+            digits++;
+            counter++;
+        }else if(str[index] == ' ' || hasFinished){ // If we found a space (word ended) or string ended.
+            if(digits == counter && digits > 5) { // If more than 5 digits and all are numbers.
+                for (int i = 0; i < counter; ++i) { // Remove big number.
+                    str[index - (i + 1)] = ' '; // Skip \0 or space
+                }
+            }
+
+            counter = 0;
+            digits = 0;
+        }else{
+            counter++;
         }
 
         index++;
-    }
-
-    if (index > 5){
-        index = 0;
-        while(str[index] != '\0'){
-            str[index] = ' ';
-
-            index++;
-        }
-    }
+    }while(!hasFinished);
 }
 
 void RemoveWhiteSpace(char* str){
     int index = 0;
     while(str[index] != '\0'){
-        if((isspace(str[index]))) {
+        if((isspace(str[index])) || !isprint(str[index]) || iscntrl(str[index])) {
             str[index] = ' ';
         }
 
         index++;
-    }
-}
-
-void SplitAndPreprocess(List *words, void (func)(char*)){
-    
-    Node* wordNode = words->head;
-    while(wordNode != NULL){
-        func(wordNode->value);
-
-        List newWords = StringSplit(wordNode->value, " ");
-        if(newWords.size <= 1){
-            List_Destroy(&newWords);
-            wordNode = wordNode->next;
-            continue;
-        }
-
-        List_Join(words, &newWords);
-        
-        Node* tempnode = wordNode->next;
-        free(wordNode->value);
-        List_RemoveNode(words, wordNode);
-
-        wordNode = tempnode;
     }
 }
 
@@ -255,11 +231,11 @@ List StringPreprocess(char* str, Hash stopwords){
     Node* temp = words.head;
     //preprocess the specific words
     while(temp != NULL){
-        StringToLower((char*)temp->value);
+        StringToLower(temp->value);
         RemoveUnicode(temp->value);
         RemoveNewLines(temp->value);
         RemovePunctuation(temp->value);
-        RemoveComma(temp->value);
+        RemoveWhiteSpace(temp->value);
         RemoveDot(temp->value);
         RemoveBigNumber(temp->value);
 
