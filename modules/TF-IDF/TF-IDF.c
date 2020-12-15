@@ -8,10 +8,10 @@
 #include "StringUtil.h"
 #include "Tuple.h"
 
-void InsertIcpWordsToDict(ItemCliquePair icp, Hash* dictionary, Hash processedWords){
-    /* For every item in the clique, inserts every one of its unique words to the dictionary,
-     * or increments the counter if it already exists
-     * This is a helper function for TF_IDF_Calculate */
+void UpdateUniqueWordsFromICP(ItemCliquePair icp, Hash* dictionary, Hash processedWords){
+    /* Increment a counter in the global dictionary (Or creates it if needed) for every unique
+     * word in the icp. Helps with finding how many times a word appears in the icps
+     * To be used in the global dictionary. */
 
     //Assisting Hash to not increment counters 2 times for the same words, prevents duplicating
     Hash currCliqueWordsInserted;
@@ -48,20 +48,23 @@ void InsertIcpWordsToDict(ItemCliquePair icp, Hash* dictionary, Hash processedWo
     Hash_Destroy(currCliqueWordsInserted);
 }
 
-Hash CreateDictionary(List correlated, Hash processedWords){
+Hash CreateDictionary(CliqueGroup group, Hash processedWords){
     /* Creates a dictionary of all the unique words for every item
-     * that is correlated to this clique. */
+     * Key : word , Value : in how many files the word appeared.
+     * If a word appears twice in an isp it will only be counted once. */
 
     Hash dictionary;
     Hash_Init(&dictionary,DEFAULT_HASH_SIZE,RSHash,StringCmp);
 
     //Insert unique words to dict for each icp correlated to the clique
-    Node* currIcpNode = correlated.head;
-    while(currIcpNode != NULL){
-        ItemCliquePair icp = *(ItemCliquePair*)currIcpNode->value;
-        InsertIcpWordsToDict(icp, &dictionary, processedWords);
+    Node* currCliqueNode = group.cliques.head;
+    while(currCliqueNode != NULL){
+        Clique* currClique = (Clique*)currCliqueNode->value;
+        Node* currIcpNode = currClique->similar.head;
 
-        currIcpNode = currIcpNode->next;
+        UpdateUniqueWordsFromICP(*(ItemCliquePair *) currIcpNode->value, &dictionary, processedWords);
+
+        currCliqueNode = currCliqueNode->next;
     }
 
     return dictionary;
@@ -83,13 +86,13 @@ int IDF_Index_Cmp(const void* value1, const void* value2){
     }
 }
 
-Hash IDF_Calculate(List correlated, Hash proccesedWords, int dimensionLimit){
-    // Calculated IDF value for current dictionary.
+Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLimit){
+    // Calculated IDF value. The dictionary should contain values that correspond to the number
+    // of times a word appeared uniquely in each item.
 
-    //Get the dictionary based on those icps
-    Hash dictionary = CreateDictionary(correlated, proccesedWords);
+    Hash dictionary = CreateDictionary(cliqueGroup, proccesedWords);
 
-    int numberOfItems = correlated.size;
+    int numberOfItems = CliqueGroup_NumberOfItems(cliqueGroup);
 
     Node* currWordCountNode  = dictionary.keyValuePairs.head;
     while(currWordCountNode != NULL){
@@ -106,9 +109,9 @@ Hash IDF_Calculate(List correlated, Hash proccesedWords, int dimensionLimit){
 
     //Sorting the array based on IDF values(descending)
     qsort(kvpArray, dictionary.keyValuePairs.size, sizeof(KeyValuePair*), IDF_Index_Cmp);
-     for (int j = 0; j < 100; ++j) {
-         printf("%s\n",kvpArray[j]->key);
-     }
+    for (int j = 0; j < 100; ++j) {
+        printf("%s\n",kvpArray[j]->key);
+    }
 
     //Now Trim
     Hash trimmedDictionary;
@@ -175,3 +178,45 @@ double* TF_IDF_Calculate(Hash dictionary, List processedWords){
     return vector;
 }
 
+/* Gets all tf_idf vectors for every icp correlated to the clique */
+void CreateXY(List pairs, Hash dictionary, Hash itemProcessedWords, double*** x, double** y){
+
+    //Set width and height
+    unsigned int width = (unsigned int)dictionary.keyValuePairs.size;
+    unsigned int height = (unsigned int)pairs.size;
+
+    //Malloc arrays for X and Y data
+    double **vectors = malloc(height * sizeof(double*));
+    double* results = malloc(height * sizeof(double));
+
+    int index = 0;
+    Node* currPairNode = pairs.head;
+    while (currPairNode != NULL){
+        Tuple* currTuple = currPairNode->value;
+        ItemCliquePair* icp1 = (ItemCliquePair*)currTuple->value1;
+        ItemCliquePair* icp2 = (ItemCliquePair*)currTuple->value2;
+
+        List* processedWords1 = Hash_GetValue(itemProcessedWords, &icp1->id, sizeof(icp1->id));
+        List* processedWords2 = Hash_GetValue(itemProcessedWords, &icp2->id, sizeof(icp2->id));
+
+        //X
+        double* vector1 = TF_IDF_Calculate(dictionary, *processedWords1); // this mallocs
+        double* vector2 = TF_IDF_Calculate(dictionary, *processedWords2);
+
+        // Concat vec1 - vec2
+        double* vectorFinal = malloc(2 * width);
+        memcpy(vectorFinal, vector1 , width * sizeof(double));
+        memcpy(vectorFinal + width, vector2 , width * sizeof(double));
+
+        vectors[index] = vectorFinal;
+
+        //Y
+        results[index] = (icp1->clique->id == icp2->clique->id) ?  1.0 :  0.0;
+
+        index++;
+        currPairNode = currPairNode->next;
+    }
+
+    *x = vectors;
+    *y = results;
+}

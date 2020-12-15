@@ -257,32 +257,16 @@ void CliqueGroup_Finalize(CliqueGroup cg){ //this should run after the CliqueGro
     }
 }
 
-List Clique_GetCorrelatedIcps(Clique clique){
-    List correlated;
-    List_Init(&correlated);
+int CliqueGroup_NumberOfItems(CliqueGroup group){
+    int count = 0;
 
-    Node* currIcpNode = clique.similar.head;
-    while(currIcpNode != NULL){
-        ItemCliquePair* icp = (ItemCliquePair*)currIcpNode->value;
-        List_Append(&correlated, icp);
+    Node* currCliqueNode = group.cliques.head;
+    while(currCliqueNode != NULL){
+        Clique* currClique = (Clique*)currCliqueNode->value;
+        count += currClique->similar.size;
 
-        currIcpNode = currIcpNode->next;
+        currCliqueNode = currCliqueNode->next;
     }
 
-    currIcpNode = clique.nonSimilar.head;
-    while(currIcpNode != NULL){
-        ItemCliquePair* icp = (ItemCliquePair*)currIcpNode->value;
-        Node* currIcp2Node = icp->clique->similar.head;
-        while(currIcp2Node != NULL){
-            ItemCliquePair* icp2 = (ItemCliquePair*)currIcp2Node->value;
-            List_Append(&correlated, icp2);
-
-            currIcp2Node = currIcp2Node->next;
-        }
-
-        currIcpNode = currIcpNode->next;
-    }
-
-    return correlated;
+    return count;
 }
-

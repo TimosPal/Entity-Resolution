@@ -4,8 +4,9 @@
 #include "Hash.h"
 #include "CliqueGroup.h"
 
-Hash IDF_Calculate(List correlated, Hash proccesedWords, int dimensionLimit);
-
+Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLimit);
 double* TF_IDF_Calculate(Hash dictionary, List processedWords);
+
+void CreateXY(List pairs, Hash dictionary, Hash itemProcessedWords, double*** x, double** y);
 
 #endif

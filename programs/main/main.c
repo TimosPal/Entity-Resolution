@@ -14,7 +14,9 @@
 
 #include "Item.h"
 #include "Tuple.h"
-#include "CliqueModel.h"
+
+#include "TF-IDF.h"
+#include "LogisticRegression.h"
 
 /* It is assumed that the json and csv files have proper formatting and appropriate values ,
  * so no extra error checking is done. */
@@ -174,7 +176,7 @@ void WordList_Free(void* val){
     free(val);
 }
 
-/* Creates all processed items at once because they will 
+/* Creates all processed items at once because they will
  *be needed many times when creating the models*/
 Hash CreateProcessedItems(CliqueGroup cg){
     Hash itemProcessedWords;
@@ -206,41 +208,6 @@ Hash CreateProcessedItems(CliqueGroup cg){
     return itemProcessedWords;
 }
 
-/* Creates models for all the cliques in the cliqueGroup */
-CliqueModel* CreateModels(CliqueGroup cliqueGroup, Hash itemProcessedWords){
-    CliqueModel* cliqueModels = malloc(cliqueGroup.cliques.size * sizeof(CliqueModel));
-
-    Node* currCliqueNode = cliqueGroup.cliques.head;
-    int index = 0;
-    while(currCliqueNode != NULL){
-        Clique* clique = (Clique*)currCliqueNode->value;
-
-        //Get all correlated icps to the clique
-        List correlated = Clique_GetCorrelatedIcps(*clique);
-
-        if (correlated.size > 1){
-            //Initialize and train the model
-            CliqueModel_Init(&cliqueModels[index], correlated, *clique, itemProcessedWords); //You can error check here with the return value
-        }
-
-        //Cleanup
-        List_Destroy(&correlated);
-
-        index++;
-        currCliqueNode = currCliqueNode->next;
-    }
-
-    return cliqueModels;
-}
-
-void DestroyModels(CliqueModel* cliqueModels, int size){
-    for (int i = 0; i < size; i++){
-        CliqueModel_Destroy(&cliqueModels[i]);
-    }
-
-    free(cliqueModels);
-}
-
 int main(int argc, char* argv[]){
     /* --- Arguments --------------------------------------------------------------------------*/
 
@@ -261,22 +228,35 @@ int main(int argc, char* argv[]){
     /* --- Print results ----------------------------------------------------------------------*/
 
     //CliqueGroup_PrintIdentical(&cliqueGroup, Item_Print);
+    List pairs; // TODO
 
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    CliqueModel* models = CreateModels(cliqueGroup, itemProcessedWords);
+    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 1000);
 
-    printf("ALL GOOD\n");
+    double* yValues;
+    double** xValues;
+
+    CreateXY(pairs , idfDictionary, itemProcessedWords, &xValues, &yValues);
+    int width = 2 * idfDictionary.keyValuePairs.size;
+    int height = pairs.size;
+
+    LogisticRegression model;
+    LogisticRegression_Init(&model, 0, , , width, height);
+
     /* --- Clean up ---------------------------------------------------------------------------*/
 
-    DestroyModels(models, cliqueGroup.cliques.size);
+    Hash_FreeValues(idfDictionary, Tuple_Free);
+    Hash_Destroy(idfDictionary);
 
     Hash_FreeValues(itemProcessedWords, WordList_Free);
     Hash_Destroy(itemProcessedWords);
     
     CliqueGroup_FreeValues(cliqueGroup, Item_Free);
     CliqueGroup_Destroy(cliqueGroup);
+
+    printf("ALL GOOD\n");
 
     return 0;
 }

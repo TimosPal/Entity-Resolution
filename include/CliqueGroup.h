@@ -45,6 +45,6 @@ void ItemCliquePair_Free(void* value);
 Clique* Clique_New();
 void Clique_Free(void* value);
 
-List Clique_GetCorrelatedIcps(Clique clique);
+int CliqueGroup_NumberOfItems(CliqueGroup group);
 
 #endif

@@ -13,7 +13,6 @@ ER.a_OBJS =						\
 	$(MODULES)/TF-IDF/TF-IDF.o \
 	$(MODULES)/Tuple/Tuple.o \
 	$(MODULES)/LogisticRegression/LogisticRegression.o \
-	$(MODULES)/CliqueModel/CliqueModel.o
 
 # Ο βασικός κορμός του Makefile
 include ../common.mk
