@@ -86,23 +86,7 @@ int IDF_Index_Cmp(const void* value1, const void* value2){
     }
 }
 
-Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLimit){
-    // Calculated IDF value. The dictionary should contain values that correspond to the number
-    // of times a word appeared uniquely in each item.
-
-    Hash dictionary = CreateDictionary(cliqueGroup, proccesedWords);
-
-    int numberOfItems = CliqueGroup_NumberOfItems(cliqueGroup);
-
-    Node* currWordCountNode  = dictionary.keyValuePairs.head;
-    while(currWordCountNode != NULL){
-        double* val = ((KeyValuePair*)currWordCountNode->value)->value;
-        *val = log(numberOfItems / *val);
-
-        currWordCountNode = currWordCountNode->next;
-    }
-
-    // Remove small frequencies for smaller dimensionality.
+Hash TF_Trim(Hash dictionary, int dimensionLimit){
 
     // Convert List to Array
     KeyValuePair** kvpArray = (KeyValuePair**)List_ToArray(dictionary.keyValuePairs);
@@ -137,6 +121,26 @@ Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLi
     Hash_Destroy(dictionary);
 
     return trimmedDictionary;
+}
+
+Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLimit){
+    // Calculated IDF value. The dictionary should contain values that correspond to the number
+    // of times a word appeared uniquely in each item.
+
+    Hash dictionary = CreateDictionary(cliqueGroup, proccesedWords);
+
+    int numberOfItems = CliqueGroup_NumberOfItems(cliqueGroup);
+
+    Node* currWordCountNode  = dictionary.keyValuePairs.head;
+    while(currWordCountNode != NULL){
+        double* val = ((KeyValuePair*)currWordCountNode->value)->value;
+        *val = log(numberOfItems / *val);
+
+        currWordCountNode = currWordCountNode->next;
+    }
+
+    // Remove small frequencies for smaller dimensionality.
+    return TF_Trim(dictionary, dimensionLimit);
 }
 
 double* TF_IDF_Calculate(Hash dictionary, List processedWords){
