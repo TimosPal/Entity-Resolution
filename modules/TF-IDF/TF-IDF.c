@@ -193,8 +193,8 @@ void CreateXY(List pairs, Hash dictionary, Hash itemProcessedWords, double*** x,
     Node* currPairNode = pairs.head;
     while (currPairNode != NULL){
         Tuple* currTuple = currPairNode->value;
-        ItemCliquePair* icp1 = (ItemCliquePair*)currTuple->value1;
-        ItemCliquePair* icp2 = (ItemCliquePair*)currTuple->value2;
+        ItemCliquePair* icp1 = *(ItemCliquePair**)currTuple->value1;
+        ItemCliquePair* icp2 = *(ItemCliquePair**)currTuple->value2;
 
         List* processedWords1 = Hash_GetValue(itemProcessedWords, &icp1->id, sizeof(icp1->id));
         List* processedWords2 = Hash_GetValue(itemProcessedWords, &icp2->id, sizeof(icp2->id));
@@ -204,7 +204,7 @@ void CreateXY(List pairs, Hash dictionary, Hash itemProcessedWords, double*** x,
         double* vector2 = TF_IDF_Calculate(dictionary, *processedWords2);
 
         // Concat vec1 - vec2
-        double* vectorFinal = malloc(2 * width);
+        double* vectorFinal = malloc(2 * width * sizeof(double));
         memcpy(vectorFinal, vector1 , width * sizeof(double));
         memcpy(vectorFinal + width, vector2 , width * sizeof(double));
 

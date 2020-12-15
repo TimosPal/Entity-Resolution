@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "Tuple.h"
+
 ItemCliquePair* ItemCliquePair_New(void* item){
     static unsigned int id = 0;
 
@@ -157,15 +159,35 @@ bool CliqueGroup_Update_NonSimilar(CliqueGroup* cg, void* key1, int keySize1, vo
     return true;
 }
 
-void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
+void CliqueGroup_PrintIdentical(List pairs, void (*Print)(void* value)){
+    Node* currPairNode = pairs.head;
+    while(currPairNode != NULL){
+        Tuple* tuple = currPairNode->value;
+
+        ItemCliquePair **icpA = tuple->value1;
+        ItemCliquePair **icpB = tuple->value2;
+
+        Print((*icpA)->item);
+        printf(" ");
+        Print((*icpB)->item);
+        printf("\n");
+
+        currPairNode = currPairNode->next;
+    }
+}
+
+List CliqueGroup_GetIdenticalPairs(CliqueGroup* cg){
+    List pairs;
+    List_Init(&pairs);
+
     Node* currCliqueNode = cg->cliques.head;
     while (currCliqueNode != NULL){
-        // Printing each clique.
+        // getting each clique.
         Clique* currClique = (Clique*)(currCliqueNode->value);
         List currCliqueList = currClique->similar;
-        if (currCliqueList.size > 1){ // Only printing cliques that contain 2+ items.
+        if (currCliqueList.size > 1){ // Only getting cliques that contain 2+ items.
 
-            // Print each similar pair.
+            // getting each similar pair.
             Node* currItemA = currCliqueList.head;
             while (currItemA != NULL){
                 Node* currItemB = currItemA->next;
@@ -173,10 +195,9 @@ void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
                     ItemCliquePair *icpA = (ItemCliquePair *) (currItemA->value);
                     ItemCliquePair *icpB = (ItemCliquePair *) (currItemB->value);
 
-                    Print(icpA->item);
-                    printf(" ");
-                    Print(icpB->item);
-                    printf("\n");
+                    Tuple* tuple = malloc(sizeof(Tuple));
+                    Tuple_Init(tuple, &icpA, sizeof(icpA) , &icpB, sizeof(icpB));
+                    List_Append(&pairs, tuple);
 
                     currItemB = currItemB->next;
                 }
@@ -186,6 +207,8 @@ void CliqueGroup_PrintIdentical(CliqueGroup* cg, void (*Print)(void* value)){
         }
         currCliqueNode = currCliqueNode->next;
     }
+
+    return pairs;
 }
 
 void CliqueGroup_MergeCliques(Clique* newClique, Clique clique1, Clique clique2, Node* cliqueParentNode){
@@ -215,7 +238,6 @@ void CliqueGroup_MergeCliques(Clique* newClique, Clique clique1, Clique clique2,
 	}
 
 	newClique->nonSimilar = List_Merge(clique1.nonSimilar, clique2.nonSimilar);
-
 }
 
 bool pointercmp(void* value1, void* value2){

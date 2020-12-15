@@ -227,23 +227,30 @@ int main(int argc, char* argv[]){
 
     /* --- Print results ----------------------------------------------------------------------*/
 
-    //CliqueGroup_PrintIdentical(&cliqueGroup, Item_Print);
-    List pairs; // TODO
+    List pairs = CliqueGroup_GetIdenticalPairs(&cliqueGroup);
+    //CliqueGroup_PrintIdentical(pairs, Item_Print);
 
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 1000);
+    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 100);
 
-    double* yValues;
     double** xValues;
+    double* yValues;
 
     CreateXY(pairs , idfDictionary, itemProcessedWords, &xValues, &yValues);
     int width = 2 * idfDictionary.keyValuePairs.size;
     int height = pairs.size;
 
     LogisticRegression model;
-    LogisticRegression_Init(&model, 0, , , width, height);
+    LogisticRegression_Init(&model, 0, xValues, yValues, width, height);
+    printf("-----------\n");
+    LogisticRegression_Train(&model, 1, 0.1);
+
+    for (int i = 0; i < height; ++i) {
+        double accuracy = LogisticRegression_Predict(&model, xValues[i]);
+        //printf("Accuracy : %f Real value : %f\n", accuracy, yValues[i]);
+    }
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 
