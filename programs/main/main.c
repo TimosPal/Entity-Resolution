@@ -208,6 +208,53 @@ Hash CreateProcessedItems(CliqueGroup cg){
     return itemProcessedWords;
 }
 
+void CreateXY(List pairs, Hash idfDictionary, Hash itemProcessedWords, double*** X, double** Y){
+    List val1s;
+    List val2s;
+    Tuple_TuplesToLists(pairs, &val1s, &val2s);
+
+    Hash* x1 = CreateX(val1s, idfDictionary, itemProcessedWords);
+    Hash* x2 = CreateX(val2s, idfDictionary, itemProcessedWords);
+
+    List_Destroy(&val1s);
+    List_Destroy(&val2s);
+
+    double** xVals = malloc(pairs.size * sizeof(double*));
+    int arrSize = idfDictionary.keyValuePairs.size;
+    for (int i = 0; i < pairs.size; ++i) {
+        printf("- - creating vectors - -\n");
+
+        // TFI-DFS are in hash form to simulate sparsed matrix.
+        // We make them into arrays for faster access in training.
+        double* x1Arr = TF_IDF_ToArray(x1[i], idfDictionary);
+        double* x2Arr = TF_IDF_ToArray(x2[i], idfDictionary);
+
+        Hash_FreeValues(x1[i], free);
+        Hash_Destroy(x1[i]);
+        Hash_FreeValues(x2[i], free);
+        Hash_Destroy(x2[i]);
+
+        // Concat 2 tf-idfs int one for pair wise training.
+        int arrSizeInBytes = arrSize * sizeof(double);
+        double* xValsConcat = malloc(2 * arrSizeInBytes);
+        memcpy(xValsConcat, x1Arr, arrSizeInBytes);
+        memcpy(xValsConcat + arrSize, x2Arr, arrSizeInBytes);
+
+        free(x1Arr);
+        free(x2Arr);
+
+        xVals[i] = xValsConcat;
+    }
+
+    free(x1);
+    free(x2);
+
+    double* yVals = CreateY(pairs);
+
+    *Y = yVals;
+    *X = xVals;
+}
+
 int main(int argc, char* argv[]){
     /* --- Arguments --------------------------------------------------------------------------*/
 
@@ -233,42 +280,15 @@ int main(int argc, char* argv[]){
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 400);
+    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 1000);
 
-    List val1s;
-    List val2s;
-    Tuple_TuplesToLists(pairs, &val1s, &val2s);
-
-    Hash* x1 = CreateX(val1s, idfDictionary, itemProcessedWords);
-    Hash* x2 = CreateX(val2s, idfDictionary, itemProcessedWords);
-
-    double** xVals = malloc(pairs.size * sizeof(double*));
-    int arrSize = idfDictionary.keyValuePairs.size;
-    for (int i = 0; i < pairs.size; ++i) {
-        double* x1Arr = TF_IDF_ToArray(x1[i], idfDictionary);
-        double* x2Arr = TF_IDF_ToArray(x2[i], idfDictionary);
-
-        int arrSizeInBytes = arrSize * sizeof(double);
-        double* xValsConcat = malloc(2 * arrSizeInBytes);
-        memcpy(xValsConcat, x1Arr, arrSizeInBytes);
-        memcpy(xValsConcat + arrSize, x2Arr, arrSizeInBytes);
-
-        xVals[i] = xValsConcat;
-    }
-
-    double* yVals = CreateY(pairs);
-
-    int width = 2 * arrSize;
+    double** xVals;
+    double* yVals;
+    int width = 2 * idfDictionary.keyValuePairs.size;
     int height = pairs.size;
-//
-//    for (int j = 0; j < height; ++j) {
-//        for (int i = 0; i < width; ++i) {
-//            if(xVals[j][i] > 1)
-//                printf("-- %f --\n", xVals[j][i]);
-//        }
-//    }
-//    printf("sdjklsjds\n");
-//    sleep(10);
+    CreateXY(pairs, idfDictionary, itemProcessedWords, &xVals, &yVals);
+
+    printf("- - - -\n");
 
     LogisticRegression model;
     LogisticRegression_Init(&model, 0, xVals, yVals, width, height);
@@ -288,7 +308,6 @@ int main(int argc, char* argv[]){
     }
 
     printf("%d / %d\n- - - -\n", counter2 , height);
-    sleep(3);
 
     for (int i = 0; i < height; ++i) {
         double accuracy = LogisticRegression_Predict(&model, xVals[i]);
@@ -296,6 +315,11 @@ int main(int argc, char* argv[]){
     }
 
     /* --- Clean up ---------------------------------------------------------------------------*/
+
+    List_FreeValues(pairs, Tuple_Free);
+    List_Destroy(&pairs);
+
+    LogisticRegression_Destroy(model);
 
     Hash_FreeValues(idfDictionary, free);
     Hash_Destroy(idfDictionary);

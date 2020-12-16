@@ -87,6 +87,7 @@ int IDF_Index_Cmp(const void* value1, const void* value2){
 }
 
 Hash TF_Trim(Hash dictionary, Hash averageTFIDF, int dimensionLimit){
+    // Trims dictionary
 
     // Convert List to Array
     KeyValuePair** kvpArray = (KeyValuePair**)List_ToArray(averageTFIDF.keyValuePairs);
@@ -115,8 +116,6 @@ Hash TF_Trim(Hash dictionary, Hash averageTFIDF, int dimensionLimit){
     }
 
     free(kvpArray);
-    Hash_FreeValues(dictionary, free);
-    Hash_Destroy(dictionary);
 
     return trimmedDictionary;
 }
@@ -163,9 +162,25 @@ Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLi
 
             currTFIDFNode = currTFIDFNode->next;
         }
+
+        Hash_FreeValues(xVals[i], free);
+        Hash_Destroy(xVals[i]);
     }
 
-    return TF_Trim(dictionary, newAverageDictionary, dimensionLimit);
+    Hash newDictionary = TF_Trim(dictionary, newAverageDictionary, dimensionLimit);
+
+    free(xVals);
+    List_Destroy(&items);
+
+    // Clean up old dictionary.
+    Hash_FreeValues(dictionary, free);
+    Hash_Destroy(dictionary);
+
+    // Clean up average values.
+    Hash_FreeValues(newAverageDictionary, free);
+    Hash_Destroy(newAverageDictionary);
+
+    return newDictionary;
 }
 
 Hash TF_IDF_Calculate(Hash dictionary, List processedWords){

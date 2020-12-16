@@ -32,7 +32,8 @@ double PartialDerivative(double* weights, double bWeight, double** xVals, double
     double result = 0;
 
     for (int i = 0; i < height; ++i) {
-        result += (SigmoidFunction(LinearFunction(weights,bWeight,xVals[i],width)) - yVals[i]) * xVals[i][derivativeIndex];
+        if(xVals[i][derivativeIndex] > 0)
+            result += (SigmoidFunction(LinearFunction(weights,bWeight,xVals[i],width)) - yVals[i]) * xVals[i][derivativeIndex];
     }
 
     return result;
@@ -43,6 +44,7 @@ double* GradientVector(double* weights, double bWeight, double** xVals, double* 
 
     for (int i = 0; i < width; i++) {
         vector[i] = PartialDerivative(weights, bWeight, xVals, yVals, height, width, i);
+        printf("Partial derivative (%d) : %.14f\n",i,vector[i]);
     }
 
     return vector;
@@ -96,7 +98,7 @@ void LogisticRegression_Train(LogisticRegression* model, double learningRate, do
         double dist = EuclideanDistance(newW, model->weights, model->width);
         //printf("Distance is %.15f\n", dist);
         printf("DIFF IS %.15f\n", dist - terminationValue);
-        sleep(10);
+
         if(dist < terminationValue){
             shouldTrain = false;
         }
