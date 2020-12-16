@@ -233,25 +233,52 @@ int main(int argc, char* argv[]){
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 1000);
+    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 400);
 
-    double** xValues;
-    double* yValues;
+    List val1s;
+    List val2s;
+    Tuple_TuplesToLists(pairs, &val1s, &val2s);
 
-    CreateXY(pairs , idfDictionary, itemProcessedWords, &xValues, &yValues);
-    int width = 2 * idfDictionary.keyValuePairs.size;
+    Hash* x1 = CreateX(val1s, idfDictionary, itemProcessedWords);
+    Hash* x2 = CreateX(val2s, idfDictionary, itemProcessedWords);
+
+    double** xVals = malloc(pairs.size * sizeof(double*));
+    int arrSize = idfDictionary.keyValuePairs.size;
+    for (int i = 0; i < pairs.size; ++i) {
+        double* x1Arr = TF_IDF_ToArray(x1[i], idfDictionary);
+        double* x2Arr = TF_IDF_ToArray(x2[i], idfDictionary);
+
+        int arrSizeInBytes = arrSize * sizeof(double);
+        double* xValsConcat = malloc(2 * arrSizeInBytes);
+        memcpy(xValsConcat, x1Arr, arrSizeInBytes);
+        memcpy(xValsConcat + arrSize, x2Arr, arrSizeInBytes);
+
+        xVals[i] = xValsConcat;
+    }
+
+    double* yVals = CreateY(pairs);
+
+    int width = 2 * arrSize;
     int height = pairs.size;
+//
+//    for (int j = 0; j < height; ++j) {
+//        for (int i = 0; i < width; ++i) {
+//            if(xVals[j][i] > 1)
+//                printf("-- %f --\n", xVals[j][i]);
+//        }
+//    }
+//    printf("sdjklsjds\n");
+//    sleep(10);
 
     LogisticRegression model;
-    LogisticRegression_Init(&model, 0, xValues, yValues, width, height);
-    printf("- - - - - - - - - - -\n");
-    //LogisticRegression_Train(&model, 1, 0.1);
+    LogisticRegression_Init(&model, 0, xVals, yVals, width, height);
+    LogisticRegression_Train(&model, 0.1, 1);
 
     int counter2 = 0;
     for (int i = 0; i < height; ++i) {
         int counter = 0;
         for (int j = 0; j < width; ++j) {
-            if(xValues[i][j] != 0){
+            if(xVals[i][j] != 0){
                 counter++;
             }
         }
@@ -260,18 +287,17 @@ int main(int argc, char* argv[]){
             counter2++;
     }
 
-    printf("%d / %d\n", counter2 , height);
+    printf("%d / %d\n- - - -\n", counter2 , height);
+    sleep(3);
 
-    /*
     for (int i = 0; i < height; ++i) {
-        double accuracy = LogisticRegression_Predict(&model, xValues[i]);
-        //printf("Accuracy : %f Real value : %f\n", accuracy, yValues[i]);
+        double accuracy = LogisticRegression_Predict(&model, xVals[i]);
+        printf("Accuracy : %f Real value : %f\n", accuracy, yVals[i]);
     }
-     */
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 
-    Hash_FreeValues(idfDictionary, Tuple_Free);
+    Hash_FreeValues(idfDictionary, free);
     Hash_Destroy(idfDictionary);
 
     Hash_FreeValues(itemProcessedWords, WordList_Free);

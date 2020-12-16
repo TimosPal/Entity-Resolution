@@ -86,34 +86,32 @@ int IDF_Index_Cmp(const void* value1, const void* value2){
     }
 }
 
-Hash TF_Trim(Hash dictionary, int dimensionLimit){
+Hash TF_Trim(Hash dictionary, Hash averageTFIDF, int dimensionLimit){
 
     // Convert List to Array
-    KeyValuePair** kvpArray = (KeyValuePair**)List_ToArray(dictionary.keyValuePairs);
+    KeyValuePair** kvpArray = (KeyValuePair**)List_ToArray(averageTFIDF.keyValuePairs);
 
     //Sorting the array based on IDF values(descending)
-    qsort(kvpArray, dictionary.keyValuePairs.size, sizeof(KeyValuePair*), IDF_Index_Cmp);
+    qsort(kvpArray, averageTFIDF.keyValuePairs.size, sizeof(KeyValuePair*), IDF_Index_Cmp);
     for (int j = 0; j < 100; ++j) {
-        printf("%s\n",kvpArray[j]->key);
+        //printf("%s\n",kvpArray[j]->key); TODO:
     }
 
     //Now Trim
     Hash trimmedDictionary;
     Hash_Init(&trimmedDictionary, DEFAULT_HASH_SIZE, RSHash, StringCmp);
 
-    if (dimensionLimit >= dictionary.keyValuePairs.size || dimensionLimit == -1){
-        dimensionLimit = dictionary.keyValuePairs.size;
+    if (dimensionLimit >= averageTFIDF.keyValuePairs.size || dimensionLimit == -1){
+        dimensionLimit = averageTFIDF.keyValuePairs.size;
     }
 
     for (int i = 0; i < dimensionLimit; i++){
-        Tuple* double_index_tuple = malloc(sizeof(Tuple));
-
-        //Malloc and set values for tuple ( <double, int> )
-        Tuple_Init(double_index_tuple, kvpArray[i]->value, sizeof(double), &i, sizeof(i));
-
-        // add tuple to new dictionary
         int keySize = strlen(kvpArray[i]->key) + 1;
-        Hash_Add(&trimmedDictionary, kvpArray[i]->key, keySize, double_index_tuple);
+        double* oldIDF = Hash_GetValue(dictionary, kvpArray[i]->key, keySize);
+
+        double* newIDFValue = malloc(sizeof(double));
+        *newIDFValue = *(double*)oldIDF;
+        Hash_Add(&trimmedDictionary, kvpArray[i]->key, keySize, newIDFValue);
     }
 
     free(kvpArray);
@@ -123,58 +121,91 @@ Hash TF_Trim(Hash dictionary, int dimensionLimit){
     return trimmedDictionary;
 }
 
-Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLimit){
+Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLimit) {
     // Calculated IDF value. The dictionary should contain values that correspond to the number
     // of times a word appeared uniquely in each item.
 
     Hash dictionary = CreateDictionary(cliqueGroup, proccesedWords);
 
-    int numberOfItems = CliqueGroup_NumberOfItems(cliqueGroup);
+    List items = CliqueGroup_GetAllItems(cliqueGroup);
 
     Node* currWordCountNode  = dictionary.keyValuePairs.head;
     while(currWordCountNode != NULL){
         double* val = ((KeyValuePair*)currWordCountNode->value)->value;
-        *val = log(numberOfItems / *val);
+        *val = log(items.size / *val);
 
         currWordCountNode = currWordCountNode->next;
     }
 
     // Remove small frequencies for smaller dimensionality.
-    return TF_Trim(dictionary, dimensionLimit);
+    Hash newAverageDictionary;
+    Hash_Init(&newAverageDictionary, DEFAULT_HASH_SIZE, RSHash, StringCmp);
+
+    Hash* xVals = CreateX(items, dictionary, proccesedWords);
+    for (int i = 0; i < items.size; ++i) {
+        Hash* currVector = &xVals[i];
+        Node* currTFIDFNode = currVector->keyValuePairs.head;
+
+        while(currTFIDFNode != NULL){
+            KeyValuePair* kvp = currTFIDFNode->value;
+            char* word = kvp->key;
+            double currVectorTFIDF = *(double*)kvp->value;
+            int keySize = strlen(word) + 1;
+
+            double* averageTFIDF = Hash_GetValue(newAverageDictionary, word, keySize);
+            if(averageTFIDF){
+                *averageTFIDF += currVectorTFIDF;
+            }else{
+                double* newTFIDF = malloc(sizeof(double));
+                *newTFIDF = currVectorTFIDF;
+                Hash_Add(&newAverageDictionary, word, keySize, newTFIDF);
+            }
+
+            currTFIDFNode = currTFIDFNode->next;
+        }
+    }
+
+    return TF_Trim(dictionary, newAverageDictionary, dimensionLimit);
 }
 
-double* TF_IDF_Calculate(Hash dictionary, List processedWords){
+Hash TF_IDF_Calculate(Hash dictionary, List processedWords){
     /* Calculates a tfidf vector for said Word list based on
      * the given dictionary */
-    int vectorSize = dictionary.keyValuePairs.size;
 
-    double* vector = calloc(vectorSize, sizeof(double));
+    Hash vector;
+    Hash_Init(&vector, DEFAULT_HASH_SIZE, RSHash, StringCmp);
 
     //Calculating BoW
     //Dictionary Hash has the indexes as values that are used in the vector
     Node* currWordNode = processedWords.head;
     while(currWordNode != NULL){
         int keySize = strlen(currWordNode->value)+1;
-        Tuple* double_index_tuple = (Tuple*) Hash_GetValue(dictionary, currWordNode->value, keySize);
+        double* idfValue = Hash_GetValue(dictionary, currWordNode->value, keySize);
+
         //if word is in dictionary
-        if (double_index_tuple){
-            int index = *(int*)double_index_tuple->value2;
-            vector[index]++;
+        if (idfValue){
+            double* oldBowValue = Hash_GetValue(vector, idfValue, sizeof(double));
+            if(oldBowValue){
+                *oldBowValue = *oldBowValue + 1;
+            }else{
+                double* newBowValue = malloc(sizeof(double));
+                *newBowValue = 1;
+                Hash_Add(&vector, currWordNode->value, keySize, newBowValue);
+            }
         }
 
         currWordNode = currWordNode->next;
     }
 
     //Calculate TF-IDF for every number in vector
-    Node* currKVPNode = dictionary.keyValuePairs.head;
+    Node* currKVPNode = vector.keyValuePairs.head;
     while(currKVPNode != NULL){
         KeyValuePair* kvp = currKVPNode->value;
-        Tuple* double_index_tuple = (Tuple*)kvp->value;
 
-        int index = *(int*)double_index_tuple->value2;
-
-        vector[index] /= processedWords.size;
-        vector[index] *= *(double*)double_index_tuple->value1;
+        char* word = kvp->key;
+        double* bow = kvp->value;
+        double* idf = Hash_GetValue(dictionary, word, strlen(word) + 1);
+        *bow = *idf * (*bow / processedWords.size);
 
         currKVPNode = currKVPNode->next;
     }
@@ -182,37 +213,38 @@ double* TF_IDF_Calculate(Hash dictionary, List processedWords){
     return vector;
 }
 
-/* Gets all tf_idf vectors for every icp correlated to the clique */
-void CreateXY(List pairs, Hash dictionary, Hash itemProcessedWords, double*** x, double** y){
-
-    //Set width and height
-    unsigned int width = (unsigned int)dictionary.keyValuePairs.size;
-    unsigned int height = (unsigned int)pairs.size;
+Hash* CreateX(List xVals, Hash dictionary, Hash itemProcessedWords){
+    unsigned int height = (unsigned int)xVals.size;
 
     //Malloc arrays for X and Y data
-    double **vectors = malloc(height * sizeof(double*));
+    Hash* vectors = malloc(height * sizeof(Hash));
+
+    int index = 0;
+    Node* currItemNode = xVals.head;
+    while (currItemNode != NULL){
+        ItemCliquePair* icp = currItemNode->value;
+        List* processedWords = Hash_GetValue(itemProcessedWords, &icp->id, sizeof(icp->id));
+
+        //X
+        vectors[index] = TF_IDF_Calculate(dictionary, *processedWords);
+
+        index++;
+        currItemNode = currItemNode->next;
+    }
+
+    return vectors;
+}
+
+double* CreateY(List pairs){
+    unsigned int height = (unsigned int)pairs.size;
     double* results = malloc(height * sizeof(double));
 
     int index = 0;
     Node* currPairNode = pairs.head;
     while (currPairNode != NULL){
         Tuple* currTuple = currPairNode->value;
-        ItemCliquePair* icp1 = *(ItemCliquePair**)currTuple->value1;
-        ItemCliquePair* icp2 = *(ItemCliquePair**)currTuple->value2;
-
-        List* processedWords1 = Hash_GetValue(itemProcessedWords, &icp1->id, sizeof(icp1->id));
-        List* processedWords2 = Hash_GetValue(itemProcessedWords, &icp2->id, sizeof(icp2->id));
-
-        //X
-        double* vector1 = TF_IDF_Calculate(dictionary, *processedWords1); // this mallocs
-        double* vector2 = TF_IDF_Calculate(dictionary, *processedWords2);
-
-        // Concat vec1 - vec2
-        double* vectorFinal = malloc(2 * width * sizeof(double));
-        memcpy(vectorFinal, vector1 , width * sizeof(double));
-        memcpy(vectorFinal + width, vector2 , width * sizeof(double));
-
-        vectors[index] = vectorFinal;
+        ItemCliquePair* icp1 = currTuple->value1;
+        ItemCliquePair* icp2 = currTuple->value2;
 
         //Y
         results[index] = (icp1->clique->id == icp2->clique->id) ?  1.0 :  0.0;
@@ -221,6 +253,28 @@ void CreateXY(List pairs, Hash dictionary, Hash itemProcessedWords, double*** x,
         currPairNode = currPairNode->next;
     }
 
-    *x = vectors;
-    *y = results;
+    return results;
+}
+
+double* TF_IDF_ToArray(Hash hash, Hash dictionary){
+    // Allocates values.
+    double* array = malloc(dictionary.keyValuePairs.size * sizeof(double));
+    int iter = 0;
+
+    Node* currNode = dictionary.keyValuePairs.head;
+    while(currNode != NULL){
+        KeyValuePair* kvp = currNode->value;
+
+        double* tfidf = Hash_GetValue(hash, kvp->key , strlen(kvp->key) + 1);
+        if(tfidf){
+            array[iter] = *(double*)kvp->value;
+        }else{
+            array[iter] = 0.0;
+        }
+
+        currNode = currNode->next;
+        iter++;
+    }
+
+    return array;
 }

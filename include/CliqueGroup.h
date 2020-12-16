@@ -45,7 +45,7 @@ void ItemCliquePair_Free(void* value);
 Clique* Clique_New();
 void Clique_Free(void* value);
 
-int CliqueGroup_NumberOfItems(CliqueGroup group);
+List CliqueGroup_GetAllItems(CliqueGroup group);
 List CliqueGroup_GetIdenticalPairs(CliqueGroup* cg);
 
 #endif

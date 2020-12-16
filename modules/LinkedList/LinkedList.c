@@ -181,14 +181,14 @@ List List_Merge(List list1, List list2){
 }
 
 void** List_ToArray(List list){
-	Node* currPair = list.head;
+	Node* currNode = list.head;
     void** array = malloc(list.size * sizeof(void*));
     int iter = 0;
 
-    while(currPair != NULL){
-        array[iter] = currPair->value;
+    while(currNode != NULL){
+        array[iter] = currNode->value;
 
-        currPair = currPair->next;
+		currNode = currNode->next;
         iter++;
     }
 

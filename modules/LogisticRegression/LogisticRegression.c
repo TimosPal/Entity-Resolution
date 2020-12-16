@@ -24,7 +24,8 @@ double LinearFunction(double* weights,double bWeight,double* xVals,int dimension
 }
 
 double SigmoidFunction(double x){
-    return 1.0 / (1.0 + exp(-x));
+    double val = 1.0 / (1.0 + exp(-x));
+    return val;
 }
 
 double PartialDerivative(double* weights, double bWeight, double** xVals, double* yVals, int height, int width, int derivativeIndex){
@@ -58,9 +59,9 @@ void LogisticRegression_Init(LogisticRegression* model, double bWeight, double**
 
     //setting the starting weights
     model->weights = calloc(width, sizeof(double));
-    // for (int i = 0; i < width; i++){
-    //     model->weights[i] = 1.0;
-    // }
+    for (int i = 0; i < width; i++){
+        model->weights[i] = 1.0;
+    }
 }
 
 void LogisticRegression_Destroy(LogisticRegression model){
@@ -95,6 +96,7 @@ void LogisticRegression_Train(LogisticRegression* model, double learningRate, do
         double dist = EuclideanDistance(newW, model->weights, model->width);
         //printf("Distance is %.15f\n", dist);
         printf("DIFF IS %.15f\n", dist - terminationValue);
+        sleep(10);
         if(dist < terminationValue){
             shouldTrain = false;
         }

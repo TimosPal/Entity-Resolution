@@ -26,3 +26,18 @@ void Tuple_FreeValues(Tuple tuple, void (*free_func)(void*)){
     free_func(tuple.value1);
     free_func(tuple.value2);
 }
+
+void Tuple_TuplesToLists(List tuples, List* val1s, List* val2s){
+    List_Init(val1s);
+    List_Init(val2s);
+
+    Node* currNode = tuples.head;
+    while(currNode != NULL){
+        Tuple* currTuple = currNode->value;
+
+        List_Append(val1s, currTuple->value1);
+        List_Append(val2s, currTuple->value2);
+
+        currNode = currNode->next;
+    }
+}

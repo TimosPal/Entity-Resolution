@@ -196,7 +196,7 @@ List CliqueGroup_GetIdenticalPairs(CliqueGroup* cg){
                     ItemCliquePair *icpB = (ItemCliquePair *) (currItemB->value);
 
                     Tuple* tuple = malloc(sizeof(Tuple));
-                    Tuple_Init(tuple, &icpA, sizeof(icpA) , &icpB, sizeof(icpB));
+                    Tuple_Init(tuple, icpA, sizeof(*icpA) , icpB, sizeof(*icpB));
                     List_Append(&pairs, tuple);
 
                     currItemB = currItemB->next;
@@ -279,16 +279,23 @@ void CliqueGroup_Finalize(CliqueGroup cg){ //this should run after the CliqueGro
     }
 }
 
-int CliqueGroup_NumberOfItems(CliqueGroup group){
-    int count = 0;
+List CliqueGroup_GetAllItems(CliqueGroup group){
+    List items;
+    List_Init(&items);
 
     Node* currCliqueNode = group.cliques.head;
     while(currCliqueNode != NULL){
         Clique* currClique = (Clique*)currCliqueNode->value;
-        count += currClique->similar.size;
+
+        Node* currItemNode = currClique->similar.head;
+        while(currItemNode != NULL) {
+            List_Append(&items, (ItemCliquePair*)currItemNode->value);
+
+            currItemNode = currItemNode->next;
+        }
 
         currCliqueNode = currCliqueNode->next;
     }
 
-    return count;
+    return items;
 }
