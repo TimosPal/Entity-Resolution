@@ -13,6 +13,7 @@ typedef struct Hash {
     bool (*cmpFunction)(void*,void*);
 
     int bucketSize;
+    bool shouldMallocKeys;
 } Hash;
 
 typedef struct KeyValuePair{
@@ -21,7 +22,7 @@ typedef struct KeyValuePair{
 }KeyValuePair;
 
 
-void Hash_Init(Hash* hash, int bucketSize, unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*));
+void Hash_Init(Hash* hash, int bucketSize, unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*), bool shouldMallocKeys);
 void* Hash_GetValue(Hash hash,void* key,int keySize); //Returns a value based on a key.
 void Hash_FreeValues(Hash hash,void (*freeMethod)(void*));
 void Hash_Destroy(Hash hash);

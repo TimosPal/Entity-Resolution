@@ -60,7 +60,7 @@ void Clique_Free(void* value){
 }
 
 void CliqueGroup_Init(CliqueGroup* cg, int bucketSize,unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*)){
-    Hash_Init(&cg->hash, bucketSize, hashFunction, cmpFunction);
+    Hash_Init(&cg->hash, bucketSize, hashFunction, cmpFunction, true);
     List_Init(&cg->cliques);
     cg->finalizeNeeded = false;
 }
@@ -221,7 +221,7 @@ List CliqueGroup_GetNonIdenticalPairs(CliqueGroup* cg){
     List_Init(&pairs);
 
     Hash checkedCliques;
-    Hash_Init(&checkedCliques, DEFAULT_HASH_SIZE, RSHash, StringCmp);
+    Hash_Init(&checkedCliques, DEFAULT_HASH_SIZE, RSHash, StringCmp, true);
 
     Node* currCliqueNode = cg->cliques.head;
     while (currCliqueNode != NULL){
@@ -314,7 +314,7 @@ void CliqueGroup_Finalize(CliqueGroup cg){ //this should run after the CliqueGro
         Node* icpNode = clique->nonSimilar.head;
         Hash* tempHash = malloc(sizeof(Hash));
         //create hash to help with removing icps with the same cliques
-        Hash_Init(tempHash, clique->similar.size * 3, cg.hash.hashFunction, pointercmp);
+        Hash_Init(tempHash, clique->similar.size * 3, cg.hash.hashFunction, pointercmp, true);
         while(icpNode != NULL){
             ItemCliquePair* icp = (ItemCliquePair*)icpNode->value;
             bool existsInHash = Hash_GetValue(*tempHash, &icp->clique, sizeof(icp->clique));

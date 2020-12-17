@@ -1,3 +1,5 @@
 left_spec_id,right_spec_id,label
 test_eshop//1,test_eshop//2,1
 test_eshop//1,test_eshop//3,0
+test_eshop//3,test_eshop//4,1
+test_eshop//2,test_eshop//4,0

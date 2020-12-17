@@ -11,7 +11,7 @@ unsigned int SimpleHash(const void* val, unsigned int size){
 
 void Hash_Test_Init() {
     Hash hash;
-    Hash_Init(&hash,100,SimpleHash,Compare_Int);
+    Hash_Init(&hash,100,SimpleHash,Compare_Int, true);
 
     TEST_ASSERT(hash.bucketSize == 100);
     TEST_ASSERT(hash.hashFunction == SimpleHash);
@@ -22,7 +22,7 @@ void Hash_Test_Init() {
 
 void Hash_Test_GetValue() {
     Hash hash;
-    Hash_Init(&hash,100,SimpleHash,Compare_Int);
+    Hash_Init(&hash,100,SimpleHash,Compare_Int, true);
     int* key = malloc(sizeof(int));
     *key = 12;
     int* val = malloc(sizeof(int));
@@ -39,7 +39,7 @@ void Hash_Test_GetValue() {
 
 void Hash_Test_Add() {
     Hash hash;
-    Hash_Init(&hash,100,SimpleHash,Compare_Int);
+    Hash_Init(&hash,100,SimpleHash,Compare_Int, true);
     int* key = malloc(sizeof(int));
     *key = 12;
     int* val = malloc(sizeof(int));

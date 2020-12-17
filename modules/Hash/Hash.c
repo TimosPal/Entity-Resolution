@@ -5,21 +5,26 @@
 #include <stdlib.h>
 
 
-KeyValuePair* KeyValuePair_New(void* key, int size, void* value){
+KeyValuePair* KeyValuePair_New(void* key, int size, void* value, bool shouldMallocKey){
     KeyValuePair* kvp = malloc(sizeof(KeyValuePair));
 
-    kvp->key = malloc(size * sizeof(char));
-    memcpy(kvp->key, key, size*sizeof(char));
+    if(shouldMallocKey) {
+        kvp->key = malloc(size * sizeof(char));
+        memcpy(kvp->key, key, size * sizeof(char));
+    }else{
+        kvp->key = key;
+    }
     kvp->value = value;
 
     return kvp;
 }
 
-void Hash_Init(Hash* hash, int bucketSize, unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*)) {
+void Hash_Init(Hash* hash, int bucketSize, unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*), bool shouldMallocKeys) {
     hash->bucketSize = bucketSize; // size of the array.
     hash->hashFunction = hashFunction; // used in get.
     hash->cmpFunction = cmpFunction; // used in get.
     hash->buckets = malloc(bucketSize * sizeof(List));
+    hash->shouldMallocKeys = shouldMallocKeys;
     List_Init(&hash->keyValuePairs);
 
     for(int i = 0; i < bucketSize; i++)
@@ -52,7 +57,7 @@ bool Hash_Add(Hash* hash, void* key, int keySize, void* value){
     unsigned int index = hash->hashFunction(key,keySize) % hash->bucketSize;
     List *bucketItems = &(hash->buckets[index]);
 
-    KeyValuePair *kvp = KeyValuePair_New(key, keySize, value);
+    KeyValuePair *kvp = KeyValuePair_New(key, keySize, value, hash->shouldMallocKeys);
     List_Append(bucketItems, kvp);
 
     List_Append(&hash->keyValuePairs,kvp);
@@ -60,7 +65,7 @@ bool Hash_Add(Hash* hash, void* key, int keySize, void* value){
     return true;
 }
 
-void KeyValuePair_Free(void* value){
+void KeyValuePair_Free_WithKey(void* value){
     KeyValuePair* kvp = (KeyValuePair*)value;
     free(kvp->key);
     free(value);
@@ -69,7 +74,10 @@ void KeyValuePair_Free(void* value){
 void Hash_Destroy(Hash hash){
     for(int i = 0; i < hash.bucketSize; i++){
         List* list =  &(hash.buckets[i]);
-        List_FreeValues(*list, KeyValuePair_Free);
+        if(hash.shouldMallocKeys)
+            List_FreeValues(*list, KeyValuePair_Free_WithKey);
+        else
+            List_FreeValues(*list, free);
         List_Destroy(list);
     }
 

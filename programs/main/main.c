@@ -158,7 +158,7 @@ Hash CreateStopwordHash(char* fileStr){
     assert(fp != NULL);
 
     Hash stopwords;
-    Hash_Init(&stopwords, DEFAULT_HASH_SIZE, RSHash, StringCmp);
+    Hash_Init(&stopwords, DEFAULT_HASH_SIZE, RSHash, StringCmp, true);
 
     char buffer[BUFFER_SIZE];
     while(fscanf(fp, "%s", buffer) != EOF){
@@ -180,7 +180,7 @@ void WordList_Free(void* val){
  *be needed many times when creating the models*/
 Hash CreateProcessedItems(CliqueGroup cg){
     Hash itemProcessedWords;
-    Hash_Init(&itemProcessedWords, cg.hash.bucketSize, cg.hash.hashFunction, cg.hash.cmpFunction);
+    Hash_Init(&itemProcessedWords, cg.hash.bucketSize, cg.hash.hashFunction, cg.hash.cmpFunction, false);
 
     Hash stopwords = CreateStopwordHash(STOPWORDS_FILE);
 
@@ -275,21 +275,24 @@ int main(int argc, char* argv[]){
     /* --- Print results ----------------------------------------------------------------------*/
 
     List pairs = CliqueGroup_GetIdenticalPairs(&cliqueGroup);
-    printf("\nIdentical pairs : \n\n");
-    CliqueGroup_PrintPairs(pairs, Item_Print);
+    //printf("\nIdentical pairs : \n\n");
+    //CliqueGroup_PrintPairs(pairs, Item_Print);
 
     List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(&cliqueGroup);
-    printf("\nNon identical pairs : \n\n");
-    CliqueGroup_PrintPairs(nonIdenticalPairs, Item_Print);
+    //printf("\nNon identical pairs : \n\n");
+    //printf("%d\n",nonIdenticalPairs.size);
+    //CliqueGroup_PrintPairs(nonIdenticalPairs, Item_Print);
 
     // Join lists for later training.
     List_Join(&pairs, &nonIdenticalPairs);
+    //exit(0); // large : 299395 , medium : 43074
 
     /* --- Create processed words for items ---------------------------------------------------*/
 
     printf("\n- - - - - - - - - - - - - - - -\n");
+
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 10);
+    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 2);
 
     double** xVals;
     double* yVals;
@@ -297,10 +300,11 @@ int main(int argc, char* argv[]){
     int height = pairs.size;
     CreateXY(pairs, idfDictionary, itemProcessedWords, &xVals, &yVals);
 
+    printf("\n- - - - - - - - - - - - - - - -\n");
 
     LogisticRegression model;
     LogisticRegression_Init(&model, 0, xVals, yVals, width, height);
-    LogisticRegression_Train(&model, 0.1, 1);
+    LogisticRegression_Train(&model, 0.01, 0.001);
 
     int counter2 = 0;
     for (int i = 0; i < height; ++i) {
@@ -327,7 +331,7 @@ int main(int argc, char* argv[]){
     List_FreeValues(pairs, Tuple_Free);
     List_Destroy(&pairs);
 
-    LogisticRegression_Destroy(model);
+    //LogisticRegression_Destroy(model);
 
     Hash_FreeValues(idfDictionary, free);
     Hash_Destroy(idfDictionary);

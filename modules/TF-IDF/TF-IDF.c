@@ -15,7 +15,7 @@ void UpdateUniqueWordsFromICP(ItemCliquePair icp, Hash* dictionary, Hash process
 
     //Assisting Hash to not increment counters 2 times for the same words, prevents duplicating
     Hash currCliqueWordsInserted;
-    Hash_Init(&currCliqueWordsInserted,DEFAULT_HASH_SIZE,RSHash,StringCmp);
+    Hash_Init(&currCliqueWordsInserted,DEFAULT_HASH_SIZE,RSHash,StringCmp, false);
 
     //Get the list of words for the specific icp
     List* words = Hash_GetValue(processedWords, &icp.id, sizeof(icp.id));
@@ -54,7 +54,7 @@ Hash CreateDictionary(CliqueGroup group, Hash processedWords){
      * If a word appears twice in an isp it will only be counted once. */
 
     Hash dictionary;
-    Hash_Init(&dictionary,DEFAULT_HASH_SIZE,RSHash,StringCmp);
+    Hash_Init(&dictionary,DEFAULT_HASH_SIZE,RSHash,StringCmp, false);
 
     //Insert unique words to dict for each icp correlated to the clique
     Node* currCliqueNode = group.cliques.head;
@@ -100,7 +100,7 @@ Hash TF_Trim(Hash dictionary, Hash averageTFIDF, int dimensionLimit){
 
     //Now Trim
     Hash trimmedDictionary;
-    Hash_Init(&trimmedDictionary, DEFAULT_HASH_SIZE, RSHash, StringCmp);
+    Hash_Init(&trimmedDictionary, DEFAULT_HASH_SIZE, RSHash, StringCmp, false);
 
     if (dimensionLimit >= averageTFIDF.keyValuePairs.size || dimensionLimit == -1){
         dimensionLimit = averageTFIDF.keyValuePairs.size;
@@ -138,9 +138,10 @@ Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLi
 
     // Remove small frequencies for smaller dimensionality.
     Hash newAverageDictionary;
-    Hash_Init(&newAverageDictionary, DEFAULT_HASH_SIZE, RSHash, StringCmp);
+    Hash_Init(&newAverageDictionary, DEFAULT_HASH_SIZE, RSHash, StringCmp, false);
 
     Hash* xVals = CreateX(items, dictionary, proccesedWords);
+    printf("-o-o-o-o\n");
     for (int i = 0; i < items.size; ++i) {
         Hash* currVector = &xVals[i];
         Node* currTFIDFNode = currVector->keyValuePairs.head;
@@ -188,7 +189,7 @@ Hash TF_IDF_Calculate(Hash dictionary, List processedWords){
      * the given dictionary */
 
     Hash vector;
-    Hash_Init(&vector, DEFAULT_HASH_SIZE, RSHash, StringCmp);
+    Hash_Init(&vector, DEFAULT_HASH_SIZE, RSHash, StringCmp, false);
 
     //Calculating BoW
     //Dictionary Hash has the indexes as values that are used in the vector
