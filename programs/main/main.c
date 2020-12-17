@@ -275,12 +275,21 @@ int main(int argc, char* argv[]){
     /* --- Print results ----------------------------------------------------------------------*/
 
     List pairs = CliqueGroup_GetIdenticalPairs(&cliqueGroup);
-    //CliqueGroup_PrintIdentical(pairs, Item_Print);
+    printf("\nIdentical pairs : \n\n");
+    CliqueGroup_PrintPairs(pairs, Item_Print);
+
+    List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(&cliqueGroup);
+    printf("\nNon identical pairs : \n\n");
+    CliqueGroup_PrintPairs(nonIdenticalPairs, Item_Print);
+
+    // Join lists for later training.
+    List_Join(&pairs, &nonIdenticalPairs);
 
     /* --- Create processed words for items ---------------------------------------------------*/
 
+    printf("\n- - - - - - - - - - - - - - - -\n");
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 1000);
+    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 10);
 
     double** xVals;
     double* yVals;
@@ -288,7 +297,6 @@ int main(int argc, char* argv[]){
     int height = pairs.size;
     CreateXY(pairs, idfDictionary, itemProcessedWords, &xVals, &yVals);
 
-    printf("- - - -\n");
 
     LogisticRegression model;
     LogisticRegression_Init(&model, 0, xVals, yVals, width, height);

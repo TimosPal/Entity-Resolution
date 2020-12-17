@@ -30,7 +30,7 @@ typedef struct CliqueGroup{
 void CliqueGroup_Init(CliqueGroup* cg, int bucketSize,unsigned int (*hashFunction)(const void*, unsigned int), bool (*cmpFunction)(void*, void*));
 void CliqueGroup_Destroy(CliqueGroup cg);
 void CliqueGroup_FreeValues(CliqueGroup cg, void (*subFree)(void*));
-void CliqueGroup_PrintIdentical(List pairs, void (*Print)(void* value));
+void CliqueGroup_PrintPairs(List pairs, void (*Print)(void* value));
 
 void CliqueGroup_MergeCliques(Clique* newClique, Clique clique1, Clique clique2, Node* cliqueParentNode);
 
@@ -47,5 +47,6 @@ void Clique_Free(void* value);
 
 List CliqueGroup_GetAllItems(CliqueGroup group);
 List CliqueGroup_GetIdenticalPairs(CliqueGroup* cg);
+List CliqueGroup_GetNonIdenticalPairs(CliqueGroup* cg);
 
 #endif

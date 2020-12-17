@@ -1,9 +1,14 @@
+
 #include "CliqueGroup.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "Tuple.h"
+#include "Hash.h"
+#include "Hashes.h"
+#include "Util.h"
+#include "StringUtil.h"
 
 ItemCliquePair* ItemCliquePair_New(void* item){
     static unsigned int id = 0;
@@ -159,17 +164,17 @@ bool CliqueGroup_Update_NonSimilar(CliqueGroup* cg, void* key1, int keySize1, vo
     return true;
 }
 
-void CliqueGroup_PrintIdentical(List pairs, void (*Print)(void* value)){
+void CliqueGroup_PrintPairs(List pairs, void (*Print)(void* value)){
     Node* currPairNode = pairs.head;
     while(currPairNode != NULL){
         Tuple* tuple = currPairNode->value;
 
-        ItemCliquePair **icpA = tuple->value1;
-        ItemCliquePair **icpB = tuple->value2;
+        ItemCliquePair *icpA = tuple->value1;
+        ItemCliquePair *icpB = tuple->value2;
 
-        Print((*icpA)->item);
+        Print(icpA->item);
         printf(" ");
-        Print((*icpB)->item);
+        Print(icpB->item);
         printf("\n");
 
         currPairNode = currPairNode->next;
@@ -207,6 +212,58 @@ List CliqueGroup_GetIdenticalPairs(CliqueGroup* cg){
         }
         currCliqueNode = currCliqueNode->next;
     }
+
+    return pairs;
+}
+
+List CliqueGroup_GetNonIdenticalPairs(CliqueGroup* cg){
+    List pairs;
+    List_Init(&pairs);
+
+    Hash checkedCliques;
+    Hash_Init(&checkedCliques, DEFAULT_HASH_SIZE, RSHash, StringCmp);
+
+    Node* currCliqueNode = cg->cliques.head;
+    while (currCliqueNode != NULL){
+        // getting each clique.
+        Clique* currClique = (Clique*)(currCliqueNode->value);
+        Hash_Add(&checkedCliques, &currClique->id, sizeof(int), "-");
+
+        // getting each similar pair.
+        Node* currItemNodeA = currClique->similar.head;
+        while (currItemNodeA != NULL){
+
+            Node* currNonSimilarCliqueNode = currClique->nonSimilar.head;
+            while (currNonSimilarCliqueNode != NULL){
+                Clique* currNonSimilarClique = ((ItemCliquePair*)currNonSimilarCliqueNode->value)->clique;
+
+                // This pair was added prior so we skip if the clique is found in the hash.
+                if(!Hash_GetValue(checkedCliques, &currNonSimilarClique->id, sizeof(int))){
+
+                    Node* currItemNodeB = currNonSimilarClique->similar.head;
+                    while(currItemNodeB != NULL){
+                        ItemCliquePair *icpA = (ItemCliquePair *) (currItemNodeA->value);
+                        ItemCliquePair *icpB = (ItemCliquePair *) (currItemNodeB->value);
+
+                        Tuple* tuple = malloc(sizeof(Tuple));
+                        Tuple_Init(tuple, icpA, sizeof(*icpA) , icpB, sizeof(*icpB));
+                        List_Append(&pairs, tuple);
+
+                        currItemNodeB = currItemNodeB->next;
+                    }
+                }
+
+                currNonSimilarCliqueNode = currNonSimilarCliqueNode->next;
+            }
+
+            currItemNodeA = currItemNodeA->next;
+        }
+
+
+        currCliqueNode = currCliqueNode->next;
+    }
+
+    Hash_Destroy(checkedCliques);
 
     return pairs;
 }
