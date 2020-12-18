@@ -15,10 +15,14 @@ double EuclideanDistance(double* x, double* y, unsigned int size){
     return sqrt(sum);
 }
 
-double LinearFunction(double* weights, double bWeight, double* xVals, int dimension){
+double LinearFunction(double* weights, double bWeight, double* leftVector, double* rightVector, int dimension){
     double result = bWeight;
-    for (int i = 0; i < dimension; ++i) {
-        result += weights[i] * xVals[i];
+    for (int i = 0; i < dimension/2; i++) {
+        result += weights[i] * leftVector[i];
+    }
+
+    for (int i = 0; i < dimension/2; i++) {
+        result += weights[dimension/2 + i] * rightVector[i];
     }
 
     return result;
@@ -32,30 +36,30 @@ double SigmoidFunction(double x){
 double PartialDerivative(LogisticRegression* model, int derivativeIndex){
     double result = 0;
 
-    for (int i = 0; i < model->height; ++i) {
-        double* vector = malloc(model->width * sizeof(double));
-        memcpy(vector, model->xVals[model->xIndexes[i][0]], model->width/2 * sizeof(double));
-        memcpy(vector + model->width/2, model->xVals[model->xIndexes[i][1]], model->width/2 * sizeof(double));
-
-        if(vector[derivativeIndex] > 0){
-            result += (SigmoidFunction(LinearFunction(model->weights, model->bWeight, vector, model->width)) - model->yVals[i]) * vector[derivativeIndex];
+    for (int i = 0; i < model->height; i++) {
+        double* leftVector = model->xVals[model->xIndexes[i][0]];
+        double* rightVector = model->xVals[model->xIndexes[i][1]];
+        double xij;
+        if(derivativeIndex < model->width / 2){
+            xij = leftVector[derivativeIndex];
+        }else{
+            xij = rightVector[derivativeIndex - model->width/2];
         }
 
-        free(vector);
+        if(xij > 0){
+            result += (SigmoidFunction(LinearFunction(model->weights, model->bWeight, leftVector, rightVector, model->width)) - model->yVals[i]) * xij;
+        }
+
     }
 
     return result;
 }
 
-double* GradientVector(LogisticRegression* model){
-    double* vector = malloc(model->width * sizeof(double));
-
+void GradientVector(LogisticRegression* model, double* vector){
     for (int i = 0; i < model->width; i++) {
         vector[i] = PartialDerivative(model, i);
         //printf("Partial derivative (%d) : %.14f\n", i, vector[i]);
     }
-
-    return vector;
 }
 
 void LogisticRegression_Init(LogisticRegression* model, double bWeight, double** xVals, unsigned int** xIndexes, double* yVals, unsigned int width, unsigned int height, unsigned int itemCount){
@@ -93,14 +97,19 @@ void LogisticRegression_Destroy(LogisticRegression model){
 void LogisticRegression_Train(LogisticRegression* model, double learningRate, double terminationValue){
     bool shouldTrain = true;
 
+    double* newW = malloc(model->width * sizeof(double));
+    double* gradientVector = malloc(model->width * sizeof(double));
     while(shouldTrain) {
-        double* gradientVector = GradientVector(model);
+        GradientVector(model, gradientVector);
 
-        double* newW = malloc(model->width * sizeof(double));
         for (int i = 0; i < model->width; ++i) {
             newW[i] = model->weights[i] - learningRate * gradientVector[i];
         }
         
+        double* temp = model->weights;
+        model->weights = newW;
+        newW = temp;
+
         //Compute Euclidean Distance of the 2 vectors and sets shouldTrain 
         //to false if it is smaller than terminationValue
         double dist = EuclideanDistance(newW, model->weights, model->width);
@@ -111,13 +120,12 @@ void LogisticRegression_Train(LogisticRegression* model, double learningRate, do
             shouldTrain = false;
         }
 
-        free(model->weights);
-        model->weights = newW;
-
-        free(gradientVector);
     }
+
+    free(gradientVector);
+    free(newW);
 }
 
-double LogisticRegression_Predict(LogisticRegression* model, double* vector){
-    return SigmoidFunction(LinearFunction(model->weights, model->bWeight, vector, model->width));
+double LogisticRegression_Predict(LogisticRegression* model, double* leftVector, double* rightVector){
+    return SigmoidFunction(LinearFunction(model->weights, model->bWeight, leftVector, rightVector, model->width));
 }

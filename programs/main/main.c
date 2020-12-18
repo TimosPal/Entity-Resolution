@@ -319,7 +319,7 @@ int main(int argc, char* argv[]){
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
     printf("Created Processed Words\n");
 
-    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, 100); //Create Dictionary based on items list
+    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, 400); //Create Dictionary based on items list
     printf("Created and Trimmed Dictionary based on avg TFIDF\n");
 
     double** xVals;
@@ -344,7 +344,7 @@ int main(int argc, char* argv[]){
 
     LogisticRegression model;
     LogisticRegression_Init(&model, 0, xVals, xIndexes, yVals, width, height, items.size);
-    LogisticRegression_Train(&model, 0.01, 0.001);
+    LogisticRegression_Train(&model, 0.001, 0.0001);
 
     // int counter2 = 0;
     // for (int i = 0; i < height; ++i) {
@@ -361,12 +361,11 @@ int main(int argc, char* argv[]){
 
     // printf("%d / %d\n- - - -\n", counter2 , height);
 
-    for (int i = 0; i < height; ++i) {
-        double* vector = malloc(width * sizeof(double));
-        memcpy(vector, xVals[xIndexes[i][0]], width/2 * sizeof(double));
-        memcpy(vector + width/2, xVals[xIndexes[i][1]], width/2 * sizeof(double));
-
-        double accuracy = LogisticRegression_Predict(&model, vector);
+    for (int i = 0; i < height; i++) {
+        double* leftVector = xVals[xIndexes[i][0]];
+        double* rightVector = xVals[xIndexes[i][1]];
+        
+        double accuracy = LogisticRegression_Predict(&model, leftVector, rightVector);
         printf("Accuracy : %f Real value : %f\n", accuracy, yVals[i]);
     }
 
