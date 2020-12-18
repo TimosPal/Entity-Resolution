@@ -1,5 +1,6 @@
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 #include "Util.h"
 #include "ArgUtil.h"
@@ -299,12 +300,11 @@ int main(int argc, char* argv[]){
     /* --- Print results ----------------------------------------------------------------------*/
 
     List pairs = CliqueGroup_GetIdenticalPairs(&cliqueGroup);
-    //printf("\nIdentical pairs : \n\n");
+    printf("\n%d identical pairs : \n\n", pairs.size);
     //CliqueGroup_PrintPairs(pairs, Item_Print);
 
     List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(&cliqueGroup);
-    //printf("\nNon identical pairs : \n\n");
-    //printf("%d\n",nonIdenticalPairs.size);
+    printf("\n%d non identical pairs : \n\n", nonIdenticalPairs.size);
     //CliqueGroup_PrintPairs(nonIdenticalPairs, Item_Print);
 
     // Join lists for later training.
@@ -319,7 +319,7 @@ int main(int argc, char* argv[]){
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
     printf("Created Processed Words\n");
 
-    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, 400); //Create Dictionary based on items list
+    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, 1000); //Create Dictionary based on items list
     printf("Created and Trimmed Dictionary based on avg TFIDF\n");
 
     double** xVals;
@@ -333,41 +333,29 @@ int main(int argc, char* argv[]){
     CreateXY(items, pairs, idfDictionary, itemProcessedWords, &xVals, &xIndexes, &yVals);
     
     printf("Created X Y Datasets for training\n");
-    
-    // for(int i = 0; i < items.size; i++){
-    //     printf("Vector:\n");
-    //     for(int j = 0; j < idfDictionary.keyValuePairs.size; j++){
-    //         printf("%f ", xVals[i][j]);
-    //     }
-    //     printf("\n\n\n");
-    // }
 
     LogisticRegression model;
     LogisticRegression_Init(&model, 0, xVals, xIndexes, yVals, width, height, items.size);
-    LogisticRegression_Train(&model, 0.001, 0.0001);
+    LogisticRegression_Train(&model, 0.001, 10);
 
-    // int counter2 = 0;
-    // for (int i = 0; i < height; ++i) {
-    //     int counter = 0;
-    //     for (int j = 0; j < width; ++j) {
-    //         if(xVals[i][j] != 0){
-    //             counter++;
-    //         }
-    //     }
-
-    //     if(counter > 0)
-    //         counter2++;
-    // }
-
-    // printf("%d / %d\n- - - -\n", counter2 , height);
-
+    int counter0 = 0;
+    int counter1 = 0;
     for (int i = 0; i < height; i++) {
         double* leftVector = xVals[xIndexes[i][0]];
         double* rightVector = xVals[xIndexes[i][1]];
         
-        double accuracy = LogisticRegression_Predict(&model, leftVector, rightVector);
-        printf("Accuracy : %f Real value : %f\n", accuracy, yVals[i]);
+        double prediction = LogisticRegression_Predict(&model, leftVector, rightVector);
+        if(fabs(yVals[i] - prediction) < 0.1) {
+            if(yVals[i] == 0){
+                counter0++;
+            }else{
+                counter1++;
+            }
+        }
+        printf("Accuracy : %f Real value : %f\n", prediction, yVals[i]);
     }
+    printf("Accuracy : %d / %d\n",counter0 + counter1 , height);
+    printf("Counter0 %d Counter1 %d\n",counter0,counter1);
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 

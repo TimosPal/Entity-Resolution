@@ -33,31 +33,28 @@ double SigmoidFunction(double x){
     return val;
 }
 
-double PartialDerivative(LogisticRegression* model, int derivativeIndex){
+double PartialDerivative(LogisticRegression* model, int derivativeIndex, int j){
     double result = 0;
 
-    for (int i = 0; i < model->height; i++) {
-        double* leftVector = model->xVals[model->xIndexes[i][0]];
-        double* rightVector = model->xVals[model->xIndexes[i][1]];
-        double xij;
-        if(derivativeIndex < model->width / 2){
-            xij = leftVector[derivativeIndex];
-        }else{
-            xij = rightVector[derivativeIndex - model->width/2];
-        }
+    double* leftVector = model->xVals[model->xIndexes[j][0]];
+    double* rightVector = model->xVals[model->xIndexes[j][1]];
+    double xij;
+    if(derivativeIndex < model->width / 2){
+        xij = leftVector[derivativeIndex];
+    }else{
+        xij = rightVector[derivativeIndex - model->width/2];
+    }
 
-        if(xij > 0){
-            result += (SigmoidFunction(LinearFunction(model->weights, model->bWeight, leftVector, rightVector, model->width)) - model->yVals[i]) * xij;
-        }
-
+    if(xij > 0){
+        result += (SigmoidFunction(LinearFunction(model->weights, model->bWeight, leftVector, rightVector, model->width)) - model->yVals[j]) * xij;
     }
 
     return result;
 }
 
-void GradientVector(LogisticRegression* model, double* vector){
+void GradientVector(LogisticRegression* model, double* vector, int j){
     for (int i = 0; i < model->width; i++) {
-        vector[i] = PartialDerivative(model, i);
+        vector[i] = PartialDerivative(model, i, j);
         //printf("Partial derivative (%d) : %.14f\n", i, vector[i]);
     }
 }
@@ -94,32 +91,24 @@ void LogisticRegression_Destroy(LogisticRegression model){
     free(model.xIndexes);
 }
 
-void LogisticRegression_Train(LogisticRegression* model, double learningRate, double terminationValue){
-    bool shouldTrain = true;
-
+void LogisticRegression_Train(LogisticRegression *model, double learningRate, int epochs) {
     double* newW = malloc(model->width * sizeof(double));
     double* gradientVector = malloc(model->width * sizeof(double));
-    while(shouldTrain) {
-        GradientVector(model, gradientVector);
 
-        for (int i = 0; i < model->width; ++i) {
-            newW[i] = model->weights[i] - learningRate * gradientVector[i];
+    for(int k = 0; k < epochs; k++) {
+        for (int j = 0; j < model->height; ++j) {
+
+            GradientVector(model, gradientVector, j);
+
+            for (int i = 0; i < model->width; ++i) {
+                newW[i] = model->weights[i] - learningRate * gradientVector[i];
+            }
+
+            double *temp = model->weights;
+            model->weights = newW;
+            newW = temp;
         }
-        
-        double* temp = model->weights;
-        model->weights = newW;
-        newW = temp;
-
-        //Compute Euclidean Distance of the 2 vectors and sets shouldTrain 
-        //to false if it is smaller than terminationValue
-        double dist = EuclideanDistance(newW, model->weights, model->width);
-        //printf("Distance is %.15f\n", dist);
-        printf("DIFF IS %.15f\n", dist - terminationValue);
-
-        if(dist < terminationValue){
-            shouldTrain = false;
-        }
-
+        printf("k %d\n",k);
     }
 
     free(gradientVector);

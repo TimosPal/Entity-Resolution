@@ -17,7 +17,7 @@ typedef struct LogisticRegression {
 
 void LogisticRegression_Init(LogisticRegression* model, double bWeight, double** xVals, unsigned int** xIndexes, double* yVals, unsigned int width, unsigned int height, unsigned int itemCount);
 void LogisticRegression_Destroy(LogisticRegression model);
-void LogisticRegression_Train(LogisticRegression* model, double learningRate, double terminationValue);
+void LogisticRegression_Train(LogisticRegression *model, double learningRate, int epochs);
 double LogisticRegression_Predict(LogisticRegression* model, double* leftVector, double* rightVector);
 
 #endif
