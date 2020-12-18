@@ -86,7 +86,7 @@ void Hash_Destroy(Hash hash){
     free(hash.buckets);
 }
 
-void Hash_FreeValues(Hash hash,void (*freeMethod)(void*)){
+void Hash_FreeValues(Hash hash, void (*freeMethod)(void*)){
     for(int i = 0; i < hash.bucketSize; i++){
         List* list =  &(hash.buckets[i]);
         Node* tempNode = list->head;

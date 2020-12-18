@@ -1,6 +1,7 @@
 #include "LogisticRegression.h"
 
 #include <math.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -14,7 +15,7 @@ double EuclideanDistance(double* x, double* y, unsigned int size){
     return sqrt(sum);
 }
 
-double LinearFunction(double* weights,double bWeight,double* xVals,int dimension){
+double LinearFunction(double* weights, double bWeight, double* xVals, int dimension){
     double result = bWeight;
     for (int i = 0; i < dimension; ++i) {
         result += weights[i] * xVals[i];
@@ -28,35 +29,44 @@ double SigmoidFunction(double x){
     return val;
 }
 
-double PartialDerivative(double* weights, double bWeight, double** xVals, double* yVals, int height, int width, int derivativeIndex){
+double PartialDerivative(LogisticRegression* model, int derivativeIndex){
     double result = 0;
 
-    for (int i = 0; i < height; ++i) {
-        if(xVals[i][derivativeIndex] > 0)
-            result += (SigmoidFunction(LinearFunction(weights,bWeight,xVals[i],width)) - yVals[i]) * xVals[i][derivativeIndex];
+    for (int i = 0; i < model->height; ++i) {
+        double* vector = malloc(model->width * sizeof(double));
+        memcpy(vector, model->xVals[model->xIndexes[i][0]], model->width/2 * sizeof(double));
+        memcpy(vector + model->width/2, model->xVals[model->xIndexes[i][1]], model->width/2 * sizeof(double));
+
+        if(vector[derivativeIndex] > 0){
+            result += (SigmoidFunction(LinearFunction(model->weights, model->bWeight, vector, model->width)) - model->yVals[i]) * vector[derivativeIndex];
+        }
+
+        free(vector);
     }
 
     return result;
 }
 
-double* GradientVector(double* weights, double bWeight, double** xVals, double* yVals, int height, int width){
-    double* vector = malloc(width * sizeof(double));
+double* GradientVector(LogisticRegression* model){
+    double* vector = malloc(model->width * sizeof(double));
 
-    for (int i = 0; i < width; i++) {
-        vector[i] = PartialDerivative(weights, bWeight, xVals, yVals, height, width, i);
-        printf("Partial derivative (%d) : %.14f\n",i,vector[i]);
+    for (int i = 0; i < model->width; i++) {
+        vector[i] = PartialDerivative(model, i);
+        //printf("Partial derivative (%d) : %.14f\n", i, vector[i]);
     }
 
     return vector;
 }
 
-void LogisticRegression_Init(LogisticRegression* model, double bWeight, double** xVals, double* yVals, unsigned int width, unsigned int height){
+void LogisticRegression_Init(LogisticRegression* model, double bWeight, double** xVals, unsigned int** xIndexes, double* yVals, unsigned int width, unsigned int height, unsigned int itemCount){
     model->bWeight = bWeight;
 
     model->xVals = xVals;
+    model->xIndexes = xIndexes;
     model->yVals = yVals;
 
     model->height = height;
+    model->itemCount = itemCount;
     model->width = width;
 
     //setting the starting weights
@@ -69,24 +79,22 @@ void LogisticRegression_Init(LogisticRegression* model, double bWeight, double**
 void LogisticRegression_Destroy(LogisticRegression model){
     free(model.weights);
     free(model.yVals);
-    for(int i = 0; i < model.height; i++){
+    
+    for(int i = 0; i < model.itemCount; i++){
         free(model.xVals[i]);
     }
+    for(int i = 0; i < model.height; i++){
+        free(model.xIndexes[i]);
+    }
     free(model.xVals);
+    free(model.xIndexes);
 }
 
 void LogisticRegression_Train(LogisticRegression* model, double learningRate, double terminationValue){
     bool shouldTrain = true;
 
     while(shouldTrain) {
-        double *gradientVector = GradientVector(
-                model->weights,
-                model->bWeight,
-                model->xVals,
-                model->yVals,
-                model->height,
-                model->width
-        );
+        double* gradientVector = GradientVector(model);
 
         double* newW = malloc(model->width * sizeof(double));
         for (int i = 0; i < model->width; ++i) {

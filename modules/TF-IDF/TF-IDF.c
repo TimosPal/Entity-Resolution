@@ -48,7 +48,7 @@ void UpdateUniqueWordsFromICP(ItemCliquePair icp, Hash* dictionary, Hash process
     Hash_Destroy(currCliqueWordsInserted);
 }
 
-Hash CreateDictionary(CliqueGroup group, Hash processedWords){
+Hash CreateDictionary(List items, Hash processedWords){
     /* Creates a dictionary of all the unique words for every item
      * Key : word , Value : in how many files the word appeared.
      * If a word appears twice in an isp it will only be counted once. */
@@ -57,14 +57,11 @@ Hash CreateDictionary(CliqueGroup group, Hash processedWords){
     Hash_Init(&dictionary,DEFAULT_HASH_SIZE,RSHash,StringCmp, false);
 
     //Insert unique words to dict for each icp correlated to the clique
-    Node* currCliqueNode = group.cliques.head;
-    while(currCliqueNode != NULL){
-        Clique* currClique = (Clique*)currCliqueNode->value;
-        Node* currIcpNode = currClique->similar.head;
-
+    Node* currIcpNode = items.head;
+    while(currIcpNode != NULL){
         UpdateUniqueWordsFromICP(*(ItemCliquePair *) currIcpNode->value, &dictionary, processedWords);
 
-        currCliqueNode = currCliqueNode->next;
+        currIcpNode = currIcpNode->next;
     }
 
     return dictionary;
@@ -120,14 +117,13 @@ Hash TF_Trim(Hash dictionary, Hash averageTFIDF, int dimensionLimit){
     return trimmedDictionary;
 }
 
-Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLimit) {
+Hash IDF_Calculate(List items, Hash processedWords, int dimensionLimit) {
     // Calculated IDF value. The dictionary should contain values that correspond to the number
     // of times a word appeared uniquely in each item.
 
-    Hash dictionary = CreateDictionary(cliqueGroup, proccesedWords);
+    Hash dictionary = CreateDictionary(items, processedWords);
 
-    List items = CliqueGroup_GetAllItems(cliqueGroup);
-
+    //Calculate IDFs for every word
     Node* currWordCountNode  = dictionary.keyValuePairs.head;
     while(currWordCountNode != NULL){
         double* val = ((KeyValuePair*)currWordCountNode->value)->value;
@@ -136,12 +132,11 @@ Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLi
         currWordCountNode = currWordCountNode->next;
     }
 
-    // Remove small frequencies for smaller dimensionality.
+    // Remove smallest average TFIDFs for smaller dimensionality.
     Hash newAverageDictionary;
     Hash_Init(&newAverageDictionary, DEFAULT_HASH_SIZE, RSHash, StringCmp, false);
 
-    Hash* xVals = CreateX(items, dictionary, proccesedWords);
-    printf("-o-o-o-o\n");
+    Hash* xVals = CreateVectors(items, dictionary, processedWords);
     for (int i = 0; i < items.size; ++i) {
         Hash* currVector = &xVals[i];
         Node* currTFIDFNode = currVector->keyValuePairs.head;
@@ -171,7 +166,6 @@ Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLi
     Hash newDictionary = TF_Trim(dictionary, newAverageDictionary, dimensionLimit);
 
     free(xVals);
-    List_Destroy(&items);
 
     // Clean up old dictionary.
     Hash_FreeValues(dictionary, free);
@@ -184,7 +178,7 @@ Hash IDF_Calculate(CliqueGroup cliqueGroup, Hash proccesedWords, int dimensionLi
     return newDictionary;
 }
 
-Hash TF_IDF_Calculate(Hash dictionary, List processedWords){
+Hash CreateVector(Hash dictionary, List processedWords){
     /* Calculates a tfidf vector for said Word list based on
      * the given dictionary */
 
@@ -200,7 +194,7 @@ Hash TF_IDF_Calculate(Hash dictionary, List processedWords){
 
         //if word is in dictionary
         if (idfValue){
-            double* oldBowValue = Hash_GetValue(vector, idfValue, sizeof(double));
+            double* oldBowValue = Hash_GetValue(vector, currWordNode->value, keySize);
             if(oldBowValue){
                 *oldBowValue = *oldBowValue + 1;
             }else{
@@ -229,20 +223,20 @@ Hash TF_IDF_Calculate(Hash dictionary, List processedWords){
     return vector;
 }
 
-Hash* CreateX(List xVals, Hash dictionary, Hash itemProcessedWords){
-    unsigned int height = (unsigned int)xVals.size;
+Hash* CreateVectors(List items, Hash dictionary, Hash itemProcessedWords){
+    unsigned int height = (unsigned int)items.size;
 
     //Malloc arrays for X and Y data
     Hash* vectors = malloc(height * sizeof(Hash));
 
     int index = 0;
-    Node* currItemNode = xVals.head;
+    Node* currItemNode = items.head;
     while (currItemNode != NULL){
         ItemCliquePair* icp = currItemNode->value;
         List* processedWords = Hash_GetValue(itemProcessedWords, &icp->id, sizeof(icp->id));
 
         //X
-        vectors[index] = TF_IDF_Calculate(dictionary, *processedWords);
+        vectors[index] = CreateVector(dictionary, *processedWords);
 
         index++;
         currItemNode = currItemNode->next;

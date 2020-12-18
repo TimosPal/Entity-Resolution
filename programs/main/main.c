@@ -208,51 +208,75 @@ Hash CreateProcessedItems(CliqueGroup cg){
     return itemProcessedWords;
 }
 
-void CreateXY(List pairs, Hash idfDictionary, Hash itemProcessedWords, double*** X, double** Y){
-    List val1s;
-    List val2s;
-    Tuple_TuplesToLists(pairs, &val1s, &val2s);
+bool UIntCmp(void* value1, void* value2){
+    if(*(unsigned int*)value1 == *(unsigned int*)value2){
+        return true;
+    }else{
+        return false;
+    }
+}
 
-    Hash* x1 = CreateX(val1s, idfDictionary, itemProcessedWords);
-    Hash* x2 = CreateX(val2s, idfDictionary, itemProcessedWords);
+void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWords, double*** X, unsigned int*** xIndexes, double** Y){
+    //Array of sparse matrices(hashes) with TFIDF values
+    Hash* x = CreateVectors(items, idfDictionary, itemProcessedWords);
+    
+    //Hash with keys = id of icp and value = index in array of TFIDF vectors
+    Hash indexes;
+    Hash_Init(&indexes, DEFAULT_HASH_SIZE, RSHash, UIntCmp, false);
+    
+    //Array with TFIDF vectors for each item
+    double** xVals = malloc(items.size * sizeof(double*));
+    
+    int k = 0;
+    Node* itemNode = items.head;
+    while(itemNode != NULL){
+        ItemCliquePair* icp = (ItemCliquePair*)itemNode->value;
 
-    List_Destroy(&val1s);
-    List_Destroy(&val2s);
+        unsigned int* index = malloc(sizeof(unsigned int));
+        *index = k;
+        Hash_Add(&indexes, &icp->id, sizeof(icp->id), index);
+        xVals[k] = TF_IDF_ToArray(x[k], idfDictionary);
 
-    double** xVals = malloc(pairs.size * sizeof(double*));
-    int arrSize = idfDictionary.keyValuePairs.size;
-    for (int i = 0; i < pairs.size; ++i) {
-        printf("- - creating vectors - -\n");
+        Hash_FreeValues(x[k], free);
+        Hash_Destroy(x[k]);
 
-        // TFI-DFS are in hash form to simulate sparsed matrix.
-        // We make them into arrays for faster access in training.
-        double* x1Arr = TF_IDF_ToArray(x1[i], idfDictionary);
-        double* x2Arr = TF_IDF_ToArray(x2[i], idfDictionary);
-
-        Hash_FreeValues(x1[i], free);
-        Hash_Destroy(x1[i]);
-        Hash_FreeValues(x2[i], free);
-        Hash_Destroy(x2[i]);
-
-        // Concat 2 tf-idfs int one for pair wise training.
-        int arrSizeInBytes = arrSize * sizeof(double);
-        double* xValsConcat = malloc(2 * arrSizeInBytes);
-        memcpy(xValsConcat, x1Arr, arrSizeInBytes);
-        memcpy(xValsConcat + arrSize, x2Arr, arrSizeInBytes);
-
-        free(x1Arr);
-        free(x2Arr);
-
-        xVals[i] = xValsConcat;
+        k++;
+        itemNode = itemNode->next;
     }
 
-    free(x1);
-    free(x2);
+    free(x);
+
+    //Array of vector indexes in TFIDF array for all pairs
+    unsigned int** pairIndexes = malloc(pairs.size * sizeof(unsigned int*));
+    Node* pairNode = pairs.head;
+    k = 0;
+    //Mapping
+    while(pairNode != NULL){
+        pairIndexes[k] = malloc(2 * sizeof(unsigned int));
+
+        Tuple* pair = (Tuple*)pairNode->value;
+
+        ItemCliquePair* icp1 = (ItemCliquePair*)pair->value1;
+        unsigned int* index1 = Hash_GetValue(indexes, &icp1->id, sizeof(icp1->id));
+        pairIndexes[k][0] = *index1; 
+
+        ItemCliquePair* icp2 = (ItemCliquePair*)pair->value2;
+        unsigned int* index2 = Hash_GetValue(indexes, &icp2->id, sizeof(icp2->id));
+        pairIndexes[k][1] = *index2; 
+
+        k++;
+        pairNode = pairNode->next;
+    }
 
     double* yVals = CreateY(pairs);
 
     *Y = yVals;
     *X = xVals;
+    *xIndexes = pairIndexes;
+
+    //Cleanup
+    Hash_FreeValues(indexes, free);
+    Hash_Destroy(indexes);
 }
 
 int main(int argc, char* argv[]){
@@ -270,7 +294,7 @@ int main(int argc, char* argv[]){
 
     /* --- Reads CSV files and updates the cliqueGroups ---------------------------------------*/
 
-    HandleData_W(dataSetWPath,&cliqueGroup);
+    HandleData_W(dataSetWPath, &cliqueGroup);
 
     /* --- Print results ----------------------------------------------------------------------*/
 
@@ -287,51 +311,73 @@ int main(int argc, char* argv[]){
     List_Join(&pairs, &nonIdenticalPairs);
     //exit(0); // large : 299395 , medium : 43074
 
+    //Split(pairs, list1, items1, list2, items2);
+    //Split() 20-20
+    List items = CliqueGroup_GetAllItems(cliqueGroup);
     /* --- Create processed words for items ---------------------------------------------------*/
 
-    printf("\n- - - - - - - - - - - - - - - -\n");
-
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    Hash idfDictionary = IDF_Calculate(cliqueGroup, itemProcessedWords, 2);
+    printf("Created Processed Words\n");
+
+    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, 100); //Create Dictionary based on items list
+    printf("Created and Trimmed Dictionary based on avg TFIDF\n");
 
     double** xVals;
+    unsigned int** xIndexes;
     double* yVals;
-    int width = 2 * idfDictionary.keyValuePairs.size;
-    int height = pairs.size;
-    CreateXY(pairs, idfDictionary, itemProcessedWords, &xVals, &yVals);
 
-    printf("\n- - - - - - - - - - - - - - - -\n");
+    
+    unsigned int width = 2 * idfDictionary.keyValuePairs.size;
+    unsigned int height = pairs.size;
+
+    CreateXY(items, pairs, idfDictionary, itemProcessedWords, &xVals, &xIndexes, &yVals);
+    
+    printf("Created X Y Datasets for training\n");
+    
+    // for(int i = 0; i < items.size; i++){
+    //     printf("Vector:\n");
+    //     for(int j = 0; j < idfDictionary.keyValuePairs.size; j++){
+    //         printf("%f ", xVals[i][j]);
+    //     }
+    //     printf("\n\n\n");
+    // }
 
     LogisticRegression model;
-    LogisticRegression_Init(&model, 0, xVals, yVals, width, height);
+    LogisticRegression_Init(&model, 0, xVals, xIndexes, yVals, width, height, items.size);
     LogisticRegression_Train(&model, 0.01, 0.001);
 
-    int counter2 = 0;
+    // int counter2 = 0;
+    // for (int i = 0; i < height; ++i) {
+    //     int counter = 0;
+    //     for (int j = 0; j < width; ++j) {
+    //         if(xVals[i][j] != 0){
+    //             counter++;
+    //         }
+    //     }
+
+    //     if(counter > 0)
+    //         counter2++;
+    // }
+
+    // printf("%d / %d\n- - - -\n", counter2 , height);
+
     for (int i = 0; i < height; ++i) {
-        int counter = 0;
-        for (int j = 0; j < width; ++j) {
-            if(xVals[i][j] != 0){
-                counter++;
-            }
-        }
+        double* vector = malloc(width * sizeof(double));
+        memcpy(vector, xVals[xIndexes[i][0]], width/2 * sizeof(double));
+        memcpy(vector + width/2, xVals[xIndexes[i][1]], width/2 * sizeof(double));
 
-        if(counter > 0)
-            counter2++;
-    }
-
-    printf("%d / %d\n- - - -\n", counter2 , height);
-
-    for (int i = 0; i < height; ++i) {
-        double accuracy = LogisticRegression_Predict(&model, xVals[i]);
+        double accuracy = LogisticRegression_Predict(&model, vector);
         printf("Accuracy : %f Real value : %f\n", accuracy, yVals[i]);
     }
 
     /* --- Clean up ---------------------------------------------------------------------------*/
 
+    List_Destroy(&items);
+
     List_FreeValues(pairs, Tuple_Free);
     List_Destroy(&pairs);
 
-    //LogisticRegression_Destroy(model);
+    LogisticRegression_Destroy(model);
 
     Hash_FreeValues(idfDictionary, free);
     Hash_Destroy(idfDictionary);
