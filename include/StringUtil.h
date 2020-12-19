@@ -24,4 +24,7 @@ unsigned int StringHash(void* str);
 
 void RemoveFileExtension(char* str);
 
+void RemoveBigNumber(char* str);
+void RemoveUnicode(char* str);
+
 #endif

@@ -21,8 +21,22 @@ void StringUtil_Test_StringSplit(){
     List_Destroy(&l);
 }
 
+void StringUtil_Test_RemoveUniCode(){
+    char buffer[512] = "asdf \\u000basd";
+    RemoveUnicode(buffer);
+    TEST_ASSERT(strcmp(buffer,"asdf       asd") == 0);
+}
+
+void StringUtil_Test_RemoveBigNumber(){
+    char buffer[512] = "12345679 a123a342 123";
+    RemoveBigNumber(buffer);
+    TEST_ASSERT(strcmp(buffer,"         a123a342 123") == 0);
+}
+
 TEST_LIST = {
         { "StringUtil_Test_StringToInt", StringUtil_Test_StringToInt },
         { "StringUtil_Test_StringSplit", StringUtil_Test_StringSplit },
+        { "StringUtil_Test_RemoveUniCode", StringUtil_Test_RemoveUniCode},
+        { "StringUtil_Test_RemoveBigNumber", StringUtil_Test_RemoveBigNumber},
         { NULL, NULL }
 };
