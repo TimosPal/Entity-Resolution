@@ -108,7 +108,7 @@ void LogisticRegression_Train(LogisticRegression *model, double learningRate, in
             model->weights = newW;
             newW = temp;
         }
-        printf("k %d\n",k);
+        printf("%d out of %d epochs\n", k+1, epochs);
     }
 
     free(gradientVector);

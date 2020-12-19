@@ -211,3 +211,32 @@ void List_Join(List* list1, List* list2){
     list2->tail = NULL;
     list2->head = NULL;
 }
+
+/* List 1 will be splitted , percentage of list1 in decimal*/
+bool List_Split(List* list1, List* list2,  double percentage){
+	List_Init(list2); //just to be sure list 2 has been initialized with 0s
+	
+	int index = list1->size * percentage;
+
+	if (index < 2){
+		return false;
+	}
+
+	Node* splitNode = List_GetNode(*list1, index); //splitNode will be in list2
+
+	Node* list1_tail = splitNode->prev;
+
+	//for list2
+	list2->head = splitNode;
+	list2->head->prev = NULL;
+	list2->tail = list1->tail;
+	list2->size = list1->size - index;
+
+	//for list1
+	list1->tail = list1_tail;
+	list1->tail->next = NULL;
+	list1->size = index;
+
+
+	return true;
+}

@@ -1,3 +1,8 @@
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <string.h>
 #include <assert.h>
 #include <math.h>
@@ -48,11 +53,12 @@ int CalculateBucketSize(char* websitesFolderPath){
     return bucketSize;
 }
 
-void ParseArgs(int argc, char* argv[], char **websitesFolderPath,char **dataSetWPath,int* bucketSize){
+void ParseArgs(int argc, char* argv[], char **websitesFolderPath, char **dataSetWPath, int* bucketSize, 
+char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath){
     // Get the flags from argv.
     // -f should contain the path to the folder containing the websites folders.
-    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-f", websitesFolderPath), "arg -f is missing or has no value")
-    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-w", dataSetWPath), "arg -w is missing or has no value")
+    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-f", websitesFolderPath), "Argument -f is missing or has no value")
+    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-w", dataSetWPath), "Argument -w is missing or has no value")
 
     // -b is the bucketsize.
     char *bucketSizeStr;
@@ -64,6 +70,21 @@ void ParseArgs(int argc, char* argv[], char **websitesFolderPath,char **dataSetW
         // We estimated the size based on the files number.
         *bucketSize = CalculateBucketSize(*websitesFolderPath);
         //printf("------------- %d -------------\n",bucketSize);
+    }
+
+    //i is the filename for identical pairs to be printed out to
+    if(FindArgAfterFlag(argv, argc, "-i", identicalFilePath)) {
+        IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-i", identicalFilePath), "Argument -i is missing or has no value")
+    }
+
+    //n is the filename for non identical pairs to be printed out to
+    if(FindArgAfterFlag(argv, argc, "-n", nonIdenticalFilePath)) {
+        IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-n", nonIdenticalFilePath), "Argument -n is missing or has no value")
+    }
+
+    //o is the filename for testing output to be printed out to
+    if(FindArgAfterFlag(argv, argc, "-o", outputFilePath)) {
+        IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-o", outputFilePath), "Argument -o is missing or has no value")
     }
 }
 
@@ -280,12 +301,29 @@ void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWord
     Hash_Destroy(indexes);
 }
 
+void RedirectFileDescriptorToFile(int fdR, char* filePath, int* fd_new, int* fd_copy){
+    *fd_new = open(filePath, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+
+    //redirect printfs to the file
+    *fd_copy = dup(fdR);
+    dup2(*fd_new, 1);
+}
+
+void ResetFileDescriptor(int fdR, int fd_new, int fd_copy){
+    //close file
+    close(fd_new);
+    
+    //reset
+    dup2(fd_copy, fdR);
+    close(fd_copy);
+}
+
 int main(int argc, char* argv[]){
     /* --- Arguments --------------------------------------------------------------------------*/
 
-    char *websitesFolderPath , *dataSetWPath;
+    char *websitesFolderPath , *dataSetWPath, *identicalFilePath, *nonIdenticalFilePath, *outputFilePath;
     int bucketSize;
-    ParseArgs(argc, argv, &websitesFolderPath, &dataSetWPath, &bucketSize);
+    ParseArgs(argc, argv, &websitesFolderPath, &dataSetWPath, &bucketSize, &identicalFilePath, &nonIdenticalFilePath, &outputFilePath);
 
     /* --- Reads Json files and adds them to the clique ---------------------------------------*/
 
@@ -298,71 +336,149 @@ int main(int argc, char* argv[]){
     HandleData_W(dataSetWPath, &cliqueGroup);
 
     /* --- Print results ----------------------------------------------------------------------*/
+    
+    printf("\n");
 
-    List pairs = CliqueGroup_GetIdenticalPairs(&cliqueGroup);
-    printf("\n%d identical pairs : \n\n", pairs.size);
-    //CliqueGroup_PrintPairs(pairs, Item_Print);
+    //Get Identical Pairs
+    List trainingPairs = CliqueGroup_GetIdenticalPairs(&cliqueGroup);
+    printf("%d identical pairs found, printed in %s\n\n", trainingPairs.size, identicalFilePath);
+    
+    //Redirect stdout to the fd of the identicalFilePath
+    int fd_copy, fd_new;
+    RedirectFileDescriptorToFile(1, identicalFilePath, &fd_new, &fd_copy);
 
+    //Print
+    CliqueGroup_PrintPairs(trainingPairs, Item_Print);
+
+    //Reset stdout
+    ResetFileDescriptor(1, fd_new, fd_copy);
+
+    //Get Non Identical Pairs
     List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(&cliqueGroup);
-    printf("\n%d non identical pairs : \n\n", nonIdenticalPairs.size);
-    //CliqueGroup_PrintPairs(nonIdenticalPairs, Item_Print);
+    printf("%d non identical pairs found, printed in %s\n\n", nonIdenticalPairs.size, nonIdenticalFilePath);
+    
+    //Redirect stdout to the fd of the nonIdenticalFilePath
+    RedirectFileDescriptorToFile(1, nonIdenticalFilePath, &fd_new, &fd_copy);
+
+    //Print
+    CliqueGroup_PrintPairs(nonIdenticalPairs, Item_Print);
+
+    //Reset stdout
+    ResetFileDescriptor(1, fd_new, fd_copy);
 
     // Join lists for later training.
-    List_Join(&pairs, &nonIdenticalPairs);
-    //exit(0); // large : 299395 , medium : 43074
+    List_Join(&trainingPairs, &nonIdenticalPairs);
+    // large : 299395 , medium : 43074
 
-    //Split(pairs, list1, items1, list2, items2);
-    //Split() 20-20
+    //60-40
+    double trainingPercentage = 0.6, testingPercentage = 0.2, validationPercentage = 0.2;
+
+    List testingPairs;
+    if (List_Split(&trainingPairs, &testingPairs, trainingPercentage) == false){
+        printf("Can't split dataset for testing\n");
+        exit(1);
+    }else{
+        printf("Splitted for testing\n\n");
+    }
+
+    //50-50 for the 40% of all
+    List validationPairs;
+    if (List_Split(&testingPairs, &validationPairs, testingPercentage + trainingPercentage/2) == false){
+        printf("Can't split dataset for validation\n");
+        exit(1);
+    }else{
+        printf("Splitted for validation\n\n");
+    }
+
+    printf("Training size: %d pairs (%.2f%%)\nTesting size: %d pairs (%.2f%%)\nValidation size: %d pairs (%.2f%%)\n\n", 
+    trainingPairs.size, trainingPercentage*100, validationPairs.size, testingPercentage*100, validationPairs.size, validationPercentage*100);
+
+    //Get all items in a list to use later
     List items = CliqueGroup_GetAllItems(cliqueGroup);
+    
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    printf("Created Processed Words\n");
+    printf("Created Processed Words\n\n");
 
     Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, 1000); //Create Dictionary based on items list
-    printf("Created and Trimmed Dictionary based on avg TFIDF\n");
+    printf("Created and Trimmed Dictionary based on average TFIDF\n\n");
 
-    double** xVals;
-    unsigned int** xIndexes;
-    double* yVals;
+    double** xValsTraining;
+    unsigned int** xIndexesTraining;
+    double* yValsTraining;
 
     
     unsigned int width = 2 * idfDictionary.keyValuePairs.size;
-    unsigned int height = pairs.size;
+    unsigned int height = trainingPairs.size;
 
-    CreateXY(items, pairs, idfDictionary, itemProcessedWords, &xVals, &xIndexes, &yVals);
-    
-    printf("Created X Y Datasets for training\n");
+    CreateXY(items, trainingPairs, idfDictionary, itemProcessedWords, &xValsTraining, &xIndexesTraining, &yValsTraining);
+    printf("Created X Y Datasets for training\n\n");
 
+    //Training
     LogisticRegression model;
-    LogisticRegression_Init(&model, 0, xVals, xIndexes, yVals, width, height, items.size);
-    LogisticRegression_Train(&model, 0.001, 10);
+    LogisticRegression_Init(&model, 0, xValsTraining, xIndexesTraining, yValsTraining, width, height, items.size);
+    LogisticRegression_Train(&model, 0.001, 1);
+
+    printf("\nTraining completed\n");
+
+    //Testing Datasets
+    double** xValsTesting;
+    unsigned int** xIndexesTesting;
+    double* yValsTesting;
+
+    CreateXY(items, testingPairs, idfDictionary, itemProcessedWords, &xValsTesting, &xIndexesTesting, &yValsTesting);
+    printf("Created X Y Datasets for testing\n\n");
+
+    //Start testing
+    printf("Starting Tests...");
+
+    //Redirect stdout to the fd of the outputFilePath
+    RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
 
     int counter0 = 0;
     int counter1 = 0;
-    for (int i = 0; i < height; i++) {
-        double* leftVector = xVals[xIndexes[i][0]];
-        double* rightVector = xVals[xIndexes[i][1]];
+    for (int i = 0; i < testingPairs.size; i++) {
+        double* leftVector = xValsTesting[xIndexesTesting[i][0]];
+        double* rightVector = xValsTesting[xIndexesTesting[i][1]];
         
         double prediction = LogisticRegression_Predict(&model, leftVector, rightVector);
-        if(fabs(yVals[i] - prediction) < 0.1) {
-            if(yVals[i] == 0){
+        if(fabs(yValsTesting[i] - prediction) < 0.1) {
+            if(yValsTesting[i] == 0){
                 counter0++;
             }else{
                 counter1++;
             }
         }
-        printf("Accuracy : %f Real value : %f\n", prediction, yVals[i]);
+        printf("Prediction : %f Real value : %f\n", prediction, yValsTraining[i]);
     }
-    printf("Accuracy : %d / %d\n",counter0 + counter1 , height);
-    printf("Counter0 %d Counter1 %d\n",counter0,counter1);
+
+    printf("\nGeneral Pair Accuracy : %d / %d\n", counter0 + counter1 , testingPairs.size);
+    printf("%d Identical Pairs accurate\n%d Non Identical pairs accurate\n",counter1,counter0);
+    printf("\n");
+
+    //Reset stdout
+    ResetFileDescriptor(1, fd_new, fd_copy);
+    printf("Printed prediction results in %s\n\n", outputFilePath);
+
+    //TODO: we dont know how many identical and non identical pairs there were
+    //printf("Identical Pair Accuracy : %d / %d\n", counter1 , testingPairs.size);
+    //printf("Non Identical Pair Accuracy : %d / %d\n", counter0 , testingPairs.size);
+    printf("General Pair Accuracy : %d / %d\n", counter0 + counter1 , testingPairs.size);
+    printf("%d Identical Pairs accurate\n%d Non Identical pairs accurate\n",counter1,counter0);
+    printf("\n");
 
     /* --- Clean up ---------------------------------------------------------------------------*/
+    
+    printf("Cleaning up...\n\n");
 
     List_Destroy(&items);
 
-    List_FreeValues(pairs, Tuple_Free);
-    List_Destroy(&pairs);
+    List_FreeValues(trainingPairs, Tuple_Free);
+    List_Destroy(&trainingPairs);
+
+    List_FreeValues(testingPairs, Tuple_Free);
+    List_Destroy(&validationPairs);
 
     LogisticRegression_Destroy(model);
 
@@ -375,7 +491,7 @@ int main(int argc, char* argv[]){
     CliqueGroup_FreeValues(cliqueGroup, Item_Free);
     CliqueGroup_Destroy(cliqueGroup);
 
-    printf("ALL GOOD\n");
+    printf("Exiting...\n");
 
     return 0;
 }

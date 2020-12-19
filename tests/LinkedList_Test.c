@@ -191,11 +191,47 @@ void LinkedList_Test_Remove(){
     free(array);
 }
 
+void LinkedList_Test_Split(){
+    List list1;
+    List_Init(&list1);
+
+    int value1 = 1, value2 = 2, value3 = 3;
+    List_Append(&list1, &value1);
+    List_Append(&list1, &value2);
+    List_Append(&list1, &value3);
+    
+    List list2;
+    List_Split(&list1, &list2, 0.8); // here list1 should have 2 items after the split
+
+    TEST_ASSERT(list1.size == 2);
+    TEST_ASSERT(list2.size == 1);
+
+    //for list1
+    TEST_ASSERT(list1.head->value == &value1);
+    TEST_ASSERT(list1.head->next->value == &value2);
+    TEST_ASSERT(list1.head->next->next == NULL);
+    TEST_ASSERT(list1.head->prev == NULL);
+    TEST_ASSERT(list1.tail->next == NULL);
+    
+    //for list2
+    TEST_ASSERT(list2.size == 1);
+    TEST_ASSERT(list2.head->value == &value3);
+    TEST_ASSERT(list2.head->next == NULL);
+    TEST_ASSERT(list2.head->prev == NULL);
+    TEST_ASSERT(list2.tail == list2.head);
+    TEST_ASSERT(list2.tail->next == NULL);
+
+    List_Destroy(&list1);
+    List_Destroy(&list2);
+    
+}
+
 TEST_LIST = {
     { "LinkedList_Test_init",        LinkedList_Test_Init },
     { "LinkedList_Test_insert",      LinkedList_Test_Insert},
     { "LinkedList_Test_remove",      LinkedList_Test_Remove},
     { "LinkedList_Test_value_exist", LinkedList_Test_ValueExist},
     { "LinkedList_Test_merge",       LinkedList_Test_Merge},
+    { "LinkedList_Test_Split", LinkedList_Test_Split},
     { NULL, NULL }
 };
