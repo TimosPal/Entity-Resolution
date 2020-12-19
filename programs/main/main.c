@@ -373,6 +373,7 @@ int main(int argc, char* argv[]){
     //60-40
     double trainingPercentage = 0.6, testingPercentage = 0.2, validationPercentage = 0.2;
 
+    //TODO: randomize trainingPairs before splitting
     List testingPairs;
     if (List_Split(&trainingPairs, &testingPairs, trainingPercentage) == false){
         printf("Can't split dataset for testing\n");
@@ -381,7 +382,6 @@ int main(int argc, char* argv[]){
         printf("Splitted for testing\n\n");
     }
 
-    //50-50 for the 40% of all
     List validationPairs;
     if (List_Split(&testingPairs, &validationPairs, testingPercentage + trainingPercentage/2) == false){
         printf("Can't split dataset for validation\n");
@@ -472,15 +472,29 @@ int main(int argc, char* argv[]){
     
     printf("Cleaning up...\n\n");
 
-    List_Destroy(&items);
 
     List_FreeValues(trainingPairs, Tuple_Free);
     List_Destroy(&trainingPairs);
 
-    List_FreeValues(testingPairs, Tuple_Free);
-    List_Destroy(&validationPairs);
-
     LogisticRegression_Destroy(model);
+
+    free(yValsTesting);
+    for(int i = 0; i < items.size; i++){
+        free(xValsTesting[i]);
+    }
+    for(int i = 0; i < testingPairs.size; i++){
+        free(xIndexesTesting[i]);
+    }
+    free(xValsTesting);
+    free(xIndexesTesting);
+
+    List_Destroy(&items);
+    
+    List_FreeValues(testingPairs, Tuple_Free);
+    List_Destroy(&testingPairs);
+
+    List_FreeValues(validationPairs, Tuple_Free);
+    List_Destroy(&validationPairs);
 
     Hash_FreeValues(idfDictionary, free);
     Hash_Destroy(idfDictionary);
