@@ -341,16 +341,12 @@ int main(int argc, char* argv[]){
 
     //Get Identical Pairs
     List trainingPairs = CliqueGroup_GetIdenticalPairs(&cliqueGroup);
-    printf("%d identical pairs found, printed in %s\n\n", trainingPairs.size, identicalFilePath);
+    printf("%d identical pairs found, printed in %s\n", trainingPairs.size, identicalFilePath);
     
     //Redirect stdout to the fd of the identicalFilePath
     int fd_copy, fd_new;
     RedirectFileDescriptorToFile(1, identicalFilePath, &fd_new, &fd_copy);
-
-    //Print
     CliqueGroup_PrintPairs(trainingPairs, Item_Print);
-
-    //Reset stdout
     ResetFileDescriptor(1, fd_new, fd_copy);
 
     //Get Non Identical Pairs
@@ -359,38 +355,25 @@ int main(int argc, char* argv[]){
     
     //Redirect stdout to the fd of the nonIdenticalFilePath
     RedirectFileDescriptorToFile(1, nonIdenticalFilePath, &fd_new, &fd_copy);
-
-    //Print
     CliqueGroup_PrintPairs(nonIdenticalPairs, Item_Print);
-
-    //Reset stdout
     ResetFileDescriptor(1, fd_new, fd_copy);
 
     // Join lists for later training.
     List_Join(&trainingPairs, &nonIdenticalPairs);
-    // large : 299395 , medium : 43074
 
-    //60-40
+    // Split the set 60-40
     double trainingPercentage = 0.6, testingPercentage = 0.2, validationPercentage = 0.2;
 
     //TODO: randomize trainingPairs before splitting
     List testingPairs;
-    if (List_Split(&trainingPairs, &testingPairs, trainingPercentage) == false){
-        printf("Can't split dataset for testing\n");
-        exit(1);
-    }else{
-        printf("Splitted for testing\n\n");
-    }
+    IF_ERROR_MSG(!List_Split(&trainingPairs, &testingPairs, trainingPercentage), "Can't split dataset for testing")
+    printf("Split for testing\n");
 
     List validationPairs;
-    if (List_Split(&testingPairs, &validationPairs, testingPercentage + trainingPercentage/2) == false){
-        printf("Can't split dataset for validation\n");
-        exit(1);
-    }else{
-        printf("Splitted for validation\n\n");
-    }
+    IF_ERROR_MSG(!List_Split(&testingPairs, &validationPairs, testingPercentage + trainingPercentage/2), "Can't split dataset for validation")
+    printf("Split for validation\n\n");
 
-    printf("Training size: %d pairs (%.2f%%)\nTesting size: %d pairs (%.2f%%)\nValidation size: %d pairs (%.2f%%)\n\n", 
+    printf("Training size: %d pairs (%.2f%%)\nTesting size: %d pairs (%.2f%%)\nValidation size: %d pairs (%.2f%%)\n\n",
     trainingPairs.size, trainingPercentage*100, validationPairs.size, testingPercentage*100, validationPairs.size, validationPercentage*100);
 
     //Get all items in a list to use later
@@ -399,15 +382,13 @@ int main(int argc, char* argv[]){
     /* --- Create processed words for items ---------------------------------------------------*/
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
-    printf("Created Processed Words\n\n");
-
-    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, 1000); //Create Dictionary based on items list
-    printf("Created and Trimmed Dictionary based on average TFIDF\n\n");
+    printf("Created Processed Words\n");
+    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, 100); //Create Dictionary based on items list
+    printf("Created and Trimmed Dictionary based on average TFIDF\n");
 
     double** xValsTraining;
     unsigned int** xIndexesTraining;
     double* yValsTraining;
-
     
     unsigned int width = 2 * idfDictionary.keyValuePairs.size;
     unsigned int height = trainingPairs.size;
@@ -418,9 +399,8 @@ int main(int argc, char* argv[]){
     //Training
     LogisticRegression model;
     LogisticRegression_Init(&model, 0, xValsTraining, xIndexesTraining, yValsTraining, width, height, items.size);
-    LogisticRegression_Train(&model, 0.001, 1);
-
-    printf("\nTraining completed\n");
+    LogisticRegression_Train(&model, LEARNING_RATE, EPOCHS);
+    printf("\rTraining completed with %d epochs\n\n", EPOCHS);
 
     //Testing Datasets
     double** xValsTesting;
@@ -450,7 +430,7 @@ int main(int argc, char* argv[]){
                 counter1++;
             }
         }
-        printf("Prediction : %f Real value : %f\n", prediction, yValsTraining[i]);
+        printf("Prediction : %f Real value : %f\n", prediction, yValsTesting[i]);
     }
 
     printf("\nGeneral Pair Accuracy : %d / %d\n", counter0 + counter1 , testingPairs.size);
@@ -470,8 +450,7 @@ int main(int argc, char* argv[]){
 
     /* --- Clean up ---------------------------------------------------------------------------*/
     
-    printf("Cleaning up...\n\n");
-
+    printf("Cleaning up...\n");
 
     List_FreeValues(trainingPairs, Tuple_Free);
     List_Destroy(&trainingPairs);
@@ -505,7 +484,7 @@ int main(int argc, char* argv[]){
     CliqueGroup_FreeValues(cliqueGroup, Item_Free);
     CliqueGroup_Destroy(cliqueGroup);
 
-    printf("Exiting...\n");
+    printf("Exiting...\n\n");
 
     return 0;
 }
