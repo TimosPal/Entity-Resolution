@@ -73,19 +73,13 @@ char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath){
     }
 
     //i is the filename for identical pairs to be printed out to
-    if(FindArgAfterFlag(argv, argc, "-i", identicalFilePath)) {
-        IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-i", identicalFilePath), "Argument -i is missing or has no value")
-    }
+    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-i", identicalFilePath), "Argument -i is missing or has no value")
 
     //n is the filename for non identical pairs to be printed out to
-    if(FindArgAfterFlag(argv, argc, "-n", nonIdenticalFilePath)) {
-        IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-n", nonIdenticalFilePath), "Argument -n is missing or has no value")
-    }
+    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-n", nonIdenticalFilePath), "Argument -n is missing or has no value")
 
     //o is the filename for testing output to be printed out to
-    if(FindArgAfterFlag(argv, argc, "-o", outputFilePath)) {
-        IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-o", outputFilePath), "Argument -o is missing or has no value")
-    }
+    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-o", outputFilePath), "Argument -o is missing or has no value")
 }
 
 void HandleData_X(char* websitesFolderPath,int bucketSize,CliqueGroup* cliqueGroup){
@@ -386,7 +380,7 @@ int main(int argc, char* argv[]){
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
     printf("Created Processed Words\n");
-    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, 100); //Create Dictionary based on items list
+    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, VOCAB_SIZE); //Create Dictionary based on items list
     printf("Created and Trimmed Dictionary based on average TFIDF\n");
 
     double** xValsTraining;
