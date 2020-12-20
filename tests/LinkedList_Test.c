@@ -226,12 +226,38 @@ void LinkedList_Test_Split(){
     
 }
 
+void LinkedList_Test_Shuffle(){
+    List list;
+    List_Init(&list);
+
+    int zero = 0, one = 1;
+    for (int i = 0; i < 50; i++){
+        List_Append(&list, &one);
+    }
+
+    for (int i = 0; i < 200; i++){
+        List_Append(&list, &zero);
+    }
+
+    List_Shuffle(&list);
+
+    Node* node = list.head;
+    while(node != NULL){
+        //printf("%d\n", *(int*)node->value);
+
+        node = node->next;
+    }
+
+    List_Destroy(&list);
+}
+
 TEST_LIST = {
     { "LinkedList_Test_init",        LinkedList_Test_Init },
-    { "LinkedList_Test_insert",      LinkedList_Test_Insert},
-    { "LinkedList_Test_remove",      LinkedList_Test_Remove},
-    { "LinkedList_Test_value_exist", LinkedList_Test_ValueExist},
-    { "LinkedList_Test_merge",       LinkedList_Test_Merge},
-    { "LinkedList_Test_Split", LinkedList_Test_Split},
+    { "LinkedList_Test_insert",      LinkedList_Test_Insert },
+    { "LinkedList_Test_remove",      LinkedList_Test_Remove },
+    { "LinkedList_Test_value_exist", LinkedList_Test_ValueExist },
+    { "LinkedList_Test_merge",       LinkedList_Test_Merge },
+    { "LinkedList_Test_Split", LinkedList_Test_Split },
+    { "LinkedList_Test_Shuffle", LinkedList_Test_Shuffle },
     { NULL, NULL }
 };

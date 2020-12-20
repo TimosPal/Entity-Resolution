@@ -91,7 +91,7 @@ void LogisticRegression_Destroy(LogisticRegression model){
     free(model.xIndexes);
 }
 
-void LogisticRegression_Train(LogisticRegression *model, double learningRate, int epochs) {
+double* LogisticRegression_Train(LogisticRegression *model, double learningRate, int epochs) {
     double* newW = malloc(model->width * sizeof(double));
     double* gradientVector = malloc(model->width * sizeof(double));
 
@@ -115,6 +115,8 @@ void LogisticRegression_Train(LogisticRegression *model, double learningRate, in
 
     free(gradientVector);
     free(newW);
+
+    return model->weights;
 }
 
 double LogisticRegression_Predict(LogisticRegression* model, double* leftVector, double* rightVector){

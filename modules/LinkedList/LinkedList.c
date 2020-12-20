@@ -240,3 +240,39 @@ bool List_Split(List* list1, List* list2,  double percentage){
 
 	return true;
 }
+
+void List_Shuffle(List* list){
+	if (list == NULL || list->size < 2){
+		return;
+	}
+
+	void** array = malloc(list->size * sizeof(void*));
+
+	//find mid node
+	int k = 0;
+	Node* node = list->head;
+	while(node != NULL){
+		array[k] = node->value;
+
+		k++;
+		node = node->next;
+	}
+
+	for (int i = 0; i < list->size-1; i++){
+		int j = rand() % list->size;
+		void* temp = array[j];
+		array[j] = array[i];
+		array[i] = temp;
+	}
+
+	k = 0;
+	node = list->head;
+	while(node != NULL){
+		node->value = array[k];
+
+		k++;
+		node = node->next;
+	}
+
+	free(array);
+}

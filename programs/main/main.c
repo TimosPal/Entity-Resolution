@@ -361,6 +361,9 @@ int main(int argc, char* argv[]){
     // Join lists for later training.
     List_Join(&trainingPairs, &nonIdenticalPairs);
 
+    //Shuffle list of training pairs before splitting
+    List_Shuffle(&trainingPairs);
+
     // Split the set 60-40
     double trainingPercentage = 0.6, testingPercentage = 0.2, validationPercentage = 0.2;
 
