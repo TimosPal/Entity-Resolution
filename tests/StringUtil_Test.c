@@ -36,7 +36,7 @@ void StringUtil_Test_RemoveBigNumber(){
 TEST_LIST = {
         { "StringUtil_Test_StringToInt", StringUtil_Test_StringToInt },
         { "StringUtil_Test_StringSplit", StringUtil_Test_StringSplit },
-        { "StringUtil_Test_RemoveUniCode", StringUtil_Test_RemoveUniCode},
-        { "StringUtil_Test_RemoveBigNumber", StringUtil_Test_RemoveBigNumber},
+        { "StringUtil_Test_RemoveUniCode", StringUtil_Test_RemoveUniCode },
+        { "StringUtil_Test_RemoveBigNumber", StringUtil_Test_RemoveBigNumber },
         { NULL, NULL }
 };

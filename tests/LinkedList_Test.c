@@ -251,13 +251,46 @@ void LinkedList_Test_Shuffle(){
     List_Destroy(&list);
 }
 
+void LinkedList_Test_Join(){
+    List list1, list2;
+    List_Init(&list1);
+    List_Init(&list2);
+
+    int zero = 0, one = 1;
+    List_Append(&list1, &zero);
+    List_Join(&list1, &list2);
+    TEST_ASSERT(list1.size == 1);
+    TEST_ASSERT(list2.size == 0);
+    TEST_ASSERT(list1.head != NULL);
+    TEST_ASSERT(list1.tail != NULL);
+    TEST_ASSERT(list1.head->value == &zero);
+    TEST_ASSERT(list2.head == NULL);
+    TEST_ASSERT(list2.tail == NULL);
+
+    List_Init(&list2);
+    List_Append(&list2, &one);
+    List_Join(&list1, &list2);
+    TEST_ASSERT(list1.size == 2);
+    TEST_ASSERT(list2.size == 0);
+    TEST_ASSERT(list1.head != NULL);
+    TEST_ASSERT(list1.tail != NULL);
+    TEST_ASSERT(list1.head->value == &zero);
+    TEST_ASSERT(list1.head->next->value == &one);
+    TEST_ASSERT(list2.head == NULL);
+    TEST_ASSERT(list2.tail == NULL);
+
+    List_Destroy(&list1);
+    List_Destroy(&list2);
+}
+
 TEST_LIST = {
     { "LinkedList_Test_init",        LinkedList_Test_Init },
     { "LinkedList_Test_insert",      LinkedList_Test_Insert },
     { "LinkedList_Test_remove",      LinkedList_Test_Remove },
     { "LinkedList_Test_value_exist", LinkedList_Test_ValueExist },
     { "LinkedList_Test_merge",       LinkedList_Test_Merge },
-    { "LinkedList_Test_Split", LinkedList_Test_Split },
-    { "LinkedList_Test_Shuffle", LinkedList_Test_Shuffle },
+    { "LinkedList_Test_split", LinkedList_Test_Split },
+    { "LinkedList_Test_shuffle", LinkedList_Test_Shuffle },
+    { "LinkedList_Test_join", LinkedList_Test_Join },
     { NULL, NULL }
 };

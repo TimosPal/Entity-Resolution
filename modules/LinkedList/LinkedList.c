@@ -195,6 +195,7 @@ void** List_ToArray(List list){
 	return array;
 }
 
+/* Join into list1 */
 void List_Join(List* list1, List* list2){
 	if (list1->size == 0){
 		*list1 = *list2;
