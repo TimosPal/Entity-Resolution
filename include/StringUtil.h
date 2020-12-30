@@ -14,6 +14,7 @@ char* NewString(char* str);
 char* GetFileNameFromPath(char* str);
 
 bool StringToInt(char* str,int* value);
+bool StringToDouble(char* str, double* value);
 bool StringCmp(void* value1,void* value2);
 bool StringIsEmptyLine(char* str);
 

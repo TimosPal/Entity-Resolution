@@ -54,7 +54,7 @@ int CalculateBucketSize(char* websitesFolderPath){
 }
 
 void ParseArgs(int argc, char* argv[], char **websitesFolderPath, char **dataSetWPath, int* bucketSize, 
-char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath){
+char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath, int* vocabSize, int* epochs, double* maxAccuracyDiff, double* learningRate){
     // Get the flags from argv.
     // -f should contain the path to the folder containing the websites folders.
     IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-f", websitesFolderPath), "Argument -f is missing or has no value")
@@ -69,7 +69,46 @@ char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath){
     }else{
         // We estimated the size based on the files number.
         *bucketSize = CalculateBucketSize(*websitesFolderPath);
-        //printf("------------- %d -------------\n",bucketSize);
+    }
+
+    // -v is the vocabSize
+    char *vocabSizeStr;
+    // If -v is not provided we give it a default value.
+    if(FindArgAfterFlag(argv, argc, "-v", &vocabSizeStr)) {
+        IF_ERROR_MSG(!StringToInt(vocabSizeStr, vocabSize), "Vocabulary Size should be a number")
+    }else{
+        // Give it a default value
+        *vocabSize = VOCAB_SIZE;
+    }
+
+    // -e is the number of epochs
+    char *epochsStr;
+    // If -e is not provided we give it a default value.
+    if(FindArgAfterFlag(argv, argc, "-e", &epochsStr)) {
+        IF_ERROR_MSG(!StringToInt(epochsStr, epochs), "Epochs should be a number")
+    }else{
+        // Give it a default value
+        *epochs = EPOCHS;
+    }
+
+    // -d is the max accuracy difference for testing
+    char *maxAccuracyDiffStr;
+    // If -d is not provided we give it a default value.
+    if(FindArgAfterFlag(argv, argc, "-d", &maxAccuracyDiffStr)) {
+        IF_ERROR_MSG(!StringToDouble(maxAccuracyDiffStr, maxAccuracyDiff), "Accuracy Difference Percentage should be a number")
+    }else{
+        // Give it a default value
+        *maxAccuracyDiff = MAX_ACCURACY_DIFF;
+    }
+
+    // -r is the learning rate for model training
+    char *learningRateStr;
+    // If -r is not provided we give it a default value.
+    if(FindArgAfterFlag(argv, argc, "-r", &learningRateStr)) {
+        IF_ERROR_MSG(!StringToDouble(learningRateStr, learningRate), "Learning rate should be a number")
+    }else{
+        // Give it a default value
+        *learningRate = LEARNING_RATE;
     }
 
     //i is the filename for identical pairs to be printed out to
@@ -316,9 +355,9 @@ int main(int argc, char* argv[]){
     /* --- Arguments --------------------------------------------------------------------------*/
 
     char *websitesFolderPath , *dataSetWPath, *identicalFilePath, *nonIdenticalFilePath, *outputFilePath;
-    int bucketSize;
-    ParseArgs(argc, argv, &websitesFolderPath, &dataSetWPath, &bucketSize, &identicalFilePath, &nonIdenticalFilePath, &outputFilePath);
-
+    int bucketSize, vocabSize, epochs;
+    double maxAccuracyDiff, learningRate;
+    ParseArgs(argc, argv, &websitesFolderPath, &dataSetWPath, &bucketSize, &identicalFilePath, &nonIdenticalFilePath, &outputFilePath, &vocabSize, &epochs, &maxAccuracyDiff, &learningRate);
     /* --- Reads Json files and adds them to the clique ---------------------------------------*/
 
     CliqueGroup cliqueGroup;
@@ -380,7 +419,7 @@ int main(int argc, char* argv[]){
 
     Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
     printf("Created Processed Words\n");
-    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, VOCAB_SIZE); //Create Dictionary based on items list
+    Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, vocabSize); //Create Dictionary based on items list
     printf("Created and Trimmed Dictionary based on average TFIDF\n");
 
     double** xValsTraining;
@@ -396,8 +435,8 @@ int main(int argc, char* argv[]){
     //Training
     LogisticRegression model;
     LogisticRegression_Init(&model, 0, xValsTraining, xIndexesTraining, yValsTraining, width, height, items.size);
-    LogisticRegression_Train(&model, LEARNING_RATE, EPOCHS);
-    printf("\rTraining completed with %d epochs\n\n", EPOCHS);
+    LogisticRegression_Train(&model, learningRate, epochs);
+    printf("\rTraining completed with %d epochs\n\n", epochs);
 
     //Testing Datasets
     double** xValsTesting;
@@ -408,7 +447,7 @@ int main(int argc, char* argv[]){
     printf("Created X Y Datasets for testing\n\n");
 
     //Start testing
-    printf("Starting Tests...");
+    printf("Starting Tests...\n");
 
     //Redirect stdout to the fd of the outputFilePath
     RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
@@ -420,7 +459,7 @@ int main(int argc, char* argv[]){
         double* rightVector = xValsTesting[xIndexesTesting[i][1]];
         
         double prediction = LogisticRegression_Predict(&model, leftVector, rightVector);
-        if(fabs(yValsTesting[i] - prediction) < 0.1) {
+        if(fabs(yValsTesting[i] - prediction) < maxAccuracyDiff) {
             if(yValsTesting[i] == 0){
                 counter0++;
             }else{
@@ -430,7 +469,9 @@ int main(int argc, char* argv[]){
         printf("Prediction : %f Real value : %f\n", prediction, yValsTesting[i]);
     }
 
-    printf("\nGeneral Pair Accuracy : %d / %d\n", counter0 + counter1 , testingPairs.size);
+    double accuracyPercentage = (double)(counter0 + counter1) / testingPairs.size * 100;
+
+    printf("General Pair Accuracy : %d / %d (%f%%)\n", counter0 + counter1 , testingPairs.size, accuracyPercentage);
     printf("%d Identical Pairs accurate\n%d Non Identical pairs accurate\n",counter1,counter0);
     printf("\n");
 
@@ -441,7 +482,7 @@ int main(int argc, char* argv[]){
     //TODO: we dont know how many identical and non identical pairs there were
     //printf("Identical Pair Accuracy : %d / %d\n", counter1 , testingPairs.size);
     //printf("Non Identical Pair Accuracy : %d / %d\n", counter0 , testingPairs.size);
-    printf("General Pair Accuracy : %d / %d\n", counter0 + counter1 , testingPairs.size);
+    printf("General Pair Accuracy : %d / %d (%f%%)\n", counter0 + counter1 , testingPairs.size, accuracyPercentage);
     printf("%d Identical Pairs accurate\n%d Non Identical pairs accurate\n",counter1,counter0);
     printf("\n");
 

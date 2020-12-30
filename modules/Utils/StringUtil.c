@@ -23,11 +23,19 @@ List StringSplit(char* str, char* token){
     return temp;
 }
 
-bool StringToInt(char* str,int* value){
+bool StringToInt(char* str, int* value){
     errno = 0;
     char* endPtr;
 
-    *value = (int)strtol(str,&endPtr,10);
+    *value = (int)strtol(str, &endPtr, 10);
+    return (errno == 0 && *endPtr == '\0');
+}
+
+bool StringToDouble(char* str, double* value){
+    errno = 0;
+    char* endPtr;
+
+    *value = (double)strtod(str, &endPtr);
     return (errno == 0 && *endPtr == '\0');
 }
 

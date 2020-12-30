@@ -1,4 +1,4 @@
-Starting Tests...Prediction : 0.000000 Real value : 0.000000
+Prediction : 0.000000 Real value : 0.000000
 Prediction : 0.000018 Real value : 0.000000
 Prediction : 0.999985 Real value : 1.000000
 Prediction : 0.017989 Real value : 0.000000
@@ -68384,8 +68384,7 @@ Prediction : 0.000000 Real value : 0.000000
 Prediction : 0.007824 Real value : 0.000000
 Prediction : 0.000000 Real value : 0.000000
 Prediction : 0.999977 Real value : 1.000000
-
-General Pair Accuracy : 67043 / 68386
+General Pair Accuracy : 67043 / 68386 (98.036148%)
 7674 Identical Pairs accurate
 59369 Non Identical pairs accurate
 

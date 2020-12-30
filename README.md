@@ -51,6 +51,10 @@ Makefile located in programs/main
     -i : where the produced simillar pairs should be saved
     -n : where the produced non-simillar (non-identical) pairs should be saved
     -o : where the predictions and accuracy of the testing test should be saved
+    -v : vocabulary size for the dictionary
+    -e : number of epochs for training the model
+    -d : max accuracy difference, > 0 and <= 1> (if below this percentage, the difference is acceptable in testing and the result was accurate).
+    -r : learning rate for model training (double)
 
 ### Data structured used :
 
