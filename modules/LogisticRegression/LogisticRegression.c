@@ -1,4 +1,5 @@
 #include "LogisticRegression.h"
+#include "Util.h"
 
 #include <math.h>
 #include <string.h>
@@ -35,18 +36,25 @@ double SigmoidFunction(double x){
 
 double PartialDerivative(LogisticRegression* model, int derivativeIndex, int j){
     double result = 0;
-
-    double* leftVector = model->xVals[model->xIndexes[j][0]];
-    double* rightVector = model->xVals[model->xIndexes[j][1]];
-    double xij;
-    if(derivativeIndex < model->width / 2){
-        xij = leftVector[derivativeIndex];
-    }else{
-        xij = rightVector[derivativeIndex - model->width/2];
+    
+    int limit = j + BATCH_SIZE;
+    if (limit > model->height){
+        limit = model->height;
     }
 
-    if(xij > 0){
-        result += (SigmoidFunction(LinearFunction(model->weights, model->bWeight, leftVector, rightVector, model->width)) - model->yVals[j]) * xij;
+    for(int k = j; k < limit; k++){
+        double* leftVector = model->xVals[model->xIndexes[k][0]];
+        double* rightVector = model->xVals[model->xIndexes[k][1]];
+        double xij;
+        if(derivativeIndex < model->width / 2){
+            xij = leftVector[derivativeIndex];
+        }else{
+            xij = rightVector[derivativeIndex - model->width/2];
+        }
+
+        if(xij > 0){
+            result += (SigmoidFunction(LinearFunction(model->weights, model->bWeight, leftVector, rightVector, model->width)) - model->yVals[k]) * xij;
+        }
     }
 
     return result;
@@ -95,10 +103,14 @@ double* LogisticRegression_Train(LogisticRegression *model, double learningRate,
     double* newW = malloc(model->width * sizeof(double));
     double* gradientVector = malloc(model->width * sizeof(double));
 
-    for(int k = 0; k < epochs; k++) {
-        for (int j = 0; j < model->height; ++j) {
+    int batches = model->height / BATCH_SIZE;
+    if (batches % BATCH_SIZE != 0){
+        batches++;
+    }
 
-            GradientVector(model, gradientVector, j);
+    for(int k = 0; k < epochs; k++) {
+        for (int j = 0; j < batches; j++){
+            GradientVector(model, gradientVector, j*BATCH_SIZE);
 
             for (int i = 0; i < model->width; ++i) {
                 newW[i] = model->weights[i] - learningRate * gradientVector[i];
