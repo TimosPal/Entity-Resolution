@@ -356,3 +356,30 @@ List CliqueGroup_GetAllItems(CliqueGroup group){
 
     return items;
 }
+
+bool CliqueGroup_PairIsValid(ItemCliquePair* icp1, ItemCliquePair* icp2, bool isEqual){
+    if (!isEqual){
+        Node* icpNode = icp1->clique->similar.head;
+        while(icpNode != NULL){
+            ItemCliquePair* icp = (ItemCliquePair*)icpNode->value;
+            if (icp->id == icp2->id){
+                return false;
+            }
+
+            icpNode = icpNode->next;
+        }
+    }else{
+        //cannon use nonSimilarHash because we don't finilize after each insertion in retraining
+        Node* icpNode = icp1->clique->nonSimilar.head;
+        while(icpNode != NULL){
+            ItemCliquePair* icp = (ItemCliquePair*)icpNode->value;
+            if (icp->clique->id == icp2->clique->id){
+                return false;
+            }
+
+            icpNode = icpNode->next;
+        }
+    }
+
+    return true;
+}

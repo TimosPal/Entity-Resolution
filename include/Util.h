@@ -15,6 +15,7 @@
 #define VOCAB_SIZE 1000
 #define MAX_ACCURACY_DIFF 0.1
 #define BATCH_SIZE 512
+#define THRESHOLD 0.05
 
 #define IF_ERROR_MSG(x,msg) { if(x) {fprintf(stderr,"ERROR : %s.\n",msg); exit(EXIT_ERROR_CODE); } }
 

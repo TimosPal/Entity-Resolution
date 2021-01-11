@@ -271,16 +271,31 @@ bool UIntCmp(void* value1, void* value2){
     }
 }
 
-void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWords, double*** X, unsigned int*** xIndexes, double** Y){
+int PairChance_Cmp(const void* value1, const void* value2){
+    Tuple* tuple1 = *(Tuple**)value1;
+    Tuple* tuple2 = *(Tuple**)value2;
+
+    double acc1 = *(double*)(tuple1->value2);
+    double acc2 = *(double*)(tuple2->value2);
+
+    if (acc1 < acc2){
+        return -1;
+    }else if(acc1 > acc2){
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
+void CreateXVals(List items, Hash idfDictionary, Hash itemProcessedWords, double*** XVals, Hash* indexes){
     //Array of sparse matrices(hashes) with TFIDF values
     Hash* x = CreateVectors(items, idfDictionary, itemProcessedWords);
     
     //Hash with keys = id of icp and value = index in array of TFIDF vectors
-    Hash indexes;
-    Hash_Init(&indexes, DEFAULT_HASH_SIZE, RSHash, UIntCmp, false);
+    Hash_Init(indexes, DEFAULT_HASH_SIZE, RSHash, UIntCmp, false);
     
     //Array with TFIDF vectors for each item
-    double** xVals = malloc(items.size * sizeof(double*));
+    double **xVals = malloc(items.size * sizeof(double*));
     
     int k = 0;
     Node* itemNode = items.head;
@@ -289,7 +304,7 @@ void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWord
 
         unsigned int* index = malloc(sizeof(unsigned int));
         *index = k;
-        Hash_Add(&indexes, &icp->id, sizeof(icp->id), index);
+        Hash_Add(indexes, &icp->id, sizeof(icp->id), index);
         xVals[k] = TF_IDF_ToArray(x[k], idfDictionary);
 
         Hash_FreeValues(x[k], free);
@@ -301,10 +316,14 @@ void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWord
 
     free(x);
 
+    *XVals = xVals;
+}
+
+void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWords, Hash indexes, unsigned int*** xIndexes, double** Y){
     //Array of vector indexes in TFIDF array for all pairs
     unsigned int** pairIndexes = malloc(pairs.size * sizeof(unsigned int*));
     Node* pairNode = pairs.head;
-    k = 0;
+    int k = 0;
     //Mapping
     while(pairNode != NULL){
         pairIndexes[k] = malloc(2 * sizeof(unsigned int));
@@ -326,12 +345,7 @@ void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWord
     double* yVals = CreateY(pairs);
 
     *Y = yVals;
-    *X = xVals;
     *xIndexes = pairIndexes;
-
-    //Cleanup
-    Hash_FreeValues(indexes, free);
-    Hash_Destroy(indexes);
 }
 
 void RedirectFileDescriptorToFile(int fdR, char* filePath, int* fd_new, int* fd_copy){
@@ -400,7 +414,6 @@ int main(int argc, char* argv[]){
     // Split the set 60-40
     double trainingPercentage = 0.6, testingPercentage = 0.2, validationPercentage = 0.2;
 
-    //TODO: randomize trainingPairs before splitting
     List testingPairs;
     IF_ERROR_MSG(!List_Split(&trainingPairs, &testingPairs, trainingPercentage), "Can't split dataset for testing")
     printf("Split for testing\n");
@@ -422,73 +435,110 @@ int main(int argc, char* argv[]){
     Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, vocabSize); //Create Dictionary based on items list
     printf("Created and Trimmed Dictionary based on average TFIDF\n");
 
-    double** xValsTraining;
+    double** xVals;
     unsigned int** xIndexesTraining;
     double* yValsTraining;
     
     unsigned int width = 2 * idfDictionary.keyValuePairs.size;
     unsigned int height = trainingPairs.size;
 
-    CreateXY(items, trainingPairs, idfDictionary, itemProcessedWords, &xValsTraining, &xIndexesTraining, &yValsTraining);
+    Hash indexes;
+    CreateXVals(items, idfDictionary, itemProcessedWords, &xVals, &indexes);
+    CreateXY(items, trainingPairs, idfDictionary, itemProcessedWords, indexes, &xIndexesTraining, &yValsTraining);
     printf("Created X Y Datasets for training\n\n");
+    
+    //Testing Datasets
+    unsigned int** xIndexesTesting;
+    double* yValsTesting;
+    
+    CreateXY(items, testingPairs, idfDictionary, itemProcessedWords, indexes, &xIndexesTesting, &yValsTesting);
+    printf("Created X Y Datasets for testing\n\n");
 
     //Training
     LogisticRegression model;
-    LogisticRegression_Init(&model, 0, xValsTraining, xIndexesTraining, yValsTraining, width, height, items.size);
-    LogisticRegression_Train(&model, learningRate, epochs);
-    printf("\rTraining completed with %d epochs\n\n", epochs);
+    LogisticRegression_Init(&model, 0, xVals, xIndexesTraining, yValsTraining, width, height, items.size);
+    
+    double threshold = THRESHOLD;
+    int retrainCounter = 0;
+    while(threshold < 0.5){
+        LogisticRegression_Train(&model, learningRate, epochs);
+        printf("\rTraining completed with %d epochs\n\n", epochs);
 
-    //Testing Datasets
-    double** xValsTesting;
-    unsigned int** xIndexesTesting;
-    double* yValsTesting;
+        //Start testing
+        printf("Predicting and Retraining #%d...\n", retrainCounter);
 
-    CreateXY(items, testingPairs, idfDictionary, itemProcessedWords, &xValsTesting, &xIndexesTesting, &yValsTesting);
-    printf("Created X Y Datasets for testing\n\n");
+        List acceptedPairs;
+        List_Init(&acceptedPairs);
 
-    //Start testing
-    printf("Starting Tests...\n");
+        int counter0 = 0;
+        int counter1 = 0;
+        for (int i = 0; i < testingPairs.size; i++) {
+            //check if this pair has already beed added to training set before
+            if(xIndexesTesting[i][0] == -1){
+                continue;
+            }
 
-    //Redirect stdout to the fd of the outputFilePath
-    RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
-
-    int counter0 = 0;
-    int counter1 = 0;
-    for (int i = 0; i < testingPairs.size; i++) {
-        double* leftVector = xValsTesting[xIndexesTesting[i][0]];
-        double* rightVector = xValsTesting[xIndexesTesting[i][1]];
-        
-        double prediction = LogisticRegression_Predict(&model, leftVector, rightVector);
-        if(fabs(yValsTesting[i] - prediction) < maxAccuracyDiff) {
-            if(yValsTesting[i] == 0){
-                counter0++;
-            }else{
-                counter1++;
+            double* leftVector = xVals[xIndexesTesting[i][0]];
+            double* rightVector = xVals[xIndexesTesting[i][1]];
+            
+            double prediction = LogisticRegression_Predict(&model, leftVector, rightVector);
+            double chance = fabs(yValsTesting[i] - prediction);
+            if(chance < threshold) {
+                if(yValsTesting[i] == 0){
+                    counter0++;
+                }else{
+                    counter1++;
+                }
+                //Add pair and chance tuple to list
+                Tuple* PairChanceTuple = malloc(sizeof(Tuple));
+                Tuple_Init(PairChanceTuple, &i, sizeof(int), &chance, sizeof(double));
+                List_Append(&acceptedPairs, PairChanceTuple);
             }
         }
-        printf("Prediction : %f Real value : %f\n", prediction, yValsTesting[i]);
-    }
+        //Tuple List to array
+        Tuple** acceptedPairsArray = (Tuple**)List_ToArray(acceptedPairs);
+        //Sort array based on accuracy
+        qsort(acceptedPairsArray, acceptedPairs.size, sizeof(Tuple*), PairChance_Cmp);
+        //Insert to cliquegroup from higher to lower accuracy (and check if can be inserted)
+        
+        //Finalize cliqueGroup
+        CliqueGroup_Finalize(cliqueGroup);
+        //Transitivity
 
-    double accuracyPercentage = (double)(counter0 + counter1) / testingPairs.size * 100;
+        retrainCounter++;
+        
+        double accuracyPercentage = (double)(counter0 + counter1) / testingPairs.size * 100;
+        printf("General Pair Accuracy : %d / %d (%f%%)\n", counter0 + counter1 , testingPairs.size, accuracyPercentage);
+        printf("%d Identical Pairs accurate\n%d Non Identical pairs accurate\n",counter1,counter0);
+        
+        //Cleanup
+        List_FreeValues(acceptedPairs, Tuple_Free);
+        List_Destroy(&acceptedPairs);
+        free(acceptedPairsArray);
+    }    
 
-    printf("General Pair Accuracy : %d / %d (%f%%)\n", counter0 + counter1 , testingPairs.size, accuracyPercentage);
-    printf("%d Identical Pairs accurate\n%d Non Identical pairs accurate\n",counter1,counter0);
-    printf("\n");
-
+    //Redirect stdout to the fd of the outputFilePath
+    ///RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
     //Reset stdout
-    ResetFileDescriptor(1, fd_new, fd_copy);
-    printf("Printed prediction results in %s\n\n", outputFilePath);
+    //ResetFileDescriptor(1, fd_new, fd_copy);
+    //printf("Printed prediction results in %s\n\n", outputFilePath);
+    
+    //NOTE: PREDICTION PRINT FOR LATER USE
+    //printf("Prediction : %f Real value : %f\n", prediction, yValsTesting[i]);
 
     //TODO: we dont know how many identical and non identical pairs there were
     //printf("Identical Pair Accuracy : %d / %d\n", counter1 , testingPairs.size);
     //printf("Non Identical Pair Accuracy : %d / %d\n", counter0 , testingPairs.size);
-    printf("General Pair Accuracy : %d / %d (%f%%)\n", counter0 + counter1 , testingPairs.size, accuracyPercentage);
-    printf("%d Identical Pairs accurate\n%d Non Identical pairs accurate\n",counter1,counter0);
-    printf("\n");
+    //printf("General Pair Accuracy : %d / %d (%f%%)\n", counter0 + counter1 , testingPairs.size, accuracyPercentage);
+    //printf("%d Identical Pairs accurate\n%d Non Identical pairs accurate\n",counter1,counter0);
+    //printf("\n");
 
     /* --- Clean up ---------------------------------------------------------------------------*/
     
     printf("Cleaning up...\n");
+
+    Hash_FreeValues(indexes, free);
+    Hash_Destroy(indexes);
 
     List_FreeValues(trainingPairs, Tuple_Free);
     List_Destroy(&trainingPairs);
@@ -497,12 +547,12 @@ int main(int argc, char* argv[]){
 
     free(yValsTesting);
     for(int i = 0; i < items.size; i++){
-        free(xValsTesting[i]);
+        free(xVals[i]);
     }
     for(int i = 0; i < testingPairs.size; i++){
         free(xIndexesTesting[i]);
     }
-    free(xValsTesting);
+    free(xVals);
     free(xIndexesTesting);
 
     List_Destroy(&items);

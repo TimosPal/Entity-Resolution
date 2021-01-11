@@ -49,4 +49,6 @@ List CliqueGroup_GetAllItems(CliqueGroup group);
 List CliqueGroup_GetIdenticalPairs(CliqueGroup* cg);
 List CliqueGroup_GetNonIdenticalPairs(CliqueGroup* cg);
 
+bool CliqueGroup_PairIsValid(ItemCliquePair* icp1, ItemCliquePair* icp2, bool isEqual);
+
 #endif

@@ -89,13 +89,9 @@ void LogisticRegression_Destroy(LogisticRegression model){
     free(model.weights);
     free(model.yVals);
     
-    for(int i = 0; i < model.itemCount; i++){
-        free(model.xVals[i]);
-    }
     for(int i = 0; i < model.height; i++){
         free(model.xIndexes[i]);
     }
-    free(model.xVals);
     free(model.xIndexes);
 }
 
