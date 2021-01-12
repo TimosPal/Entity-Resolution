@@ -1,5 +1,5 @@
-#ifndef HASHES_H_INCLUDED
-#define HASHES_H_INCLUDED
+#ifndef HASHES_H
+#define HASHES_H
 
 /* SOURCE : https://www.partow.net/programming/hashfunctions/ */
 

@@ -32,7 +32,7 @@ void Hash_Init(Hash* hash, int bucketSize, unsigned int (*hashFunction)(const vo
 
 }
 
-void* Hash_GetValue(Hash hash,void* key,int keySize){
+void* Hash_GetValue(Hash hash, void* key, int keySize){
     unsigned int index = hash.hashFunction(key,keySize) % hash.bucketSize;
     List bucketItems = hash.buckets[index];
 

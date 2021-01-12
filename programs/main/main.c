@@ -271,12 +271,27 @@ bool UIntCmp(void* value1, void* value2){
     }
 }
 
+bool IcpCmp(void* value1, void* value2){
+    ItemCliquePair* icp1 = value1;
+    ItemCliquePair* icp2 = value2;
+
+    return (icp1->id == icp2->id);
+}
+
 int PairChance_Cmp(const void* value1, const void* value2){
     Tuple* tuple1 = *(Tuple**)value1;
     Tuple* tuple2 = *(Tuple**)value2;
 
     double acc1 = *(double*)(tuple1->value2);
     double acc2 = *(double*)(tuple2->value2);
+    
+    if(1 - acc1 < acc1){
+        acc1 = 1 - acc1;
+    }
+
+    if(1 - acc2 < acc2){
+        acc2 = 1 - acc2;
+    }
 
     if (acc1 < acc2){
         return -1;
@@ -287,24 +302,28 @@ int PairChance_Cmp(const void* value1, const void* value2){
     }
 }
 
-void CreateXVals(List items, Hash idfDictionary, Hash itemProcessedWords, double*** XVals, Hash* indexes){
+void CreateXVals(List items, Hash idfDictionary, Hash itemProcessedWords, double*** XVals, Hash* icpToIndex, Hash* indexToIcp){
     //Array of sparse matrices(hashes) with TFIDF values
     Hash* x = CreateVectors(items, idfDictionary, itemProcessedWords);
     
     //Hash with keys = id of icp and value = index in array of TFIDF vectors
-    Hash_Init(indexes, DEFAULT_HASH_SIZE, RSHash, UIntCmp, false);
+    Hash_Init(icpToIndex, DEFAULT_HASH_SIZE, RSHash, UIntCmp, false);
+    Hash_Init(indexToIcp, DEFAULT_HASH_SIZE, RSHash, IcpCmp, false);
     
     //Array with TFIDF vectors for each item
     double **xVals = malloc(items.size * sizeof(double*));
     
-    int k = 0;
+    unsigned int k = 0;
     Node* itemNode = items.head;
     while(itemNode != NULL){
         ItemCliquePair* icp = (ItemCliquePair*)itemNode->value;
 
         unsigned int* index = malloc(sizeof(unsigned int));
         *index = k;
-        Hash_Add(indexes, &icp->id, sizeof(icp->id), index);
+        //add to icpToIndex Hash
+        Hash_Add(icpToIndex, &icp->id, sizeof(icp->id), index);
+        //add to indexToIcp Hash
+        Hash_Add(indexToIcp, index, sizeof(unsigned int), icp);
         xVals[k] = TF_IDF_ToArray(x[k], idfDictionary);
 
         Hash_FreeValues(x[k], free);
@@ -363,6 +382,124 @@ void ResetFileDescriptor(int fdR, int fd_new, int fd_copy){
     //reset
     dup2(fd_copy, fdR);
     close(fd_copy);
+}
+
+void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Hash* idfDictionary, Hash* icpToIndex, Hash* indexToIcp, Hash* itemProcessedWords, List* items, List* trainingPairs, double learningRate, int epochs, List* testingPairs, double** xVals){
+    unsigned int width = 2 * idfDictionary->keyValuePairs.size;
+    unsigned int height = trainingPairs->size;
+    unsigned int** xIndexesTraining;
+    double* yValsTraining;
+    
+    CreateXY(*items, *trainingPairs, *idfDictionary, *itemProcessedWords, *icpToIndex, &xIndexesTraining, &yValsTraining);
+    LogisticRegression_Init(model, 0, xVals, xIndexesTraining, yValsTraining, width, height, items->size);
+    printf("Created X Y Datasets for training\n\n");
+    
+    //Testing Datasets
+    unsigned int** xIndexesTesting;
+    double* yValsTesting;
+    
+    CreateXY(*items, *testingPairs, *idfDictionary, *itemProcessedWords, *icpToIndex, &xIndexesTesting, &yValsTesting);
+    printf("Created X Y Datasets for testing\n\n");
+    
+    double threshold = THRESHOLD;
+    double stepValue = STEP_VALUE;
+    int retrainCounter = 0;
+
+    while(threshold < 0.5){
+        printf("Starting training #%d...\n", retrainCounter);
+        LogisticRegression_Train(model, learningRate, epochs);
+        printf("\rTraining completed with %d epochs\n\n", epochs);
+
+        //Start testing
+        printf("Predicting #%d...\n", retrainCounter);
+
+        List acceptedPairs;
+        List_Init(&acceptedPairs);
+
+        for (int i = 0; i < testingPairs->size; i++) {
+            //check if this pair has already beed added to training set before
+            if(xIndexesTesting[i][0] == -1){
+                continue;
+            }
+
+            double* leftVector = xVals[xIndexesTesting[i][0]];
+            double* rightVector = xVals[xIndexesTesting[i][1]];
+            
+            double prediction = LogisticRegression_Predict(model, leftVector, rightVector);
+            
+            //chance is prediction
+            double predictionError = prediction;
+            //chance = 1 - error if it is closer to 1
+            if (1 - predictionError < predictionError){
+                predictionError = 1 - predictionError;
+            }
+            //if error is under threshold
+            if(predictionError < threshold) {
+                //Add pair and predictionError tuple to list
+                Tuple* PairPredictionErrorTuple = malloc(sizeof(Tuple));
+                //we pass the prediction and not the prediction error in order to know how to retrain
+                Tuple_Init(PairPredictionErrorTuple, &i, sizeof(int), &prediction, sizeof(double));
+                List_Append(&acceptedPairs, PairPredictionErrorTuple);
+            }
+        }
+        
+        //Tuple List to array
+        Tuple** acceptedPairsArray = (Tuple**)List_ToArray(acceptedPairs);
+        
+        //Sort array based on accuracy, we translate the prediction into the prediction's error before comparing in PairChance_Cmp
+        qsort(acceptedPairsArray, acceptedPairs.size, sizeof(Tuple*), PairChance_Cmp);
+        
+        //Insert to cliquegroup from higher to lower accuracy (and check if can be inserted)
+        for (int i = 0; i < acceptedPairs.size; i++){
+            unsigned int index1 = xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][0];
+            unsigned int index2 = xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][1];
+            double prediction = *(double*)(acceptedPairsArray[i]->value2);
+
+            ItemCliquePair* icp1 = Hash_GetValue(*indexToIcp, &index1, sizeof(unsigned int));
+            ItemCliquePair* icp2 = Hash_GetValue(*indexToIcp, &index2, sizeof(unsigned int));
+            bool isEqual = (1 - prediction < 0.5) ? true : false;
+
+            //if pair is valid into cliqueGroup
+            Item* item1 = icp1->item;
+            Item* item2 = icp2->item;
+            if (!CliqueGroup_PairIsValid(icp1, icp2, isEqual)){
+                printf("1\n");
+                isEqual = !isEqual;
+            }
+
+            if (!CliqueGroup_PairIsValid(icp1, icp2, isEqual)){
+                printf("2\n");
+            }
+
+            if(isEqual){
+                CliqueGroup_Update_Similar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
+            }else{
+                CliqueGroup_Update_NonSimilar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
+            }
+        }
+        
+        //Finalize cliqueGroup
+        CliqueGroup_Finalize(*cliqueGroup);
+        
+        //Get Pairs that will be trained in the next loop
+
+
+        //Cleanup
+        List_FreeValues(acceptedPairs, Tuple_Free);
+        List_Destroy(&acceptedPairs);
+        free(acceptedPairsArray);
+
+        //increment threshold and retrainCounter
+        retrainCounter++;
+        threshold += stepValue;
+    }
+
+    //Cleanup
+    free(yValsTesting);
+    for(int i = 0; i < testingPairs->size; i++){
+        free(xIndexesTesting[i]);
+    }
+    free(xIndexesTesting);
 }
 
 int main(int argc, char* argv[]){
@@ -435,87 +572,15 @@ int main(int argc, char* argv[]){
     Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, vocabSize); //Create Dictionary based on items list
     printf("Created and Trimmed Dictionary based on average TFIDF\n");
 
-    double** xVals;
-    unsigned int** xIndexesTraining;
-    double* yValsTraining;
-    
-    unsigned int width = 2 * idfDictionary.keyValuePairs.size;
-    unsigned int height = trainingPairs.size;
 
-    Hash indexes;
-    CreateXVals(items, idfDictionary, itemProcessedWords, &xVals, &indexes);
-    CreateXY(items, trainingPairs, idfDictionary, itemProcessedWords, indexes, &xIndexesTraining, &yValsTraining);
-    printf("Created X Y Datasets for training\n\n");
-    
-    //Testing Datasets
-    unsigned int** xIndexesTesting;
-    double* yValsTesting;
-    
-    CreateXY(items, testingPairs, idfDictionary, itemProcessedWords, indexes, &xIndexesTesting, &yValsTesting);
-    printf("Created X Y Datasets for testing\n\n");
+    double** xVals;
+    Hash icpToIndex, indexToIcp;
+    CreateXVals(items, idfDictionary, itemProcessedWords, &xVals, &icpToIndex, &indexToIcp);
+    LogisticRegression model;
 
     //Training
-    LogisticRegression model;
-    LogisticRegression_Init(&model, 0, xVals, xIndexesTraining, yValsTraining, width, height, items.size);
     
-    double threshold = THRESHOLD;
-    int retrainCounter = 0;
-    while(threshold < 0.5){
-        LogisticRegression_Train(&model, learningRate, epochs);
-        printf("\rTraining completed with %d epochs\n\n", epochs);
-
-        //Start testing
-        printf("Predicting and Retraining #%d...\n", retrainCounter);
-
-        List acceptedPairs;
-        List_Init(&acceptedPairs);
-
-        int counter0 = 0;
-        int counter1 = 0;
-        for (int i = 0; i < testingPairs.size; i++) {
-            //check if this pair has already beed added to training set before
-            if(xIndexesTesting[i][0] == -1){
-                continue;
-            }
-
-            double* leftVector = xVals[xIndexesTesting[i][0]];
-            double* rightVector = xVals[xIndexesTesting[i][1]];
-            
-            double prediction = LogisticRegression_Predict(&model, leftVector, rightVector);
-            double chance = fabs(yValsTesting[i] - prediction);
-            if(chance < threshold) {
-                if(yValsTesting[i] == 0){
-                    counter0++;
-                }else{
-                    counter1++;
-                }
-                //Add pair and chance tuple to list
-                Tuple* PairChanceTuple = malloc(sizeof(Tuple));
-                Tuple_Init(PairChanceTuple, &i, sizeof(int), &chance, sizeof(double));
-                List_Append(&acceptedPairs, PairChanceTuple);
-            }
-        }
-        //Tuple List to array
-        Tuple** acceptedPairsArray = (Tuple**)List_ToArray(acceptedPairs);
-        //Sort array based on accuracy
-        qsort(acceptedPairsArray, acceptedPairs.size, sizeof(Tuple*), PairChance_Cmp);
-        //Insert to cliquegroup from higher to lower accuracy (and check if can be inserted)
-        
-        //Finalize cliqueGroup
-        CliqueGroup_Finalize(cliqueGroup);
-        //Transitivity
-
-        retrainCounter++;
-        
-        double accuracyPercentage = (double)(counter0 + counter1) / testingPairs.size * 100;
-        printf("General Pair Accuracy : %d / %d (%f%%)\n", counter0 + counter1 , testingPairs.size, accuracyPercentage);
-        printf("%d Identical Pairs accurate\n%d Non Identical pairs accurate\n",counter1,counter0);
-        
-        //Cleanup
-        List_FreeValues(acceptedPairs, Tuple_Free);
-        List_Destroy(&acceptedPairs);
-        free(acceptedPairsArray);
-    }    
+    DynamicLearning(&cliqueGroup, &model, &idfDictionary, &icpToIndex, &indexToIcp, &itemProcessedWords, &items, &trainingPairs, learningRate, epochs, &testingPairs, xVals);    
 
     //Redirect stdout to the fd of the outputFilePath
     ///RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
@@ -537,23 +602,20 @@ int main(int argc, char* argv[]){
     
     printf("Cleaning up...\n");
 
-    Hash_FreeValues(indexes, free);
-    Hash_Destroy(indexes);
+    Hash_FreeValues(icpToIndex, free);
+    Hash_Destroy(icpToIndex);
+
+    Hash_Destroy(indexToIcp);
 
     List_FreeValues(trainingPairs, Tuple_Free);
     List_Destroy(&trainingPairs);
 
     LogisticRegression_Destroy(model);
 
-    free(yValsTesting);
     for(int i = 0; i < items.size; i++){
         free(xVals[i]);
     }
-    for(int i = 0; i < testingPairs.size; i++){
-        free(xIndexesTesting[i]);
-    }
     free(xVals);
-    free(xIndexesTesting);
 
     List_Destroy(&items);
     
