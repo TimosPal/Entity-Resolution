@@ -34,17 +34,17 @@ double SigmoidFunction(double x){
     return val;
 }
 
-double PartialDerivative(LogisticRegression* model, int derivativeIndex, int j){
+double PartialDerivative(LogisticRegression* model,unsigned int** xIndexes, double* yVals, unsigned int height, int derivativeIndex, int j){
     double result = 0;
     
     int limit = j + BATCH_SIZE;
-    if (limit > model->height){
-        limit = model->height;
+    if (limit > height){
+        limit = height;
     }
 
     for(int k = j; k < limit; k++){
-        double* leftVector = model->xVals[model->xIndexes[k][0]];
-        double* rightVector = model->xVals[model->xIndexes[k][1]];
+        double* leftVector = model->xVals[xIndexes[k][0]];
+        double* rightVector = model->xVals[xIndexes[k][1]];
         double xij;
         if(derivativeIndex < model->width / 2){
             xij = leftVector[derivativeIndex];
@@ -53,28 +53,25 @@ double PartialDerivative(LogisticRegression* model, int derivativeIndex, int j){
         }
 
         if(xij > 0){
-            result += (SigmoidFunction(LinearFunction(model->weights, model->bWeight, leftVector, rightVector, model->width)) - model->yVals[k]) * xij;
+            result += (SigmoidFunction(LinearFunction(model->weights, model->bWeight, leftVector, rightVector, model->width)) - yVals[k]) * xij;
         }
     }
 
     return result;
 }
 
-void GradientVector(LogisticRegression* model, double* vector, int j){
+void GradientVector(LogisticRegression* model,unsigned int** xIndexes, double* yVals, unsigned int height, double* vector, int j){
     for (int i = 0; i < model->width; i++) {
-        vector[i] = PartialDerivative(model, i, j);
+        vector[i] = PartialDerivative(model,xIndexes, yVals, height, i, j);
         //printf("Partial derivative (%d) : %.14f\n", i, vector[i]);
     }
 }
 
-void LogisticRegression_Init(LogisticRegression* model, double bWeight, double** xVals, unsigned int** xIndexes, double* yVals, unsigned int width, unsigned int height, unsigned int itemCount){
+void LogisticRegression_Init(LogisticRegression* model, double bWeight, double** xVals, unsigned int width, unsigned int itemCount){
     model->bWeight = bWeight;
 
     model->xVals = xVals;
-    model->xIndexes = xIndexes;
-    model->yVals = yVals;
 
-    model->height = height;
     model->itemCount = itemCount;
     model->width = width;
 
@@ -87,26 +84,20 @@ void LogisticRegression_Init(LogisticRegression* model, double bWeight, double**
 
 void LogisticRegression_Destroy(LogisticRegression model){
     free(model.weights);
-    free(model.yVals);
-    
-    for(int i = 0; i < model.height; i++){
-        free(model.xIndexes[i]);
-    }
-    free(model.xIndexes);
 }
 
-double* LogisticRegression_Train(LogisticRegression *model, double learningRate, int epochs) {
+double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndexes, double* yVals, unsigned int height, double learningRate, int epochs) {
     double* newW = malloc(model->width * sizeof(double));
     double* gradientVector = malloc(model->width * sizeof(double));
 
-    int batches = model->height / BATCH_SIZE;
+    int batches = (int)height / BATCH_SIZE;
     if (batches % BATCH_SIZE != 0){
         batches++;
     }
 
     for(int k = 0; k < epochs; k++) {
         for (int j = 0; j < batches; j++){
-            GradientVector(model, gradientVector, j*BATCH_SIZE);
+            GradientVector(model,xIndexes,yVals,height, gradientVector, j*BATCH_SIZE);
 
             for (int i = 0; i < model->width; ++i) {
                 newW[i] = model->weights[i] - learningRate * gradientVector[i];

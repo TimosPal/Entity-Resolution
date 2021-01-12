@@ -9,8 +9,8 @@ typedef struct JobScheduler{
     int numberOfThreads;
     pthread_t* threadsIDs;
 
-    pthread_mutex_t queue_lock;
-    pthread_cond_t start_Cond;
+    pthread_mutex_t queue_Lock;
+    pthread_cond_t queue_Cond;
 
     Queue jobs;
 } JobScheduler;

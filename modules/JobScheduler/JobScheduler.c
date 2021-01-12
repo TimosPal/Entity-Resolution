@@ -16,8 +16,8 @@ void JobScheduler_Init(JobScheduler* jobScheduler, int numberOfThreads){
     jobScheduler->numberOfThreads = numberOfThreads;
     jobScheduler->threadsIDs = malloc(numberOfThreads * sizeof(pthread_t));
 
-    jobScheduler->start_Lock = PTHREAD_MUTEX_INITIALIZER;
-    jobScheduler->start_Cond = PTHREAD_COND_INITIALIZER;
+    jobScheduler->queue_Lock = PTHREAD_MUTEX_INITIALIZER;
+    jobScheduler->queue_Cond = PTHREAD_COND_INITIALIZER;
 
     // Start threads.
     for (int i = 0; i < numberOfThreads; ++i) {

@@ -384,21 +384,40 @@ void ResetFileDescriptor(int fdR, int fd_new, int fd_copy){
     close(fd_copy);
 }
 
-void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Hash* idfDictionary, Hash* icpToIndex, Hash* indexToIcp, Hash* itemProcessedWords, List* items, List* trainingPairs, double learningRate, int epochs, List* testingPairs, double** xVals){
-    unsigned int width = 2 * idfDictionary->keyValuePairs.size;
-    unsigned int height = trainingPairs->size;
-    unsigned int** xIndexesTraining;
-    double* yValsTraining;
-    
-    CreateXY(*items, *trainingPairs, *idfDictionary, *itemProcessedWords, *icpToIndex, &xIndexesTraining, &yValsTraining);
-    LogisticRegression_Init(model, 0, xVals, xIndexesTraining, yValsTraining, width, height, items->size);
+typedef struct Training_Pack{
+    Hash* icpToIndex;
+    Hash* indexToIcp;
+    List* trainingPairs;
+    List* testingPairs;
+
+    double learningRate;
+    int epochs;
+} Training_Pack;
+
+typedef struct Item_Pack{
+    Hash* idfDictionary;
+    Hash* itemProcessedWords;
+    List* items;
+} Item_Pack;
+
+void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Training_Pack* trainingPack, Item_Pack* itemPack, double** xVals){
+    unsigned int width = 2 * itemPack->idfDictionary->keyValuePairs.size;
+
+    LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
     printf("Created X Y Datasets for training\n\n");
     
     //Testing Datasets
     unsigned int** xIndexesTesting;
     double* yValsTesting;
     
-    CreateXY(*items, *testingPairs, *idfDictionary, *itemProcessedWords, *icpToIndex, &xIndexesTesting, &yValsTesting);
+    CreateXY(*itemPack->items,
+            *trainingPack->testingPairs,
+            *itemPack->idfDictionary,
+            *itemPack->itemProcessedWords,
+            *trainingPack->icpToIndex,
+            &xIndexesTesting,
+            &yValsTesting);
+
     printf("Created X Y Datasets for testing\n\n");
     
     double threshold = THRESHOLD;
@@ -406,9 +425,22 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Hash* 
     int retrainCounter = 0;
 
     while(threshold < 0.5){
+        unsigned int height = trainingPack->trainingPairs->size;
+        unsigned int** xIndexesTraining;
+        double* yValsTraining;
+
+        CreateXY(*itemPack->items,
+                 *trainingPack->trainingPairs,
+                 *itemPack->idfDictionary,
+                 *itemPack->itemProcessedWords,
+                 *trainingPack->icpToIndex,
+                 &xIndexesTraining,
+                 &yValsTraining);
+
+
         printf("Starting training #%d...\n", retrainCounter);
-        LogisticRegression_Train(model, learningRate, epochs);
-        printf("\rTraining completed with %d epochs\n\n", epochs);
+        LogisticRegression_Train(model,xIndexesTraining,yValsTraining,height, trainingPack->learningRate, trainingPack->epochs);
+        printf("\rTraining completed with %d epochs\n\n", trainingPack->epochs);
 
         //Start testing
         printf("Predicting #%d...\n", retrainCounter);
@@ -416,8 +448,8 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Hash* 
         List acceptedPairs;
         List_Init(&acceptedPairs);
 
-        for (int i = 0; i < testingPairs->size; i++) {
-            //check if this pair has already beed added to training set before
+        for (int i = 0; i < trainingPack->testingPairs->size; i++) {
+            //check if this pair has already been added to training set before
             if(xIndexesTesting[i][0] == -1){
                 continue;
             }
@@ -455,20 +487,15 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Hash* 
             unsigned int index2 = xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][1];
             double prediction = *(double*)(acceptedPairsArray[i]->value2);
 
-            ItemCliquePair* icp1 = Hash_GetValue(*indexToIcp, &index1, sizeof(unsigned int));
-            ItemCliquePair* icp2 = Hash_GetValue(*indexToIcp, &index2, sizeof(unsigned int));
+            ItemCliquePair* icp1 = Hash_GetValue(*trainingPack->indexToIcp, &index1, sizeof(unsigned int));
+            ItemCliquePair* icp2 = Hash_GetValue(*trainingPack->indexToIcp, &index2, sizeof(unsigned int));
             bool isEqual = (1 - prediction < 0.5) ? true : false;
 
             //if pair is valid into cliqueGroup
             Item* item1 = icp1->item;
             Item* item2 = icp2->item;
             if (!CliqueGroup_PairIsValid(icp1, icp2, isEqual)){
-                printf("1\n");
                 isEqual = !isEqual;
-            }
-
-            if (!CliqueGroup_PairIsValid(icp1, icp2, isEqual)){
-                printf("2\n");
             }
 
             if(isEqual){
@@ -477,14 +504,21 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Hash* 
                 CliqueGroup_Update_NonSimilar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
             }
         }
-        
+
         //Finalize cliqueGroup
         CliqueGroup_Finalize(*cliqueGroup);
         
         //Get Pairs that will be trained in the next loop
-
+        G A       B          G E F D
+        a b 0
 
         //Cleanup
+        free(yValsTraining);
+        for(int i = 0; i < trainingPack->trainingPairs->size; i++){
+            free(xIndexesTraining[i]);
+        }
+        free(xIndexesTraining);
+
         List_FreeValues(acceptedPairs, Tuple_Free);
         List_Destroy(&acceptedPairs);
         free(acceptedPairsArray);
@@ -496,7 +530,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Hash* 
 
     //Cleanup
     free(yValsTesting);
-    for(int i = 0; i < testingPairs->size; i++){
+    for(int i = 0; i < trainingPack->testingPairs->size; i++){
         free(xIndexesTesting[i]);
     }
     free(xIndexesTesting);
@@ -545,7 +579,7 @@ int main(int argc, char* argv[]){
     // Join lists for later training.
     List_Join(&trainingPairs, &nonIdenticalPairs);
 
-    //Shuffle list of training pairs before splitting
+    // Shuffle list of training pairs before splitting
     List_Shuffle(&trainingPairs);
 
     // Split the set 60-40
@@ -579,8 +613,20 @@ int main(int argc, char* argv[]){
     LogisticRegression model;
 
     //Training
-    
-    DynamicLearning(&cliqueGroup, &model, &idfDictionary, &icpToIndex, &indexToIcp, &itemProcessedWords, &items, &trainingPairs, learningRate, epochs, &testingPairs, xVals);    
+    Training_Pack trainingPack = {.epochs = epochs,
+                                  .learningRate = learningRate,
+                                  .testingPairs = &testingPairs,
+                                  .trainingPairs = &trainingPairs,
+                                  .icpToIndex = &icpToIndex,
+                                  .indexToIcp = &indexToIcp,
+                                  };
+
+    Item_Pack itemPack = {.items = &items,
+                          .idfDictionary = &idfDictionary,
+                          .itemProcessedWords = &itemProcessedWords
+                         };
+
+    DynamicLearning(&cliqueGroup, &model, &trainingPack, &itemPack, xVals);
 
     //Redirect stdout to the fd of the outputFilePath
     ///RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
