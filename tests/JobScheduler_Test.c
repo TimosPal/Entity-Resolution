@@ -2,42 +2,58 @@
 
 #include "JobScheduler.h"
 
-void* FindRoot(void** args){
-    //int* numbers = *(int**)(args);
+//TODO : who frees the mem?
 
-    //printf("%d\n", numbers[0]);
-    sleep(1);
+void* sum(void** args){
+    int n = *(int*)args[0];
 
-    printf("thread id : %d\n",pthread_self());
+    int* sum = malloc(sizeof(int));
+    for (int i = 0; i < n; ++i) {
+        *sum += i;
+    }
 
-    return NULL;
+    return sum;
 }
 
 void JobScheduler_Test_General(){
     JobScheduler jobScheduler;
-    JobScheduler_Init(&jobScheduler, 2);
+    JobScheduler_Init(&jobScheduler, 10);
 
-    int* numbers = malloc(10*sizeof(int));
-    for(int i = 0; i < 10; i++){
-        numbers[i] = i;
+    for (int i = 0; i < 100; ++i) {
+        void** args = malloc(sizeof(void*));
+        int* n = malloc(sizeof(int));
+        *n = i;
+        args[0] = n;
+
+        Job* newJob = malloc(sizeof(Job));
+        Job_Init(newJob, sum, free, args);
+
+        JobScheduler_AddJob(&jobScheduler, newJob);
     }
-    
-
-    for (int j = 0; j < 9999; ++j) {
-        Job* firstJob = malloc(sizeof(Job));
-        void** firstArgs = malloc(2 * sizeof(void*));
-        int* index1 = malloc(sizeof(int));
-        *index1 = 4;
-        firstArgs[0] = &numbers;
-        firstArgs[1] = &index1;
-        Job_Init(firstJob, FindRoot, free, firstArgs);
-        JobScheduler_AddJob(&jobScheduler, firstJob);
-    }
-
     JobScheduler_WaitForJobs(&jobScheduler);
+
+    int sum = 0;
+    Node* temp = jobScheduler.results.head;
+    while(temp != NULL){
+        Job* currJob = temp->value;
+        int val = *(int*)currJob->result;
+        sum += val;
+
+        temp = temp->next;
+    }
+
     JobScheduler_Destroy(&jobScheduler);
 
-    free(numbers);
+    int outerSum = 0;
+    for (int j = 0; j < 100; ++j) {
+        int innerSum = 0;
+        for (int i = 0; i < j; ++i) {
+            innerSum += i;
+        }
+        outerSum += innerSum;
+    }
+
+    TEST_ASSERT(sum == outerSum);
 }
 
 TEST_LIST = {
