@@ -509,8 +509,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         CliqueGroup_Finalize(*cliqueGroup);
         
         //Get Pairs that will be trained in the next loop
-        G A       B          G E F D
-        a b 0
+
 
         //Cleanup
         free(yValsTraining);
