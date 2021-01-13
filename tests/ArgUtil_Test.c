@@ -21,7 +21,7 @@ void ArgUtil_Test_FindArgAfterFlag(){
 }
 
 TEST_LIST = {
-        { "ArgUtil_Test_FindFlagIndex",    ArgUtil_Test_FindFlagIndex },
+        { "ArgUtil_Test_FindFlagIndex", ArgUtil_Test_FindFlagIndex },
         { "ArgUtil_Test_FindArgAfterFlag", ArgUtil_Test_FindArgAfterFlag },
         { NULL, NULL }
 };

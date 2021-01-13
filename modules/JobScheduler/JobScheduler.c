@@ -22,7 +22,8 @@ void* JobHandler(void* args){
     while(true) {
         // Wait until the queue has a Job or the thread must exit.
         pthread_mutex_lock(threadArgs->queueJobs_Lock);
-        while (threadArgs->jobs->head == NULL && !threadArgs->shouldEnd) {
+        while (threadArgs->jobs->head == NULL && *(threadArgs->shouldEnd) == false) {
+            printf("1\n");
             pthread_cond_wait(threadArgs->queueJobs_Cond, threadArgs->queueJobs_Lock);
         }
 
@@ -60,7 +61,9 @@ void* JobHandler(void* args){
 }
 
 void JobScheduler_Init(JobScheduler* jobScheduler, int numberOfThreads){
+    Queue_Init(&jobScheduler->jobs);
     Queue_Init(&jobScheduler->results);
+    
     jobScheduler->shouldEnd = false;
     jobScheduler->numberOfThreads = numberOfThreads;
     jobScheduler->threadsIDs = malloc(numberOfThreads * sizeof(pthread_t));
@@ -76,6 +79,7 @@ void JobScheduler_Init(JobScheduler* jobScheduler, int numberOfThreads){
 
         args->shouldEnd = &jobScheduler->shouldEnd;
         args->jobs = &jobScheduler->jobs;
+        args->results = &jobScheduler->results;
         args->queueJobs_Cond = &jobScheduler->queueJobs_Cond;
         args->queueJobs_Lock = &jobScheduler->queueJobs_Lock;
         args->queueResults_Lock = &jobScheduler->queueResults_Lock;

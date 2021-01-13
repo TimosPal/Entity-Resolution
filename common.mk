@@ -52,7 +52,7 @@ override CFLAGS += -g -Wall -MMD -I$(INCLUDE) -I$(INCLUDE_ACU)
 # Linker options
 #   -lm        Link με τη math library
 #
-LDFLAGS += -lm 
+LDFLAGS += -lm -pthread
 
 # Αν στα targets με τα οποία έχει κληθεί το make (μεταβλητή MAKECMDGOALS) υπάρχει κάποιο
 # coverage*, τότε προσθέτουμε το --coverage στα compile & link flags
