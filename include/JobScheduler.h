@@ -10,6 +10,7 @@ typedef struct JobScheduler{
     pthread_t* threadsIDs;
 
     pthread_mutex_t queueResults_Lock;
+    pthread_cond_t queueResults_Cond;
 
     pthread_mutex_t queueJobs_Lock;
     pthread_cond_t queueJobs_Cond;
@@ -34,5 +35,6 @@ void Job_Init(Job* job, void* (*task)(void** args), void (*freeMethod)(void* val
 void JobScheduler_Init(JobScheduler* jobScheduler, int numberOfThreads);
 void JobScheduler_Destroy(JobScheduler* jobScheduler);
 void JobScheduler_AddJob(JobScheduler* jobScheduler, Job* newJob);
+void JobScheduler_WaitForJobs(JobScheduler* jobScheduler);
 
 #endif
