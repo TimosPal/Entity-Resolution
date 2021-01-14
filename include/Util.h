@@ -14,7 +14,7 @@
 #define LEARNING_RATE 0.001
 #define VOCAB_SIZE 1000
 #define MAX_ACCURACY_DIFF 0.1
-#define BATCH_SIZE 512
+#define BATCH_SIZE 1
 #define THRESHOLD 0.05
 #define STEP_VALUE 0.05
 

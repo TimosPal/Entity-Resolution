@@ -245,27 +245,6 @@ Hash* CreateVectors(List items, Hash dictionary, Hash itemProcessedWords){
     return vectors;
 }
 
-double* CreateY(List pairs){
-    unsigned int height = (unsigned int)pairs.size;
-    double* results = malloc(height * sizeof(double));
-
-    int index = 0;
-    Node* currPairNode = pairs.head;
-    while (currPairNode != NULL){
-        Tuple* currTuple = currPairNode->value;
-        ItemCliquePair* icp1 = currTuple->value1;
-        ItemCliquePair* icp2 = currTuple->value2;
-
-        //Y
-        results[index] = (icp1->clique->id == icp2->clique->id) ?  1.0 :  0.0;
-
-        index++;
-        currPairNode = currPairNode->next;
-    }
-
-    return results;
-}
-
 double* TF_IDF_ToArray(Hash hash, Hash dictionary){
     // Allocates values.
     double* array = malloc(dictionary.keyValuePairs.size * sizeof(double));

@@ -91,18 +91,26 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
     double* gradientVector = malloc(model->width * sizeof(double));
 
     int batches = (int)height / BATCH_SIZE;
-    if (batches % BATCH_SIZE != 0){
+    if (height % BATCH_SIZE != 0){
         batches++;
     }
 
     for(int k = 0; k < epochs; k++) {
         for (int j = 0; j < batches; j++){
-            GradientVector(model,xIndexes,yVals,height, gradientVector, j*BATCH_SIZE);
+            GradientVector(model, xIndexes, yVals, height, gradientVector, j*BATCH_SIZE);
+
+            //DEBUGGING
+            double mean;
+            for (int i = 0; i < model->width; i++){
+                mean += gradientVector[i];
+            }
+            mean /= model->width;
+            // printf("MEAN IS %.15f\n", mean); 
 
             for (int i = 0; i < model->width; ++i) {
                 newW[i] = model->weights[i] - learningRate * gradientVector[i];
             }
-
+            
             double *temp = model->weights;
             model->weights = newW;
             newW = temp;

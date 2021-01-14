@@ -170,7 +170,7 @@ void HandleData_X(char* websitesFolderPath,int bucketSize,CliqueGroup* cliqueGro
     List_Destroy(&websiteFolders);
 }
 
-void HandleData_W(char* dataSetWPath,CliqueGroup* cliqueGroup){
+void HandleData_W(char* dataSetWPath, CliqueGroup* cliqueGroup, List* testingPairs, List* validationPairs){
     /* Update cliqueGroup with dataSetW.
      * We apply the simple logic that for items a,b,c : if a == b and b == c then a == c.
      * dataSetW contains values of the following format :
@@ -179,6 +179,11 @@ void HandleData_W(char* dataSetWPath,CliqueGroup* cliqueGroup){
 
     FILE* dataSetFile = fopen(dataSetWPath, "r");
     IF_ERROR_MSG(dataSetFile == NULL, "-w file not found")
+
+    List pairs;
+    List_Init(&pairs);
+    List_Init(testingPairs);
+    List_Init(validationPairs);
 
     List values;
     CSV_GetLine(dataSetFile, &values); // get rid of columns
@@ -191,12 +196,24 @@ void HandleData_W(char* dataSetWPath,CliqueGroup* cliqueGroup){
         int similarity;
         StringToInt(similarityString,&similarity);
 
-        // If the 2 items are similar we merge the cliques.
-        if(similarity == 1) {
-            CliqueGroup_Update_Similar(cliqueGroup, id1, (int) strlen(id1) + 1, id2, (int) strlen(id2) + 1);
-        }else if(similarity == 0){
-            CliqueGroup_Update_NonSimilar(cliqueGroup, id1, (int) strlen(id1) + 1, id2, (int) strlen(id2) + 1);
-        }
+        //Alloc tuple
+        Tuple* pair = malloc(sizeof(Tuple));
+        ItemCliquePair** icpPair = malloc(2*sizeof(ItemCliquePair*));
+        bool* similarityPtr = malloc(sizeof(bool));
+
+        //Values of tuple
+        icpPair[0] = Hash_GetValue(cliqueGroup->hash, id1, strlen(id1)+1);
+        icpPair[1] = Hash_GetValue(cliqueGroup->hash, id2, strlen(id2)+1);
+        
+        *similarityPtr = similarity;
+
+        //Set Tuple
+        pair->value1 = icpPair;
+        pair->value2 = similarityPtr;
+
+        //Append Tuple to Pairs list
+        List_Append(&pairs, pair);
+
 
         List_FreeValues(values, free);
         List_Destroy(&values);
@@ -204,8 +221,49 @@ void HandleData_W(char* dataSetWPath,CliqueGroup* cliqueGroup){
 
     fclose(dataSetFile);
 
+    printf("PAIRS ARE %d\n", pairs.size);
+    //Shuffle and Split all pairs
+    List_Shuffle(&pairs);
+
+    double trainingPercentage = 0.6, testingPercentage = 0.2, validationPercentage = 0.2;
+
+    IF_ERROR_MSG(!List_Split(&pairs, testingPairs, trainingPercentage), "Can't split dataset for testing")
+    printf("Split for testing\n");
+
+    IF_ERROR_MSG(!List_Split(testingPairs, validationPairs, testingPercentage + trainingPercentage/2), "Can't split dataset for validation")
+    printf("Split for validation\n\n");
+
+    printf("Training size: %d pairs (%.2f%%)\nTesting size: %d pairs (%.2f%%)\nValidation size: %d pairs (%.2f%%)\n\n",
+    pairs.size, trainingPercentage*100, validationPairs->size, testingPercentage*100, validationPairs->size, validationPercentage*100);
+
+    Node* pairNode = pairs.head;
+    while(pairNode != NULL){
+        Tuple* pair = (Tuple*)pairNode->value;
+        ItemCliquePair** icpPair = pair->value1;
+        bool* similarityPtr = (bool*)pair->value2;
+
+        Item* item1 = icpPair[0]->item;
+        Item* item2 = icpPair[1]->item;
+
+        // If the 2 items are similar we merge the cliques.
+        if(*similarityPtr) {
+            CliqueGroup_Update_Similar(cliqueGroup, item1->id, (int) strlen(item1->id) + 1, item2->id, (int) strlen(item2->id) + 1);
+        }else{
+            CliqueGroup_Update_NonSimilar(cliqueGroup, item1->id, (int) strlen(item1->id) + 1, item2->id, (int) strlen(item2->id) + 1);
+        }
+
+        free(pair->value1);
+        free(pair->value2);
+        free(pair);
+
+        pairNode = pairNode->next;
+    }
+    
     //Finalize
     CliqueGroup_Finalize(*cliqueGroup);
+
+    //Cleanup
+    List_Destroy(&pairs);
 }
 
 Hash CreateStopwordHash(char* fileStr){
@@ -338,6 +396,26 @@ void CreateXVals(List items, Hash idfDictionary, Hash itemProcessedWords, double
     *XVals = xVals;
 }
 
+double* CreateY(List pairs){
+    unsigned int height = (unsigned int)pairs.size;
+    double* results = malloc(height * sizeof(double));
+
+    int index = 0;
+    Node* currPairNode = pairs.head;
+    while (currPairNode != NULL){
+        Tuple* currTuple = currPairNode->value;
+
+        //Y
+        bool* similarityPtr = currTuple->value2;
+        results[index] = (*similarityPtr == true) ? 1.0 : 0.0;
+
+        index++;
+        currPairNode = currPairNode->next;
+    }
+
+    return results;
+}
+
 void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWords, Hash indexes, unsigned int*** xIndexes, double** Y){
     //Array of vector indexes in TFIDF array for all pairs
     unsigned int** pairIndexes = malloc(pairs.size * sizeof(unsigned int*));
@@ -349,13 +427,21 @@ void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWord
 
         Tuple* pair = (Tuple*)pairNode->value;
 
-        ItemCliquePair* icp1 = (ItemCliquePair*)pair->value1;
+        ItemCliquePair** icpPair = pair->value1;
+        ItemCliquePair* icp1 = icpPair[0];
         unsigned int* index1 = Hash_GetValue(indexes, &icp1->id, sizeof(icp1->id));
         pairIndexes[k][0] = *index1; 
 
-        ItemCliquePair* icp2 = (ItemCliquePair*)pair->value2;
+        ItemCliquePair* icp2 = icpPair[1];
         unsigned int* index2 = Hash_GetValue(indexes, &icp2->id, sizeof(icp2->id));
         pairIndexes[k][1] = *index2; 
+
+        //sort the 2 indexes
+        if (pairIndexes[k][0] > pairIndexes[k][1]){
+            unsigned int temp = pairIndexes[k][0];
+            pairIndexes[k][0] = pairIndexes[k][1];
+            pairIndexes[k][1] = temp;
+        }
 
         k++;
         pairNode = pairNode->next;
@@ -403,7 +489,6 @@ typedef struct Item_Pack{
 void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Training_Pack* trainingPack, Item_Pack* itemPack, double** xVals){
     unsigned int width = 2 * itemPack->idfDictionary->keyValuePairs.size;
 
-    LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
     printf("Created X Y Datasets for training\n\n");
     
     //Testing Datasets
@@ -439,6 +524,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
 
 
         printf("Starting training #%d...\n", retrainCounter);
+        LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
         LogisticRegression_Train(model,xIndexesTraining,yValsTraining,height, trainingPack->learningRate, trainingPack->epochs);
         printf("\rTraining completed with %d epochs\n\n", trainingPack->epochs);
 
@@ -448,6 +534,8 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         List acceptedPairs;
         List_Init(&acceptedPairs);
 
+        int counter0 = 0;
+        int counter1 = 0;
         for (int i = 0; i < trainingPack->testingPairs->size; i++) {
             //check if this pair has already been added to training set before
             if(xIndexesTesting[i][0] == -1){
@@ -459,6 +547,14 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
             
             double prediction = LogisticRegression_Predict(model, leftVector, rightVector);
             
+            if (fabs(prediction - yValsTesting[i]) <= 0.1){
+                if(yValsTesting[i] == 1.0){
+                    counter1++;
+                }else{
+                    counter0++;
+                }
+            }
+
             //chance is prediction
             double predictionError = prediction;
             //chance = 1 - error if it is closer to 1
@@ -474,6 +570,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
                 List_Append(&acceptedPairs, PairPredictionErrorTuple);
             }
         }
+        printf("%d %d\n", counter0, counter1);
         
         //Tuple List to array
         Tuple** acceptedPairsArray = (Tuple**)List_ToArray(acceptedPairs);
@@ -522,6 +619,8 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         List_Destroy(&acceptedPairs);
         free(acceptedPairsArray);
 
+        LogisticRegression_Destroy(*model);
+
         //increment threshold and retrainCounter
         retrainCounter++;
         threshold += stepValue;
@@ -548,9 +647,10 @@ int main(int argc, char* argv[]){
     CliqueGroup_Init(&cliqueGroup, bucketSize, RSHash, StringCmp);
     HandleData_X(websitesFolderPath,bucketSize,&cliqueGroup);
 
-    /* --- Reads CSV files and updates the cliqueGroups ---------------------------------------*/
-
-    HandleData_W(dataSetWPath, &cliqueGroup);
+    /* --- Reads CSV files and updates the cliqueGroup ----------------------------------------*/
+    List testingPairs;
+    List validationPairs;
+    HandleData_W(dataSetWPath, &cliqueGroup, &testingPairs, &validationPairs);
 
     /* --- Print results ----------------------------------------------------------------------*/
     
@@ -570,6 +670,7 @@ int main(int argc, char* argv[]){
     List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(&cliqueGroup);
     printf("%d non identical pairs found, printed in %s\n\n", nonIdenticalPairs.size, nonIdenticalFilePath);
     
+    printf("New training size after transitivity: %d pairs\n\n", nonIdenticalPairs.size + trainingPairs.size);
     //Redirect stdout to the fd of the nonIdenticalFilePath
     RedirectFileDescriptorToFile(1, nonIdenticalFilePath, &fd_new, &fd_copy);
     CliqueGroup_PrintPairs(nonIdenticalPairs, Item_Print);
@@ -577,23 +678,6 @@ int main(int argc, char* argv[]){
 
     // Join lists for later training.
     List_Join(&trainingPairs, &nonIdenticalPairs);
-
-    // Shuffle list of training pairs before splitting
-    List_Shuffle(&trainingPairs);
-
-    // Split the set 60-40
-    double trainingPercentage = 0.6, testingPercentage = 0.2, validationPercentage = 0.2;
-
-    List testingPairs;
-    IF_ERROR_MSG(!List_Split(&trainingPairs, &testingPairs, trainingPercentage), "Can't split dataset for testing")
-    printf("Split for testing\n");
-
-    List validationPairs;
-    IF_ERROR_MSG(!List_Split(&testingPairs, &validationPairs, testingPercentage + trainingPercentage/2), "Can't split dataset for validation")
-    printf("Split for validation\n\n");
-
-    printf("Training size: %d pairs (%.2f%%)\nTesting size: %d pairs (%.2f%%)\nValidation size: %d pairs (%.2f%%)\n\n",
-    trainingPairs.size, trainingPercentage*100, validationPairs.size, testingPercentage*100, validationPairs.size, validationPercentage*100);
 
     //Get all items in a list to use later
     List items = CliqueGroup_GetAllItems(cliqueGroup);

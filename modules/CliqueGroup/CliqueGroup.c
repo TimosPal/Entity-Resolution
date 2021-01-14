@@ -169,8 +169,10 @@ void CliqueGroup_PrintPairs(List pairs, void (*Print)(void* value)){
     while(currPairNode != NULL){
         Tuple* tuple = currPairNode->value;
 
-        ItemCliquePair *icpA = tuple->value1;
-        ItemCliquePair *icpB = tuple->value2;
+        ItemCliquePair** icpPair = tuple->value1;
+
+        ItemCliquePair *icpA = icpPair[0];
+        ItemCliquePair *icpB = icpPair[1];
 
         Print(icpA->item);
         printf(" ");
@@ -200,8 +202,23 @@ List CliqueGroup_GetIdenticalPairs(CliqueGroup* cg){
                     ItemCliquePair *icpA = (ItemCliquePair *) (currItemA->value);
                     ItemCliquePair *icpB = (ItemCliquePair *) (currItemB->value);
 
+                    //Alloc tuple
                     Tuple* tuple = malloc(sizeof(Tuple));
-                    Tuple_Init(tuple, icpA, sizeof(*icpA) , icpB, sizeof(*icpB));
+                    
+                    //Alloc tuple values
+                    ItemCliquePair** icpPair = malloc(2*sizeof(ItemCliquePair*));
+                    bool* similarityPtr = malloc(sizeof(bool));
+                    
+                    //Set values
+                    icpPair[0] = icpA;
+                    icpPair[1] = icpB;
+                    *similarityPtr = true;
+
+                    //Set the Tuple
+                    tuple->value1 = icpPair;
+                    tuple->value2 = similarityPtr;
+
+                    //Append to list
                     List_Append(&pairs, tuple);
 
                     currItemB = currItemB->next;
@@ -245,8 +262,22 @@ List CliqueGroup_GetNonIdenticalPairs(CliqueGroup* cg){
                         ItemCliquePair *icpA = (ItemCliquePair *) (currItemNodeA->value);
                         ItemCliquePair *icpB = (ItemCliquePair *) (currItemNodeB->value);
 
+                        //Alloc tuple
                         Tuple* tuple = malloc(sizeof(Tuple));
-                        Tuple_Init(tuple, icpA, sizeof(*icpA) , icpB, sizeof(*icpB));
+                        //Alloc tuple values
+                        ItemCliquePair** icpPair = malloc(2*sizeof(ItemCliquePair*));
+                        bool* similarityPtr = malloc(sizeof(bool));
+                        
+                        //Set values
+                        icpPair[0] = icpA;
+                        icpPair[1] = icpB;
+                        *similarityPtr = false;
+
+                        //Set the Tuple
+                        tuple->value1 = icpPair;
+                        tuple->value2 = similarityPtr;
+                        
+                        //Append to list
                         List_Append(&pairs, tuple);
 
                         currItemNodeB = currItemNodeB->next;
