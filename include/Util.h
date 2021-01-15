@@ -17,6 +17,7 @@
 #define BATCH_SIZE 1
 #define THRESHOLD 0.05
 #define STEP_VALUE 0.05
+#define WORKERS 1
 
 #define IF_ERROR_MSG(x,msg) { if(x) {fprintf(stderr,"ERROR : %s.\n",msg); exit(EXIT_ERROR_CODE); } }
 

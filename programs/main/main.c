@@ -23,6 +23,9 @@
 
 #include "TF-IDF.h"
 #include "LogisticRegression.h"
+#include "JobScheduler.h"
+
+JobScheduler jobScheduler; // Global so it can be accessed from everywhere
 
 /* It is assumed that the json and csv files have proper formatting and appropriate values ,
  * so no extra error checking is done. */
@@ -509,6 +512,8 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
     double stepValue = STEP_VALUE;
     int retrainCounter = 0;
 
+    LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
+
     int testingSize = trainingPack->testingPairs->size;
     while(threshold < 0.5){
         unsigned int height = trainingPack->trainingPairs->size;
@@ -656,7 +661,14 @@ int main(int argc, char* argv[]){
     int bucketSize, vocabSize, epochs;
     double maxAccuracyDiff, learningRate;
     ParseArgs(argc, argv, &websitesFolderPath, &dataSetWPath, &bucketSize, &identicalFilePath, &nonIdenticalFilePath, &outputFilePath, &vocabSize, &epochs, &maxAccuracyDiff, &learningRate);
+
+    /* --- Init the job scheduler for multi threading wherever needed ------------------------*/
+
+    // NOTE: jobScheduler is global.
+    JobScheduler_Init(&jobScheduler, WORKERS);
+
     /* --- Reads Json files and adds them to the clique ---------------------------------------*/
+
 
     CliqueGroup cliqueGroup;
     CliqueGroup_Init(&cliqueGroup, bucketSize, RSHash, StringCmp);
@@ -745,6 +757,8 @@ int main(int argc, char* argv[]){
     /* --- Clean up ---------------------------------------------------------------------------*/
     
     printf("Cleaning up...\n");
+
+    JobScheduler_Destroy(&jobScheduler);
 
     Hash_FreeValues(icpToIndex, free);
     Hash_Destroy(icpToIndex);

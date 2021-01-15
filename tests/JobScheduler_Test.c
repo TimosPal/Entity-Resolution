@@ -2,8 +2,6 @@
 
 #include "JobScheduler.h"
 
-//TODO : who frees the mem?
-
 void* sum(void** args){
     int n = *(int*)args[0];
 

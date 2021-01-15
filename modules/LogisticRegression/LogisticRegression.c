@@ -7,6 +7,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "JobScheduler.h"
+
+extern JobScheduler jobScheduler;
+
 double EuclideanDistance(double* x, double* y, unsigned int size){
     double sum = 0;
     for (int i = 0; i < size; i++){
@@ -95,22 +99,37 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
         batches++;
     }
 
-    for(int k = 0; k < epochs; k++) {
-        for (int j = 0; j < batches; j++){
-            GradientVector(model, xIndexes, yVals, height, gradientVector, j*BATCH_SIZE);
+    double** subWeights = malloc(jobScheduler.numberOfThreads * sizeof(double*));
+    for (int l = 0; l < jobScheduler.numberOfThreads; ++l) {
+        subWeights[l] = calloc(model->width, sizeof(double));
+    }
 
-            //DEBUGGING
-            double mean;
-            for (int i = 0; i < model->width; i++){
-                mean += gradientVector[i];
+    for(int k = 0; k < epochs; k++) {
+        int m = 0;
+        while (m < batches) {
+            int numberOfVectors = jobScheduler.numberOfThreads;
+            if(numberOfVectors >= batches - m){
+                numberOfVectors = batches - m;
             }
-            mean /= model->width;
-            // printf("MEAN IS %.15f\n", mean); 
+
+            // Calculate #threads sub-weights for each batch of train batches.
+            for (int j = 0; j < numberOfVectors; j++) {
+                GradientVector(model, xIndexes, yVals, height, subWeights[j], m++ * BATCH_SIZE);
+            }
+
+
+            for (int l = 0; l < model->width; ++l) {
+                double sum = 0;
+                for (int i = 0; i < numberOfVectors; ++i) {
+                    sum += subWeights[i][l];
+                }
+                gradientVector[l] = sum / (double)numberOfVectors;
+            }
 
             for (int i = 0; i < model->width; ++i) {
                 newW[i] = model->weights[i] - learningRate * gradientVector[i];
             }
-            
+
             double *temp = model->weights;
             model->weights = newW;
             newW = temp;
@@ -122,6 +141,11 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
 
     free(gradientVector);
     free(newW);
+
+    for (int l = 0; l < jobScheduler.numberOfThreads; ++l) {
+        free(subWeights[l]);
+    }
+    free(subWeights);
 
     return model->weights;
 }
