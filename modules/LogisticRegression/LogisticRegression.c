@@ -115,15 +115,17 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
         batches++;
     }
 
-    double** subGradients = malloc(1000 * sizeof(double*));
-    for (int l = 0; l < 1000; ++l) {
+    int jobsPerUpdate = jobScheduler.numberOfThreads;
+
+    double** subGradients = malloc(jobsPerUpdate * sizeof(double*));
+    for (int l = 0; l < jobsPerUpdate; ++l) {
         subGradients[l] = calloc(model->width, sizeof(double));
     }
 
     for(int k = 0; k < epochs; k++) {
         int m = 0;
         while (m < batches) {
-            int numberOfJobs = 1000;
+            int numberOfJobs = jobsPerUpdate;
             if(numberOfJobs >= batches - m){
                 numberOfJobs = batches - m;
             }
@@ -181,7 +183,7 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
     free(gradientVector);
     free(newW);
 
-    for (int l = 0; l < 1000; ++l) {
+    for (int l = 0; l < jobsPerUpdate; ++l) {
         free(subGradients[l]);
     }
     free(subGradients);

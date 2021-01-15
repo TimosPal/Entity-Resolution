@@ -57,7 +57,7 @@ int CalculateBucketSize(char* websitesFolderPath){
 }
 
 void ParseArgs(int argc, char* argv[], char **websitesFolderPath, char **dataSetWPath, int* bucketSize, 
-char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath, int* vocabSize, int* epochs, double* maxAccuracyDiff, double* learningRate){
+char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath, int* vocabSize, int* epochs, double* maxAccuracyDiff, double* learningRate, int* threadCount){
     // Get the flags from argv.
     // -f should contain the path to the folder containing the websites folders.
     IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-f", websitesFolderPath), "Argument -f is missing or has no value")
@@ -82,6 +82,16 @@ char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath, in
     }else{
         // Give it a default value
         *vocabSize = VOCAB_SIZE;
+    }
+
+    // -t is the thread count
+    char *threadCountStr;
+    // If -t is not provided we give it a default value.
+    if(FindArgAfterFlag(argv, argc, "-t", &threadCountStr)) {
+        IF_ERROR_MSG(!StringToInt(threadCountStr, threadCount), "Thread Count should be a number")
+    }else{
+        // Give it a default value
+        *threadCount = WORKERS;
     }
 
     // -e is the number of epochs
@@ -658,14 +668,14 @@ int main(int argc, char* argv[]){
     /* --- Arguments --------------------------------------------------------------------------*/
 
     char *websitesFolderPath , *dataSetWPath, *identicalFilePath, *nonIdenticalFilePath, *outputFilePath;
-    int bucketSize, vocabSize, epochs;
+    int bucketSize, vocabSize, epochs, threadCount;
     double maxAccuracyDiff, learningRate;
-    ParseArgs(argc, argv, &websitesFolderPath, &dataSetWPath, &bucketSize, &identicalFilePath, &nonIdenticalFilePath, &outputFilePath, &vocabSize, &epochs, &maxAccuracyDiff, &learningRate);
+    ParseArgs(argc, argv, &websitesFolderPath, &dataSetWPath, &bucketSize, &identicalFilePath, &nonIdenticalFilePath, &outputFilePath, &vocabSize, &epochs, &maxAccuracyDiff, &learningRate, &threadCount);
 
     /* --- Init the job scheduler for multi threading wherever needed ------------------------*/
 
     // NOTE: jobScheduler is global.
-    JobScheduler_Init(&jobScheduler, WORKERS);
+    JobScheduler_Init(&jobScheduler, threadCount);
 
     /* --- Reads Json files and adds them to the clique ---------------------------------------*/
 
