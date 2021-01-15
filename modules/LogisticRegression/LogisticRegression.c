@@ -90,6 +90,22 @@ void LogisticRegression_Destroy(LogisticRegression model){
     free(model.weights);
 }
 
+void* CalculateGradient(void** args){
+    LogisticRegression* model = args[0];
+    unsigned int** xIndexes = args[1];
+    double* yVals = args[2];
+    unsigned int* height = args[3];
+    double* subGradient = args[4];
+    int* startIndx = args[5];
+
+    GradientVector(model, xIndexes, yVals, *height, subGradient, *startIndx);
+
+    free(startIndx);
+    free(args);
+
+    return NULL; // Changed already made into the sub gradient arrays.
+}
+
 double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndexes, double* yVals, unsigned int height, double learningRate, int epochs) {
     double* newW = malloc(model->width * sizeof(double));
     double* gradientVector = malloc(model->width * sizeof(double));
@@ -99,31 +115,54 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
         batches++;
     }
 
-    double** subWeights = malloc(jobScheduler.numberOfThreads * sizeof(double*));
-    for (int l = 0; l < jobScheduler.numberOfThreads; ++l) {
-        subWeights[l] = calloc(model->width, sizeof(double));
+    double** subGradients = malloc(1000 * sizeof(double*));
+    for (int l = 0; l < 1000; ++l) {
+        subGradients[l] = calloc(model->width, sizeof(double));
     }
 
     for(int k = 0; k < epochs; k++) {
         int m = 0;
         while (m < batches) {
-            int numberOfVectors = jobScheduler.numberOfThreads;
-            if(numberOfVectors >= batches - m){
-                numberOfVectors = batches - m;
+            int numberOfJobs = 1000;
+            if(numberOfJobs >= batches - m){
+                numberOfJobs = batches - m;
             }
 
             // Calculate #threads sub-weights for each batch of train batches.
-            for (int j = 0; j < numberOfVectors; j++) {
-                GradientVector(model, xIndexes, yVals, height, subWeights[j], m++ * BATCH_SIZE);
+            for (int j = 0; j < numberOfJobs; j++) {
+
+                // Creating the thread args.
+                Job* newJob = malloc(sizeof(Job));
+                void** args = malloc(6 * sizeof(void*));
+
+                int* startIndx = malloc(sizeof(int));
+                *startIndx = m++ * BATCH_SIZE;
+
+                args[0] = model;
+                args[1] = xIndexes;
+                args[2] = yVals;
+                args[3] = &height;
+                args[4] = subGradients[j];
+                args[5] = startIndx;
+
+                // Pushing the job to the thread pool queue.
+                Job_Init(newJob, CalculateGradient, NULL, args);
+                JobScheduler_AddJob(&jobScheduler, newJob);
             }
+
+            // Sync threads to calculate new mean gradient.
+            JobScheduler_WaitForJobs(&jobScheduler, numberOfJobs);
+            // Empty result queue since we dont require the NULL results.
+            while(jobScheduler.results.head != NULL)
+                Queue_Pop(&jobScheduler.results);
 
 
             for (int l = 0; l < model->width; ++l) {
                 double sum = 0;
-                for (int i = 0; i < numberOfVectors; ++i) {
-                    sum += subWeights[i][l];
+                for (int i = 0; i < numberOfJobs; ++i) {
+                    sum += subGradients[i][l];
                 }
-                gradientVector[l] = sum / (double)numberOfVectors;
+                gradientVector[l] = sum / (double)numberOfJobs;
             }
 
             for (int i = 0; i < model->width; ++i) {
@@ -142,10 +181,10 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
     free(gradientVector);
     free(newW);
 
-    for (int l = 0; l < jobScheduler.numberOfThreads; ++l) {
-        free(subWeights[l]);
+    for (int l = 0; l < 1000; ++l) {
+        free(subGradients[l]);
     }
-    free(subWeights);
+    free(subGradients);
 
     return model->weights;
 }

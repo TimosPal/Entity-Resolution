@@ -27,7 +27,8 @@ void Job_Init(Job* job, void* (*task)(void** args), void (*freeMethod)(void* val
 
 void Job_Free(void* value){
     Job* job = value;
-    job->freeMethod(job->result);
+    if(job->freeMethod != NULL)
+        job->freeMethod(job->result);
     free(job);
 }
 
