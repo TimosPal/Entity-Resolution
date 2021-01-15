@@ -221,7 +221,7 @@ void HandleData_W(char* dataSetWPath, CliqueGroup* cliqueGroup, List* testingPai
 
     fclose(dataSetFile);
 
-    printf("PAIRS ARE %d\n", pairs.size);
+    printf("Pairs in file are %d\n", pairs.size);
     //Shuffle and Split all pairs
     List_Shuffle(&pairs);
 
@@ -509,6 +509,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
     double stepValue = STEP_VALUE;
     int retrainCounter = 0;
 
+    int testingSize = trainingPack->testingPairs->size;
     while(threshold < 0.5){
         unsigned int height = trainingPack->trainingPairs->size;
         unsigned int** xIndexesTraining;
@@ -522,7 +523,9 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
                  &xIndexesTraining,
                  &yValsTraining);
 
-
+        //Destroy the model to free the weights before next init
+        LogisticRegression_Destroy(*model);
+        
         printf("Starting training #%d...\n", retrainCounter);
         LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
         LogisticRegression_Train(model,xIndexesTraining,yValsTraining,height, trainingPack->learningRate, trainingPack->epochs);
@@ -538,7 +541,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         int counter1 = 0;
         for (int i = 0; i < trainingPack->testingPairs->size; i++) {
             //check if this pair has already been added to training set before
-            if(xIndexesTesting[i][0] == -1){
+            if(xIndexesTesting[i][0] == -1 || xIndexesTesting[i][1] == -1){
                 continue;
             }
 
@@ -571,6 +574,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
             }
         }
         printf("%d %d\n", counter0, counter1);
+        printf("Accuracy is %f%%\n", (counter0 + (double)counter1)/testingSize * 100.0);
         
         //Tuple List to array
         Tuple** acceptedPairsArray = (Tuple**)List_ToArray(acceptedPairs);
@@ -591,22 +595,26 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
             //if pair is valid into cliqueGroup
             Item* item1 = icp1->item;
             Item* item2 = icp2->item;
-            if (!CliqueGroup_PairIsValid(icp1, icp2, isEqual)){
-                isEqual = !isEqual;
+
+            
+            //if the pair is valid, then update the cliqueGroup with it
+            if (CliqueGroup_PairIsValid(icp1, icp2, isEqual)){
+                if(isEqual){
+                    CliqueGroup_Update_Similar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
+                }else{
+                    CliqueGroup_Update_NonSimilar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
+                }
             }
 
-            if(isEqual){
-                CliqueGroup_Update_Similar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
-            }else{
-                CliqueGroup_Update_NonSimilar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
-            }
+            //"remove" these testing vectors
+            testingSize--;
+            xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][0] = -1;
+            xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][1] = -1;
         }
+
 
         //Finalize cliqueGroup
         CliqueGroup_Finalize(*cliqueGroup);
-        
-        //Get Pairs that will be trained in the next loop
-
 
         //Cleanup
         free(yValsTraining);
@@ -615,11 +623,18 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         }
         free(xIndexesTraining);
 
+        //Get Pairs that will be trained in the next loop
+        List_FreeValues(*trainingPack->trainingPairs, Tuple_Free);
+        List_Destroy(trainingPack->trainingPairs);
+        *trainingPack->trainingPairs = CliqueGroup_GetIdenticalPairs(cliqueGroup);
+        List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(cliqueGroup);
+        List_Join(trainingPack->trainingPairs, &nonIdenticalPairs);
+
+        //More Cleanup
+
         List_FreeValues(acceptedPairs, Tuple_Free);
         List_Destroy(&acceptedPairs);
         free(acceptedPairsArray);
-
-        LogisticRegression_Destroy(*model);
 
         //increment threshold and retrainCounter
         retrainCounter++;

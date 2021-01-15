@@ -39,6 +39,9 @@ void JobScheduler_Test_General(){
         int val = *(int*)currJob->result;
         sum += val;
 
+        free(((void **)currJob->taskArgs)[0]);
+        free(currJob->taskArgs);
+
         temp = temp->next;
     }
 
@@ -53,6 +56,8 @@ void JobScheduler_Test_General(){
         outerSum += innerSum;
     }
 
+    printf("SUM %d OUTERSUM %d\n", sum, outerSum);
+    
     TEST_ASSERT(sum == outerSum);
 }
 

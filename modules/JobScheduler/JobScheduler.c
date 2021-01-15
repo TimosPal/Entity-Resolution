@@ -124,6 +124,7 @@ void JobScheduler_Destroy(JobScheduler* jobScheduler){
     for (int i = 0; i < jobScheduler->numberOfThreads; ++i) {
         int *status;
         pthread_join(jobScheduler->threadsIDs[i], (void**) &status);
+        IF_ERROR_MSG(*status, "Thread error\n");
         free(status);
     }
 
