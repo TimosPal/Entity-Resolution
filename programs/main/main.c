@@ -499,6 +499,41 @@ typedef struct Item_Pack{
     List* items;
 } Item_Pack;
 
+void* GetThresholdPair(void** args){
+    int* currIndex = args[0];
+    unsigned int** xIndexesTesting = args[1];
+    double** xVals = args[2];
+    LogisticRegression* model = args[3];
+    double* threshold = args[4];
+
+    //check if this pair has already been added to training set before
+    if(xIndexesTesting[*currIndex][0] == -1 || xIndexesTesting[*currIndex][1] == -1){
+        return NULL;
+    }
+
+    double* leftVector = xVals[xIndexesTesting[*currIndex][0]];
+    double* rightVector = xVals[xIndexesTesting[*currIndex][1]];
+
+    double prediction = LogisticRegression_Predict(model, leftVector, rightVector);
+
+    //chance is prediction
+    double predictionError = prediction;
+    //chance = 1 - error if it is closer to 1
+    if (1 - predictionError < predictionError){
+        predictionError = 1 - predictionError;
+    }
+    //if error is under threshold
+    if(predictionError < *threshold) {
+        //Add pair and predictionError tuple to list
+        Tuple* pairPredictionErrorTuple = malloc(sizeof(Tuple));
+        //we pass the prediction and not the prediction error in order to know how to retrain
+        Tuple_Init(pairPredictionErrorTuple, currIndex, sizeof(int), &prediction, sizeof(double));
+        return pairPredictionErrorTuple;
+    }else{
+        return NULL;
+    }
+}
+
 void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Training_Pack* trainingPack, Item_Pack* itemPack, double** xVals){
     unsigned int width = 2 * itemPack->idfDictionary->keyValuePairs.size;
 
@@ -555,39 +590,52 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         int counter0 = 0;
         int counter1 = 0;
         for (int i = 0; i < trainingPack->testingPairs->size; i++) {
-            //check if this pair has already been added to training set before
-            if(xIndexesTesting[i][0] == -1 || xIndexesTesting[i][1] == -1){
-                continue;
-            }
+            void** args = malloc(6 * sizeof(void*));
+            int* currIndex = malloc(sizeof(int));
+            *currIndex = i;
 
-            double* leftVector = xVals[xIndexesTesting[i][0]];
-            double* rightVector = xVals[xIndexesTesting[i][1]];
-            
-            double prediction = LogisticRegression_Predict(model, leftVector, rightVector);
-            
-            if (fabs(prediction - yValsTesting[i]) <= 0.1){
-                if(yValsTesting[i] == 1.0){
-                    counter1++;
-                }else{
-                    counter0++;
+            // Thread args.
+            args[0] = currIndex;
+            args[1] = xIndexesTesting;
+            args[2] = xVals;
+            args[3] = model;
+            args[4] = &threshold;
+
+            // Create job.
+            Job* newJob = malloc(sizeof(Job));
+            Job_Init(newJob, GetThresholdPair, Tuple_Free, args);
+            JobScheduler_AddJob(&jobScheduler, newJob);
+        }
+
+        // Sync threads.
+        JobScheduler_WaitForJobs(&jobScheduler, trainingPack->testingPairs->size);
+
+        // Append results to the accaptedPairs list.
+        while(jobScheduler.results.head != NULL) {
+            Job* currJob = Queue_Pop(&jobScheduler.results);
+
+            free(currJob->taskArgs[0]);
+            free(currJob->taskArgs);
+
+            // If the value was accepted it , append it to the list
+            // and increment the counters accordingly.
+            if(currJob->result != NULL){
+                List_Append(&acceptedPairs, currJob->result);
+
+                Tuple* tuple = currJob->result;
+                int index = *(int*)tuple->value1;
+                double prediction = *(double*)tuple->value2;
+                if (fabs(prediction - yValsTesting[index]) <= 0.1){
+                    if(yValsTesting[index] == 1.0){
+                        counter1++;
+                    }else{
+                        counter0++;
+                    }
                 }
             }
 
-            //chance is prediction
-            double predictionError = prediction;
-            //chance = 1 - error if it is closer to 1
-            if (1 - predictionError < predictionError){
-                predictionError = 1 - predictionError;
-            }
-            //if error is under threshold
-            if(predictionError < threshold) {
-                //Add pair and predictionError tuple to list
-                Tuple* PairPredictionErrorTuple = malloc(sizeof(Tuple));
-                //we pass the prediction and not the prediction error in order to know how to retrain
-                Tuple_Init(PairPredictionErrorTuple, &i, sizeof(int), &prediction, sizeof(double));
-                List_Append(&acceptedPairs, PairPredictionErrorTuple);
-            }
         }
+
         printf("%d %d\n", counter0, counter1);
         printf("Accuracy is %f%%\n", (counter0 + (double)counter1)/testingSize * 100.0);
         
