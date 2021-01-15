@@ -47,7 +47,6 @@ void* JobHandler(void* args){
         }
 
         Job* currJob = Queue_Pop(threadArgs->jobs);
-        bool isLast = threadArgs->jobs->head == NULL;
 
         pthread_mutex_unlock(threadArgs->queueJobs_Lock);
 
@@ -63,24 +62,21 @@ void* JobHandler(void* args){
         Queue_Push(threadArgs->results, currJob);
         pthread_mutex_unlock(threadArgs->queueResults_Lock);
 
-        if(isLast)
-            pthread_cond_signal(threadArgs->queueResults_Cond);
+        pthread_cond_signal(threadArgs->queueResults_Cond);
     }
 
     // Thread exit.
     free(threadArgs);
 
-    int* status = malloc(sizeof(int));
-    *status = 0;
-    pthread_exit(status);
+    return NULL;
 }
 
-void JobScheduler_WaitForJobs(JobScheduler* jobScheduler){
-    pthread_mutex_lock(&jobScheduler->queueJobs_Lock);
-    while (jobScheduler->jobs.head != NULL) {
-        pthread_cond_wait(&jobScheduler->queueResults_Cond, &jobScheduler->queueJobs_Lock);
+void JobScheduler_WaitForJobs(JobScheduler* jobScheduler, int numberOfJobs){
+    pthread_mutex_lock(&jobScheduler->queueResults_Lock);
+    while (jobScheduler->results.size != numberOfJobs) {
+        pthread_cond_wait(&jobScheduler->queueResults_Cond, &jobScheduler->queueResults_Lock);
     }
-    pthread_mutex_unlock(&jobScheduler->queueJobs_Lock);
+    pthread_mutex_unlock(&jobScheduler->queueResults_Lock);
 }
 
 void JobScheduler_Init(JobScheduler* jobScheduler, int numberOfThreads){
@@ -122,10 +118,7 @@ void JobScheduler_Destroy(JobScheduler* jobScheduler){
     pthread_cond_broadcast(&jobScheduler->queueJobs_Cond);
 
     for (int i = 0; i < jobScheduler->numberOfThreads; ++i) {
-        int *status;
-        pthread_join(jobScheduler->threadsIDs[i], (void**) &status);
-        IF_ERROR_MSG(*status, "Thread error\n");
-        free(status);
+        pthread_join(jobScheduler->threadsIDs[i], NULL);
     }
 
     free(jobScheduler->threadsIDs);

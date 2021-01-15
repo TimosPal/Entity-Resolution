@@ -35,6 +35,6 @@ void Job_Init(Job* job, void* (*task)(void** args), void (*freeMethod)(void* val
 void JobScheduler_Init(JobScheduler* jobScheduler, int numberOfThreads);
 void JobScheduler_Destroy(JobScheduler* jobScheduler);
 void JobScheduler_AddJob(JobScheduler* jobScheduler, Job* newJob);
-void JobScheduler_WaitForJobs(JobScheduler* jobScheduler);
+void JobScheduler_WaitForJobs(JobScheduler* jobScheduler, int numberOfJobs);
 
 #endif

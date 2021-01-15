@@ -8,6 +8,7 @@ void* sum(void** args){
     int n = *(int*)args[0];
 
     int* sum = malloc(sizeof(int));
+    *sum = 0;
     for (int i = 0; i < n; ++i) {
         *sum += i;
     }
@@ -30,7 +31,7 @@ void JobScheduler_Test_General(){
 
         JobScheduler_AddJob(&jobScheduler, newJob);
     }
-    JobScheduler_WaitForJobs(&jobScheduler);
+    JobScheduler_WaitForJobs(&jobScheduler, 100);
 
     int sum = 0;
     Node* temp = jobScheduler.results.head;
@@ -56,8 +57,6 @@ void JobScheduler_Test_General(){
         outerSum += innerSum;
     }
 
-    printf("SUM %d OUTERSUM %d\n", sum, outerSum);
-    
     TEST_ASSERT(sum == outerSum);
 }
 
