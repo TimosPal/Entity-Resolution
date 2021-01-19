@@ -256,7 +256,7 @@ double* TF_IDF_ToArray(Hash hash, Hash dictionary){
 
         double* tfidf = Hash_GetValue(hash, kvp->key , strlen(kvp->key) + 1);
         if(tfidf){
-            array[iter] = *(double*)kvp->value;
+            array[iter] = *tfidf/* *(double*)kvp->value */;
         }else{
             array[iter] = 0.0;
         }
@@ -266,4 +266,37 @@ double* TF_IDF_ToArray(Hash hash, Hash dictionary){
     }
 
     return array;
+}
+
+bool IntCmp(void* value1, void* value2){
+    if(*(int*)value1 == *(int*)value2){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+Hash TF_IDF_ToIndexHash(Hash hash, Hash dictionary){
+    // Allocates values.
+    Hash vector;
+    Hash_Init(&vector, DEFAULT_HASH_SIZE, RSHash, IntCmp, true);
+    int iter = 0;
+
+    Node* currNode = dictionary.keyValuePairs.head;
+    while(currNode != NULL){
+        KeyValuePair* kvp = currNode->value;
+
+        double* tfidf = Hash_GetValue(hash, kvp->key , strlen(kvp->key) + 1);
+        
+        if(tfidf){
+            double* tfidfValue = malloc(sizeof(double));
+            *tfidfValue = *tfidf;
+            Hash_Add(&vector, &iter, sizeof(iter), tfidfValue);
+        }
+
+        currNode = currNode->next;
+        iter++;
+    }
+
+    return vector;
 }

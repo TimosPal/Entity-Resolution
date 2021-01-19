@@ -20,14 +20,23 @@ double EuclideanDistance(double* x, double* y, unsigned int size){
     return sqrt(sum);
 }
 
-double LinearFunction(double* weights, double bWeight, double* leftVector, double* rightVector, int dimension){
+double LinearFunction(double* weights, double bWeight, Hash* leftVector, Hash* rightVector, int dimension){
     double result = bWeight;
-    for (int i = 0; i < dimension/2; i++) {
-        result += weights[i] * leftVector[i];
+
+    Node* leftNode = leftVector->keyValuePairs.head;
+    while(leftNode != NULL){
+        KeyValuePair* kvp = (KeyValuePair*)leftNode->value;
+        result += weights[*(int*)kvp->key] * *(double*)(kvp->value);
+
+        leftNode = leftNode->next;
     }
 
-    for (int i = 0; i < dimension/2; i++) {
-        result += weights[dimension/2 + i] * rightVector[i];
+    Node* rightNode = rightVector->keyValuePairs.head;
+    while(rightNode != NULL){
+        KeyValuePair* kvp = (KeyValuePair*)rightNode->value;
+        result += weights[dimension/2 + *(int*)kvp->key] * *(double*)(kvp->value);
+
+        rightNode = rightNode->next;
     }
 
     return result;
@@ -38,7 +47,7 @@ double SigmoidFunction(double x){
     return val;
 }
 
-double PartialDerivative(LogisticRegression* model,unsigned int** xIndexes, double* yVals, unsigned int height, int derivativeIndex, int j){
+double PartialDerivative(LogisticRegression* model, unsigned int** xIndexes, double* yVals, unsigned int height, int derivativeIndex, int j){
     double result = 0;
     
     int limit = j + BATCH_SIZE;
@@ -47,13 +56,21 @@ double PartialDerivative(LogisticRegression* model,unsigned int** xIndexes, doub
     }
 
     for(int k = j; k < limit; k++){
-        double* leftVector = model->xVals[xIndexes[k][0]];
-        double* rightVector = model->xVals[xIndexes[k][1]];
+        Hash *leftVector = &model->xVals[xIndexes[k][0]]; //Hash1
+        Hash *rightVector = &model->xVals[xIndexes[k][1]]; //Hash2
         double xij;
+        double* tfidf;
         if(derivativeIndex < model->width / 2){
-            xij = leftVector[derivativeIndex];
+            tfidf = Hash_GetValue(*leftVector, &derivativeIndex, sizeof(derivativeIndex));
         }else{
-            xij = rightVector[derivativeIndex - model->width/2];
+            int newDerivativeIndex = derivativeIndex - model->width/2;
+            tfidf = Hash_GetValue(*rightVector, &newDerivativeIndex, sizeof(newDerivativeIndex));
+        }
+
+        if(tfidf){
+            xij = *tfidf;
+        }else{
+            xij = 0;
         }
 
         if(xij > 0){
@@ -66,12 +83,12 @@ double PartialDerivative(LogisticRegression* model,unsigned int** xIndexes, doub
 
 void GradientVector(LogisticRegression* model,unsigned int** xIndexes, double* yVals, unsigned int height, double* vector, int j){
     for (int i = 0; i < model->width; i++) {
-        vector[i] = PartialDerivative(model,xIndexes, yVals, height, i, j);
+        vector[i] = PartialDerivative(model, xIndexes, yVals, height, i, j);
         //printf("Partial derivative (%d) : %.14f\n", i, vector[i]);
     }
 }
 
-void LogisticRegression_Init(LogisticRegression* model, double bWeight, double** xVals, unsigned int width, unsigned int itemCount){
+void LogisticRegression_Init(LogisticRegression* model, double bWeight, Hash* xVals, unsigned int width, unsigned int itemCount){
     model->bWeight = bWeight;
 
     model->xVals = xVals;
@@ -191,6 +208,6 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
     return model->weights;
 }
 
-double LogisticRegression_Predict(LogisticRegression* model, double* leftVector, double* rightVector){
+double LogisticRegression_Predict(LogisticRegression* model, Hash* leftVector, Hash* rightVector){
     return SigmoidFunction(LinearFunction(model->weights, model->bWeight, leftVector, rightVector, model->width));
 }

@@ -7,6 +7,7 @@
 Hash IDF_Calculate(List items, Hash proccesedWords, int dimensionLimit);
 Hash CreateVector(Hash dictionary, List processedWords);
 double* TF_IDF_ToArray(Hash hash, Hash dictionary);
+Hash TF_IDF_ToIndexHash(Hash hash, Hash dictionary);
 
 Hash* CreateVectors(List xVals, Hash dictionary, Hash itemProcessedWords);
 

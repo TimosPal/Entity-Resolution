@@ -373,7 +373,7 @@ int PairChance_Cmp(const void* value1, const void* value2){
     }
 }
 
-void CreateXVals(List items, Hash idfDictionary, Hash itemProcessedWords, double*** XVals, Hash* icpToIndex, Hash* indexToIcp){
+void CreateXVals(List items, Hash idfDictionary, Hash itemProcessedWords, Hash** XVals, Hash* icpToIndex, Hash* indexToIcp){
     //Array of sparse matrices(hashes) with TFIDF values
     Hash* x = CreateVectors(items, idfDictionary, itemProcessedWords);
     
@@ -382,7 +382,7 @@ void CreateXVals(List items, Hash idfDictionary, Hash itemProcessedWords, double
     Hash_Init(indexToIcp, DEFAULT_HASH_SIZE, RSHash, IcpCmp, false);
     
     //Array with TFIDF vectors for each item
-    double **xVals = malloc(items.size * sizeof(double*));
+    Hash* xVals = malloc(items.size * sizeof(Hash));
     
     unsigned int k = 0;
     Node* itemNode = items.head;
@@ -395,7 +395,7 @@ void CreateXVals(List items, Hash idfDictionary, Hash itemProcessedWords, double
         Hash_Add(icpToIndex, &icp->id, sizeof(icp->id), index);
         //add to indexToIcp Hash
         Hash_Add(indexToIcp, index, sizeof(unsigned int), icp);
-        xVals[k] = TF_IDF_ToArray(x[k], idfDictionary);
+        xVals[k] = TF_IDF_ToIndexHash(x[k], idfDictionary);
 
         Hash_FreeValues(x[k], free);
         Hash_Destroy(x[k]);
@@ -502,7 +502,7 @@ typedef struct Item_Pack{
 void* GetThresholdPair(void** args){
     int* currIndex = args[0];
     unsigned int** xIndexesTesting = args[1];
-    double** xVals = args[2];
+    Hash* xVals = args[2];
     LogisticRegression* model = args[3];
     double* threshold = args[4];
 
@@ -511,10 +511,10 @@ void* GetThresholdPair(void** args){
         return NULL;
     }
 
-    double* leftVector = xVals[xIndexesTesting[*currIndex][0]];
-    double* rightVector = xVals[xIndexesTesting[*currIndex][1]];
+    Hash leftVector = xVals[xIndexesTesting[*currIndex][0]]; //Hash1
+    Hash rightVector = xVals[xIndexesTesting[*currIndex][1]]; //Hash2
 
-    double prediction = LogisticRegression_Predict(model, leftVector, rightVector);
+    double prediction = LogisticRegression_Predict(model, &leftVector, &rightVector);
 
     //chance is prediction
     double predictionError = prediction;
@@ -534,10 +534,10 @@ void* GetThresholdPair(void** args){
     }
 }
 
-void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Training_Pack* trainingPack, Item_Pack* itemPack, double** xVals){
+void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Training_Pack* trainingPack, Item_Pack* itemPack, Hash* xVals){
     unsigned int width = 2 * itemPack->idfDictionary->keyValuePairs.size;
 
-    printf("Created X Y Datasets for training\n\n");
+    printf("Created X Y Datasets for training\n");
     
     //Testing Datasets
     unsigned int** xIndexesTesting;
@@ -775,9 +775,11 @@ int main(int argc, char* argv[]){
     printf("Created and Trimmed Dictionary based on average TFIDF\n");
 
 
-    double** xVals;
+    Hash* xVals;
     Hash icpToIndex, indexToIcp;
     CreateXVals(items, idfDictionary, itemProcessedWords, &xVals, &icpToIndex, &indexToIcp);
+    printf("Created TFIDF Vectors\n");
+
     LogisticRegression model;
 
     //Training
@@ -829,7 +831,8 @@ int main(int argc, char* argv[]){
     LogisticRegression_Destroy(model);
 
     for(int i = 0; i < items.size; i++){
-        free(xVals[i]);
+        Hash_FreeValues(xVals[i], free);
+        Hash_Destroy(xVals[i]);
     }
     free(xVals);
 
