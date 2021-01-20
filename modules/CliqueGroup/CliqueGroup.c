@@ -361,6 +361,11 @@ void CliqueGroup_Finalize(CliqueGroup cg){ //this should run after the CliqueGro
 
             icpNode = icpNode->next; //next icp
         }
+        
+        if (clique->nonSimilarHash){ //if this is not NULL, finalize ran again before, this was malloc'ed
+            Hash_Destroy(*(clique->nonSimilarHash));
+            free(clique->nonSimilarHash);
+        }
         clique->nonSimilarHash = tempHash;
 
         cliqueNode = cliqueNode->next; //next clique

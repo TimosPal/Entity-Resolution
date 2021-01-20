@@ -499,39 +499,74 @@ typedef struct Item_Pack{
     List* items;
 } Item_Pack;
 
-void* GetThresholdPair(void** args){
-    int* currIndex = args[0];
-    unsigned int** xIndexesTesting = args[1];
-    Hash* xVals = args[2];
-    LogisticRegression* model = args[3];
-    double* threshold = args[4];
+/* get predictions of the pairs given and return list with tuples(prediction, real value) */
+void* PredictPairs(void** args){
+    int* fromIndex = args[0];
+    int* toIndex = args[1];
+    unsigned int** xIndexesTesting = args[2];
+    Hash* xVals = args[3];
+    double *yVals = args[4];
+    LogisticRegression* model = args[5];
+    
+    List* predictions = malloc(sizeof(List));
+    List_Init(predictions);
 
-    //check if this pair has already been added to training set before
-    if(xIndexesTesting[*currIndex][0] == -1 || xIndexesTesting[*currIndex][1] == -1){
-        return NULL;
-    }
+    for(int i = *fromIndex; i < *toIndex; i++){
+        
+        Hash leftVector = xVals[xIndexesTesting[i][0]]; //Hash1
+        Hash rightVector = xVals[xIndexesTesting[i][1]]; //Hash2
 
-    Hash leftVector = xVals[xIndexesTesting[*currIndex][0]]; //Hash1
-    Hash rightVector = xVals[xIndexesTesting[*currIndex][1]]; //Hash2
+        double prediction = LogisticRegression_Predict(model, &leftVector, &rightVector);
 
-    double prediction = LogisticRegression_Predict(model, &leftVector, &rightVector);
-
-    //chance is prediction
-    double predictionError = prediction;
-    //chance = 1 - error if it is closer to 1
-    if (1 - predictionError < predictionError){
-        predictionError = 1 - predictionError;
-    }
-    //if error is under threshold
-    if(predictionError < *threshold) {
         //Add pair and predictionError tuple to list
         Tuple* pairPredictionErrorTuple = malloc(sizeof(Tuple));
-        //we pass the prediction and not the prediction error in order to know how to retrain
-        Tuple_Init(pairPredictionErrorTuple, currIndex, sizeof(int), &prediction, sizeof(double));
-        return pairPredictionErrorTuple;
-    }else{
-        return NULL;
+        Tuple_Init(pairPredictionErrorTuple, &prediction, sizeof(double), &yVals[i], sizeof(double));
+        
+        List_Append(predictions, pairPredictionErrorTuple); 
     }
+
+    return predictions;
+}
+
+void* GetThresholdPair(void** args){
+    int* fromIndex = args[0];
+    int* toIndex = args[1];
+    unsigned int** xIndexesTesting = args[2];
+    Hash* xVals = args[3];
+    LogisticRegression* model = args[4];
+    double* threshold = args[5];
+    
+    List* acceptedPairs = malloc(sizeof(List));
+    List_Init(acceptedPairs);
+
+    //check if this pair has already been added to training set before
+    for(int i = *fromIndex; i < *toIndex; i++){
+        if(xIndexesTesting[i][0] == -1 || xIndexesTesting[i][1] == -1){
+            continue;
+        }
+        
+        Hash leftVector = xVals[xIndexesTesting[i][0]]; //Hash1
+        Hash rightVector = xVals[xIndexesTesting[i][1]]; //Hash2
+
+        double prediction = LogisticRegression_Predict(model, &leftVector, &rightVector);
+
+        //chance is prediction
+        double predictionError = prediction;
+        //chance = 1 - error if it is closer to 1
+        if (1 - predictionError < predictionError){
+            predictionError = 1 - predictionError;
+        }
+        //if error is under threshold
+        if(predictionError < *threshold) {
+            //Add pair and predictionError tuple to list
+            Tuple* pairPredictionErrorTuple = malloc(sizeof(Tuple));
+            //we pass the prediction and not the prediction error in order to know how to retrain
+            Tuple_Init(pairPredictionErrorTuple, &i, sizeof(int), &prediction, sizeof(double));
+            List_Append(acceptedPairs, pairPredictionErrorTuple); 
+        }
+    }
+
+    return acceptedPairs;
 }
 
 void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Training_Pack* trainingPack, Item_Pack* itemPack, Hash* xVals){
@@ -579,27 +614,31 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         printf("Starting training #%d...\n", retrainCounter);
         LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
         LogisticRegression_Train(model,xIndexesTraining,yValsTraining,height, trainingPack->learningRate, trainingPack->epochs);
-        printf("\rTraining completed with %d epochs\n\n", trainingPack->epochs);
-
         //Start testing
         printf("Predicting #%d...\n", retrainCounter);
 
         List acceptedPairs;
         List_Init(&acceptedPairs);
 
-        int counter0 = 0;
-        int counter1 = 0;
-        for (int i = 0; i < trainingPack->testingPairs->size; i++) {
+        int batchSize = trainingPack->testingPairs->size / jobScheduler.numberOfThreads;
+        int excessBatchSize = trainingPack->testingPairs->size % jobScheduler.numberOfThreads;
+
+        for (int i = 0; i < jobScheduler.numberOfThreads; i++) {
             void** args = malloc(6 * sizeof(void*));
-            int* currIndex = malloc(sizeof(int));
-            *currIndex = i;
+            int* fromIndex = malloc(sizeof(int));
+            int* toIndex = malloc(sizeof(int));
+            *fromIndex = i * batchSize;
+            *toIndex = i * batchSize + batchSize;
+            if (i == jobScheduler.numberOfThreads - 1) 
+                (*toIndex)+= excessBatchSize;
 
             // Thread args.
-            args[0] = currIndex;
-            args[1] = xIndexesTesting;
-            args[2] = xVals;
-            args[3] = model;
-            args[4] = &threshold;
+            args[0] = fromIndex;
+            args[1] = toIndex;
+            args[2] = xIndexesTesting;
+            args[3] = xVals;
+            args[4] = model;
+            args[5] = &threshold;
 
             // Create job.
             Job* newJob = malloc(sizeof(Job));
@@ -608,36 +647,25 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         }
 
         // Sync threads.
-        JobScheduler_WaitForJobs(&jobScheduler, trainingPack->testingPairs->size);
-
+        JobScheduler_WaitForJobs(&jobScheduler, jobScheduler.numberOfThreads);
+        
         // Append results to the accaptedPairs list.
         while(jobScheduler.results.head != NULL) {
             Job* currJob = Queue_Pop(&jobScheduler.results);
 
             free(currJob->taskArgs[0]);
+            free(currJob->taskArgs[1]);
             free(currJob->taskArgs);
 
             // If the value was accepted it , append it to the list
             // and increment the counters accordingly.
             if(currJob->result != NULL){
-                List_Append(&acceptedPairs, currJob->result);
-
-                Tuple* tuple = currJob->result;
-                int index = *(int*)tuple->value1;
-                double prediction = *(double*)tuple->value2;
-                if (fabs(prediction - yValsTesting[index]) <= 0.1){
-                    if(yValsTesting[index] == 1.0){
-                        counter1++;
-                    }else{
-                        counter0++;
-                    }
-                }
+                List_Join(&acceptedPairs, currJob->result);
+                free(currJob->result);
             }
 
+            free(currJob);
         }
-
-        printf("%d %d\n", counter0, counter1);
-        printf("Accuracy is %f%%\n", (counter0 + (double)counter1)/testingSize * 100.0);
         
         //Tuple List to array
         Tuple** acceptedPairsArray = (Tuple**)List_ToArray(acceptedPairs);
@@ -658,8 +686,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
             //if pair is valid into cliqueGroup
             Item* item1 = icp1->item;
             Item* item2 = icp2->item;
-
-            
+  
             //if the pair is valid, then update the cliqueGroup with it
             if (CliqueGroup_PairIsValid(icp1, icp2, isEqual)){
                 if(isEqual){
@@ -702,6 +729,8 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         //increment threshold and retrainCounter
         retrainCounter++;
         threshold += stepValue;
+
+        if(!RETRAINING) break;
     }
 
     //Cleanup
@@ -797,6 +826,108 @@ int main(int argc, char* argv[]){
                          };
 
     DynamicLearning(&cliqueGroup, &model, &trainingPack, &itemPack, xVals);
+
+    //Start testing
+    printf("Getting Predictions on test set...\n");
+    
+    unsigned int **xIndexesTesting;
+    double *yVals;
+    CreateXY(items, testingPairs, idfDictionary, itemProcessedWords, indexToIcp, &xIndexesTesting, &yVals);
+
+    int batchSize = testingPairs.size / jobScheduler.numberOfThreads;
+    int excessBatchSize = testingPairs.size % jobScheduler.numberOfThreads;
+
+    for (int i = 0; i < jobScheduler.numberOfThreads; i++) {
+        void** args = malloc(6 * sizeof(void*));
+        int* fromIndex = malloc(sizeof(int));
+        int* toIndex = malloc(sizeof(int));
+        *fromIndex = i * batchSize;
+        *toIndex = i * batchSize + batchSize;
+        if (i == jobScheduler.numberOfThreads - 1) 
+            (*toIndex)+= excessBatchSize;
+
+        // Thread args.
+        args[0] = fromIndex;
+        args[1] = toIndex;
+        args[2] = xIndexesTesting;
+        args[3] = xVals;
+        args[4] = yVals;
+        args[5] = &model;
+
+        // Create job.
+        Job* newJob = malloc(sizeof(Job));
+        Job_Init(newJob, PredictPairs, Tuple_Free, args);
+        JobScheduler_AddJob(&jobScheduler, newJob);
+    }
+
+    // Sync threads.
+    JobScheduler_WaitForJobs(&jobScheduler, jobScheduler.numberOfThreads);
+    
+    // Append results to the accaptedPairs list.
+    List testingPredictions;
+    List_Init(&testingPredictions);
+    while(jobScheduler.results.head != NULL) {
+        Job* currJob = Queue_Pop(&jobScheduler.results);
+
+        free(currJob->taskArgs[0]);
+        free(currJob->taskArgs[1]);
+        free(currJob->taskArgs);
+
+        // If the value was accepted it , append it to the list
+        // and increment the counters accordingly.
+        if(currJob->result != NULL){
+            List_Join(&testingPredictions, currJob->result);
+            free(currJob->result);
+        }
+
+        free(currJob);
+    }
+
+    //Redirect stdout to the fd of the outputFilePath
+    RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
+
+    //Now testingPredictions contains all predictions for the testing set and all real values in tuples
+    int testingCounter0 = 0, testingCounter1 = 0;
+    int testingReal1 = 0, testingReal0 = 0;
+
+    Node* predictionNode = testingPredictions.head;
+    while(predictionNode != NULL){
+        Tuple* prediction_realValue_tuple = predictionNode->value;
+        double prediction = *(double*)prediction_realValue_tuple->value1;
+        double realValue = *(double*)prediction_realValue_tuple->value2;
+
+        if(realValue == 1.0){
+            testingReal1++;
+        }else{
+            testingReal0++;
+        }
+
+        if(fabs(prediction - realValue) < maxAccuracyDiff){
+            if (realValue == 1.0){
+                testingCounter1++;
+            }else{
+                testingCounter0++;
+            }
+        }
+        printf("Prediction : %f    Real Value : %f\n", prediction, realValue);
+
+        predictionNode = predictionNode->next;
+    }
+    double accuracyPercentage = ((double)testingCounter1 + testingCounter0) / testingPairs.size * 100;
+    double identicalPercentage = (double)(testingCounter1) / testingReal1 * 100;
+    double nonIdenticalPercentage = (double)(testingCounter0) / testingReal0 * 100;
+    printf("Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter1 , testingReal1, identicalPercentage);
+    printf("Non Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 , testingReal0, nonIdenticalPercentage);
+    printf("General Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 + testingCounter1 , testingPairs.size, accuracyPercentage );
+    printf("\n");
+
+    //Reset stdout
+    ResetFileDescriptor(1, fd_new, fd_copy);
+
+    printf("Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter1 , testingReal1, identicalPercentage);
+    printf("Non Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 , testingReal0, nonIdenticalPercentage);
+    printf("General Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 + testingCounter1 , testingPairs.size, accuracyPercentage );
+    printf("\n");
 
     //Redirect stdout to the fd of the outputFilePath
     ///RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);

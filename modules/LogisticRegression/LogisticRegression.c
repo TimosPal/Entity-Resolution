@@ -126,6 +126,7 @@ void* CalculateGradient(void** args){
 double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndexes, double* yVals, unsigned int height, double learningRate, int epochs) {
     double* newW = malloc(model->width * sizeof(double));
     double* gradientVector = malloc(model->width * sizeof(double));
+    double* previousEpochWeights = calloc(model->width, sizeof(double));
 
     int batches = (int)height / BATCH_SIZE;
     if (height % BATCH_SIZE != 0){
@@ -139,6 +140,8 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
         subGradients[l] = calloc(model->width, sizeof(double));
     }
 
+    bool earlyStop = false;
+    int epochsCompleted = 0;
     for(int k = 0; k < epochs; k++) {
         int m = 0;
         while (m < batches) {
@@ -172,38 +175,59 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
             // Sync threads to calculate new mean gradient.
             JobScheduler_WaitForJobs(&jobScheduler, numberOfJobs);
             // Empty result queue since we dont require the NULL results.
-            while(jobScheduler.results.head != NULL)
-                Queue_Pop(&jobScheduler.results);
-
+            while(jobScheduler.results.head != NULL){
+                free(Queue_Pop(&jobScheduler.results));
+            }
 
             for (int l = 0; l < model->width; ++l) {
                 double sum = 0;
                 for (int i = 0; i < numberOfJobs; ++i) {
                     sum += subGradients[i][l];
                 }
-                gradientVector[l] = sum / (double)numberOfJobs;
+                gradientVector[l] = (double)sum / (double)numberOfJobs;
             }
 
             for (int i = 0; i < model->width; ++i) {
                 newW[i] = model->weights[i] - learningRate * gradientVector[i];
             }
 
+
             double *temp = model->weights;
             model->weights = newW;
             newW = temp;
         }
 
+        //stop if euclidean norm of new vs old weights is small enough
+        if (k > 0){
+            double euclideanWeightDist =  EuclideanDistance(model->weights, previousEpochWeights, model->width);
+            if (euclideanWeightDist < EARLY_STOP_EUCLIDEAN_DISTANCE){
+                earlyStop = true;
+            }
+            printf(", Dist is %.15f\n", euclideanWeightDist);
+        }
+
+        for (int i = 0; i < model->width; ++i) {
+            previousEpochWeights[i] = model->weights[i];
+        }
+
+        epochsCompleted++;
+
         printf("\r%d out of %d epochs", k+1, epochs);
         fflush(stdout);
+
+        if(earlyStop) break;
     }
 
     free(gradientVector);
     free(newW);
+    free(previousEpochWeights);
 
     for (int l = 0; l < jobsPerUpdate; ++l) {
         free(subGradients[l]);
     }
     free(subGradients);
+
+    printf("\rTraining completed with %d epochs\n\n", epochsCompleted);
 
     return model->weights;
 }
