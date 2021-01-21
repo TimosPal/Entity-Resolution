@@ -19,7 +19,8 @@
 #define STEP_VALUE 0.05
 #define WORKERS 10
 #define EARLY_STOP_EUCLIDEAN_DISTANCE 0.0001
-#define RETRAINING 0
+#define RETRAINING_TESTING_PAIRS 1000
+#define TRAINING_STEPS 2
 
 #define IF_ERROR_MSG(x,msg) { if(x) {fprintf(stderr,"ERROR : %s.\n",msg); exit(EXIT_ERROR_CODE); } }
 

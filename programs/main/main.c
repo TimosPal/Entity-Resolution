@@ -429,7 +429,7 @@ double* CreateY(List pairs){
     return results;
 }
 
-void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWords, Hash indexes, unsigned int*** xIndexes, double** Y){
+void CreateX(List items, List pairs, Hash idfDictionary, Hash itemProcessedWords, Hash indexes, unsigned int*** xIndexes){
     //Array of vector indexes in TFIDF array for all pairs
     unsigned int** pairIndexes = malloc(pairs.size * sizeof(unsigned int*));
     Node* pairNode = pairs.head;
@@ -460,9 +460,6 @@ void CreateXY(List items, List pairs, Hash idfDictionary, Hash itemProcessedWord
         pairNode = pairNode->next;
     }
 
-    double* yVals = CreateY(pairs);
-
-    *Y = yVals;
     *xIndexes = pairIndexes;
 }
 
@@ -569,6 +566,158 @@ void* GetThresholdPair(void** args){
     return acceptedPairs;
 }
 
+/* Get n random pairs for items in the items list */
+List GetRetrainingPairs(List* items, int n){
+    List retrainingPairs;
+    List_Init(&retrainingPairs);
+
+    for (int i = 0; i < n; i++){
+        int index1 = rand() % items->size;
+        int index2 = rand() % items->size;
+
+        Node* item1Node = List_GetNode(*items, index1);
+        Node* item2Node = List_GetNode(*items, index2);
+
+        ItemCliquePair* icp1 = item1Node->value;
+        ItemCliquePair* icp2 = item2Node->value;
+
+        //Alloc tuple
+        Tuple* tuple = malloc(sizeof(Tuple));
+
+        //malloc values
+        ItemCliquePair** icpPair = malloc(2*sizeof(ItemCliquePair*));
+        int* similarityPtr = malloc(sizeof(int));
+
+        //Set values
+        icpPair[0] = icp1;
+        icpPair[1] = icp2;
+        *similarityPtr = -1;
+
+        //Set the Tuple
+        tuple->value1 = icpPair;
+        tuple->value2 = similarityPtr;
+
+        List_Append(&retrainingPairs, tuple);
+    }
+
+    return retrainingPairs;
+}
+
+void TestModelOn(LogisticRegression* model, Item_Pack* itemPack, List testingPairs, Hash* indexToIcp, Hash* xVals, char* outputFilePath, double maxAccuracyDiff){
+    unsigned int **xIndexesTesting;
+    double *yVals;
+    CreateX(*itemPack->items, testingPairs, *itemPack->idfDictionary, *itemPack->itemProcessedWords, *indexToIcp, &xIndexesTesting);
+    yVals = CreateY(testingPairs);
+
+    int batchSize = testingPairs.size / jobScheduler.numberOfThreads;
+    int excessBatchSize = testingPairs.size % jobScheduler.numberOfThreads;
+
+    for (int i = 0; i < jobScheduler.numberOfThreads; i++) {
+        void** args = malloc(6 * sizeof(void*));
+        int* fromIndex = malloc(sizeof(int));
+        int* toIndex = malloc(sizeof(int));
+        *fromIndex = i * batchSize;
+        *toIndex = i * batchSize + batchSize;
+        if (i == jobScheduler.numberOfThreads - 1){
+            (*toIndex)+= excessBatchSize;
+        }
+        
+
+        // Thread args.
+        args[0] = fromIndex;
+        args[1] = toIndex;
+        args[2] = xIndexesTesting;
+        args[3] = xVals;
+        args[4] = yVals;
+        args[5] = model;
+
+        // Create job.
+        Job* newJob = malloc(sizeof(Job));
+        Job_Init(newJob, PredictPairs, Tuple_Free, args);
+        JobScheduler_AddJob(&jobScheduler, newJob);
+    }
+
+    // Sync threads.
+    JobScheduler_WaitForJobs(&jobScheduler, jobScheduler.numberOfThreads);
+    
+    // Append results to the accaptedPairs list.
+    List testingPredictions;
+    List_Init(&testingPredictions);
+    while(jobScheduler.results.head != NULL) {
+        Job* currJob = Queue_Pop(&jobScheduler.results);
+
+        free(currJob->taskArgs[0]);
+        free(currJob->taskArgs[1]);
+        free(currJob->taskArgs);
+
+        // If the value was accepted it , append it to the list
+        // and increment the counters accordingly.
+        if(currJob->result != NULL){
+            List_Join(&testingPredictions, currJob->result);
+            free(currJob->result);
+        }
+
+        free(currJob);
+    }
+
+    //Redirect stdout to the fd of the outputFilePath
+    int fd_copy, fd_new;
+    RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
+
+    //Now testingPredictions contains all predictions for the testing set and all real values in tuples
+    int testingCounter0 = 0, testingCounter1 = 0;
+    int testingReal1 = 0, testingReal0 = 0;
+
+    Node* predictionNode = testingPredictions.head;
+    while(predictionNode != NULL){
+        Tuple* prediction_realValue_tuple = predictionNode->value;
+        double prediction = *(double*)prediction_realValue_tuple->value1;
+        double realValue = *(double*)prediction_realValue_tuple->value2;
+
+        if(realValue == 1.0){
+            testingReal1++;
+        }else{
+            testingReal0++;
+        }
+
+        if(fabs(prediction - realValue) < maxAccuracyDiff){
+            if (realValue == 1.0){
+                testingCounter1++;
+            }else{
+                testingCounter0++;
+            }
+        }
+        printf("Prediction : %f    Real Value : %f\n", prediction, realValue);
+
+        predictionNode = predictionNode->next;
+    }
+    double accuracyPercentage = ((double)testingCounter1 + testingCounter0) / testingPairs.size * 100;
+    double identicalPercentage = (double)(testingCounter1) / testingReal1 * 100;
+    double nonIdenticalPercentage = (double)(testingCounter0) / testingReal0 * 100;
+    printf("Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter1 , testingReal1, identicalPercentage);
+    printf("Non Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 , testingReal0, nonIdenticalPercentage);
+    printf("General Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 + testingCounter1 , testingPairs.size, accuracyPercentage );
+    printf("\n");
+
+    //Reset stdout
+    ResetFileDescriptor(1, fd_new, fd_copy);
+
+    printf("Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter1 , testingReal1, identicalPercentage);
+    printf("Non Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 , testingReal0, nonIdenticalPercentage);
+    printf("General Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 + testingCounter1 , testingPairs.size, accuracyPercentage );
+    printf("\n");
+
+    //Cleanup
+    free(yVals);
+    for(int i = 0; i < testingPairs.size; i++){
+        free(xIndexesTesting[i]);
+    }
+    free(xIndexesTesting);
+
+    List_FreeValues(testingPredictions, Tuple_Free);
+    List_Destroy(&testingPredictions);
+}
+
 void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Training_Pack* trainingPack, Item_Pack* itemPack, Hash* xVals){
     unsigned int width = 2 * itemPack->idfDictionary->keyValuePairs.size;
 
@@ -576,17 +725,16 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
     
     //Testing Datasets
     unsigned int** xIndexesTesting;
-    double* yValsTesting;
     
-    CreateXY(*itemPack->items,
+    CreateX(*itemPack->items,
             *trainingPack->testingPairs,
             *itemPack->idfDictionary,
             *itemPack->itemProcessedWords,
             *trainingPack->icpToIndex,
-            &xIndexesTesting,
-            &yValsTesting);
+            &xIndexesTesting);
 
-    printf("Created X Y Datasets for testing\n\n");
+
+    printf("Created X Dataset for retraining predictions\n\n");
     
     double threshold = THRESHOLD;
     double stepValue = STEP_VALUE;
@@ -595,18 +743,19 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
     LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
 
     int testingSize = trainingPack->testingPairs->size;
-    while(threshold < 0.5){
+    while(threshold < 0.5 && retrainCounter != TRAINING_STEPS){ // also stop if it has retrained TRAINING_STEPS times
         unsigned int height = trainingPack->trainingPairs->size;
         unsigned int** xIndexesTraining;
         double* yValsTraining;
 
-        CreateXY(*itemPack->items,
+        CreateX(*itemPack->items,
                  *trainingPack->trainingPairs,
                  *itemPack->idfDictionary,
                  *itemPack->itemProcessedWords,
                  *trainingPack->icpToIndex,
-                 &xIndexesTraining,
-                 &yValsTraining);
+                 &xIndexesTraining);
+
+        yValsTraining = CreateY(*trainingPack->trainingPairs);
 
         //Destroy the model to free the weights before next init
         LogisticRegression_Destroy(*model);
@@ -614,7 +763,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         printf("Starting training #%d...\n", retrainCounter);
         LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
         LogisticRegression_Train(model,xIndexesTraining,yValsTraining,height, trainingPack->learningRate, trainingPack->epochs);
-        //Start testing
+        //Start predicting
         printf("Predicting #%d...\n", retrainCounter);
 
         List acceptedPairs;
@@ -729,12 +878,9 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         //increment threshold and retrainCounter
         retrainCounter++;
         threshold += stepValue;
-
-        if(!RETRAINING) break;
     }
 
     //Cleanup
-    free(yValsTesting);
     for(int i = 0; i < trainingPack->testingPairs->size; i++){
         free(xIndexesTesting[i]);
     }
@@ -811,10 +957,15 @@ int main(int argc, char* argv[]){
 
     LogisticRegression model;
 
+    //Get pairs for which the model will be retrained
+    List retrainingPairs = GetRetrainingPairs(&items, RETRAINING_TESTING_PAIRS);
+    printf("Created X Dataset for retraining predictions\n");
+
     //Training
+    //This pack contains the testing Pairs for which the model will be retrained
     Training_Pack trainingPack = {.epochs = epochs,
                                   .learningRate = learningRate,
-                                  .testingPairs = &testingPairs,
+                                  .testingPairs = &retrainingPairs,
                                   .trainingPairs = &trainingPairs,
                                   .icpToIndex = &icpToIndex,
                                   .indexToIcp = &indexToIcp,
@@ -829,106 +980,10 @@ int main(int argc, char* argv[]){
 
     //Start testing
     printf("Getting Predictions on test set...\n");
-    
-    unsigned int **xIndexesTesting;
-    double *yVals;
-    CreateXY(items, testingPairs, idfDictionary, itemProcessedWords, indexToIcp, &xIndexesTesting, &yVals);
+    TestModelOn(&model, &itemPack, testingPairs, &indexToIcp, xVals, outputFilePath, maxAccuracyDiff);
 
-    int batchSize = testingPairs.size / jobScheduler.numberOfThreads;
-    int excessBatchSize = testingPairs.size % jobScheduler.numberOfThreads;
-
-    for (int i = 0; i < jobScheduler.numberOfThreads; i++) {
-        void** args = malloc(6 * sizeof(void*));
-        int* fromIndex = malloc(sizeof(int));
-        int* toIndex = malloc(sizeof(int));
-        *fromIndex = i * batchSize;
-        *toIndex = i * batchSize + batchSize;
-        if (i == jobScheduler.numberOfThreads - 1) 
-            (*toIndex)+= excessBatchSize;
-
-        // Thread args.
-        args[0] = fromIndex;
-        args[1] = toIndex;
-        args[2] = xIndexesTesting;
-        args[3] = xVals;
-        args[4] = yVals;
-        args[5] = &model;
-
-        // Create job.
-        Job* newJob = malloc(sizeof(Job));
-        Job_Init(newJob, PredictPairs, Tuple_Free, args);
-        JobScheduler_AddJob(&jobScheduler, newJob);
-    }
-
-    // Sync threads.
-    JobScheduler_WaitForJobs(&jobScheduler, jobScheduler.numberOfThreads);
-    
-    // Append results to the accaptedPairs list.
-    List testingPredictions;
-    List_Init(&testingPredictions);
-    while(jobScheduler.results.head != NULL) {
-        Job* currJob = Queue_Pop(&jobScheduler.results);
-
-        free(currJob->taskArgs[0]);
-        free(currJob->taskArgs[1]);
-        free(currJob->taskArgs);
-
-        // If the value was accepted it , append it to the list
-        // and increment the counters accordingly.
-        if(currJob->result != NULL){
-            List_Join(&testingPredictions, currJob->result);
-            free(currJob->result);
-        }
-
-        free(currJob);
-    }
-
-    //Redirect stdout to the fd of the outputFilePath
-    RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
-
-    //Now testingPredictions contains all predictions for the testing set and all real values in tuples
-    int testingCounter0 = 0, testingCounter1 = 0;
-    int testingReal1 = 0, testingReal0 = 0;
-
-    Node* predictionNode = testingPredictions.head;
-    while(predictionNode != NULL){
-        Tuple* prediction_realValue_tuple = predictionNode->value;
-        double prediction = *(double*)prediction_realValue_tuple->value1;
-        double realValue = *(double*)prediction_realValue_tuple->value2;
-
-        if(realValue == 1.0){
-            testingReal1++;
-        }else{
-            testingReal0++;
-        }
-
-        if(fabs(prediction - realValue) < maxAccuracyDiff){
-            if (realValue == 1.0){
-                testingCounter1++;
-            }else{
-                testingCounter0++;
-            }
-        }
-        printf("Prediction : %f    Real Value : %f\n", prediction, realValue);
-
-        predictionNode = predictionNode->next;
-    }
-    double accuracyPercentage = ((double)testingCounter1 + testingCounter0) / testingPairs.size * 100;
-    double identicalPercentage = (double)(testingCounter1) / testingReal1 * 100;
-    double nonIdenticalPercentage = (double)(testingCounter0) / testingReal0 * 100;
-    printf("Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter1 , testingReal1, identicalPercentage);
-    printf("Non Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 , testingReal0, nonIdenticalPercentage);
-    printf("General Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 + testingCounter1 , testingPairs.size, accuracyPercentage );
-    printf("\n");
-
-    //Reset stdout
-    ResetFileDescriptor(1, fd_new, fd_copy);
-
-    printf("Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter1 , testingReal1, identicalPercentage);
-    printf("Non Identical Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 , testingReal0, nonIdenticalPercentage);
-    printf("General Pair Accuracy : %d / %d (%f%%)\n", testingCounter0 + testingCounter1 , testingPairs.size, accuracyPercentage );
-    printf("\n");
-
+    printf("Getting Predictions on validation set...\n");
+    TestModelOn(&model, &itemPack, validationPairs, &indexToIcp, xVals, outputFilePath, maxAccuracyDiff);
     //Redirect stdout to the fd of the outputFilePath
     ///RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
     //Reset stdout
@@ -958,6 +1013,9 @@ int main(int argc, char* argv[]){
 
     List_FreeValues(trainingPairs, Tuple_Free);
     List_Destroy(&trainingPairs);
+
+    List_FreeValues(retrainingPairs, Tuple_Free);
+    List_Destroy(&retrainingPairs);
 
     LogisticRegression_Destroy(model);
 
