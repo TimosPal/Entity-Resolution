@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "assert.h"
 #include "Tuple.h"
 #include "Hash.h"
 #include "Hashes.h"
@@ -192,13 +193,21 @@ List CliqueGroup_GetIdenticalPairs(CliqueGroup* cg){
         // getting each clique.
         Clique* currClique = (Clique*)(currCliqueNode->value);
         List currCliqueList = currClique->similar;
+
+        int limit = currClique->similar.size;
+        if(limit > CLIQUE_SIZE_LIMIT){
+            limit = CLIQUE_SIZE_LIMIT;
+        }
+        
         if (currCliqueList.size > 1){ // Only getting cliques that contain 2+ items.
 
             // getting each similar pair.
             Node* currItemA = currCliqueList.head;
-            while (currItemA != NULL){
+            int counterA = 0;
+            while (currItemA != NULL && counterA < limit){
                 Node* currItemB = currItemA->next;
-                while(currItemB != NULL) {
+                int counterB = 0;
+                while(currItemB != NULL && counterB < limit) {
                     ItemCliquePair *icpA = (ItemCliquePair *) (currItemA->value);
                     ItemCliquePair *icpB = (ItemCliquePair *) (currItemB->value);
 
@@ -222,8 +231,11 @@ List CliqueGroup_GetIdenticalPairs(CliqueGroup* cg){
                     List_Append(&pairs, tuple);
 
                     currItemB = currItemB->next;
+                    counterB++;
                 }
+
                 currItemA = currItemA->next;
+                counterA++;
             }
 
         }
@@ -251,6 +263,7 @@ List CliqueGroup_GetNonIdenticalPairs(CliqueGroup* cg){
         while (currItemNodeA != NULL){
 
             Node* currNonSimilarCliqueNode = currClique->nonSimilar.head;
+            assert(currClique->nonSimilar.size <= 3000);
             while (currNonSimilarCliqueNode != NULL){
                 Clique* currNonSimilarClique = ((ItemCliquePair*)currNonSimilarCliqueNode->value)->clique;
 

@@ -571,15 +571,22 @@ List GetRetrainingPairs(List* items, int n){
     List retrainingPairs;
     List_Init(&retrainingPairs);
 
+    void** itemsArray = List_ToArray(*items);
+
     for (int i = 0; i < n; i++){
         int index1 = rand() % items->size;
         int index2 = rand() % items->size;
 
-        Node* item1Node = List_GetNode(*items, index1);
-        Node* item2Node = List_GetNode(*items, index2);
+        if(index1 == index2){
+            if (index1 == 0){
+                index1++;
+            }else{
+                index1--;
+            }
+        }
 
-        ItemCliquePair* icp1 = item1Node->value;
-        ItemCliquePair* icp2 = item2Node->value;
+        ItemCliquePair* icp1 = itemsArray[index1];
+        ItemCliquePair* icp2 = itemsArray[index2];
 
         //Alloc tuple
         Tuple* tuple = malloc(sizeof(Tuple));
@@ -599,6 +606,8 @@ List GetRetrainingPairs(List* items, int n){
 
         List_Append(&retrainingPairs, tuple);
     }
+
+    free(itemsArray);
 
     return retrainingPairs;
 }
@@ -734,16 +743,16 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
             &xIndexesTesting);
 
 
-    printf("Created X Dataset for retraining predictions\n\n");
+    printf("Created X Array for retraining predictions\n\n");
     
     double threshold = THRESHOLD;
     double stepValue = STEP_VALUE;
-    int retrainCounter = 0;
+    int trainCounter = 0;
 
     LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
 
     int testingSize = trainingPack->testingPairs->size;
-    while(threshold < 0.5 && retrainCounter != TRAINING_STEPS){ // also stop if it has retrained TRAINING_STEPS times
+    while(threshold < 0.5 && trainCounter != TRAINING_STEPS){ // also stop if it has retrained TRAINING_STEPS times
         unsigned int height = trainingPack->trainingPairs->size;
         unsigned int** xIndexesTraining;
         double* yValsTraining;
@@ -760,123 +769,138 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         //Destroy the model to free the weights before next init
         LogisticRegression_Destroy(*model);
         
-        printf("Starting training #%d...\n", retrainCounter);
+        printf("Starting training #%d...\n", trainCounter);
         LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
         LogisticRegression_Train(model,xIndexesTraining,yValsTraining,height, trainingPack->learningRate, trainingPack->epochs);
+        trainCounter++;
         //Start predicting
-        printf("Predicting #%d...\n", retrainCounter);
+        if (trainCounter != TRAINING_STEPS){
+            printf("Predicting #%d...\n", trainCounter - 1);
 
-        List acceptedPairs;
-        List_Init(&acceptedPairs);
+            List acceptedPairs;
+            List_Init(&acceptedPairs);
 
-        int batchSize = trainingPack->testingPairs->size / jobScheduler.numberOfThreads;
-        int excessBatchSize = trainingPack->testingPairs->size % jobScheduler.numberOfThreads;
+            int batchSize = trainingPack->testingPairs->size / jobScheduler.numberOfThreads;
+            int excessBatchSize = trainingPack->testingPairs->size % jobScheduler.numberOfThreads;
 
-        for (int i = 0; i < jobScheduler.numberOfThreads; i++) {
-            void** args = malloc(6 * sizeof(void*));
-            int* fromIndex = malloc(sizeof(int));
-            int* toIndex = malloc(sizeof(int));
-            *fromIndex = i * batchSize;
-            *toIndex = i * batchSize + batchSize;
-            if (i == jobScheduler.numberOfThreads - 1) 
-                (*toIndex)+= excessBatchSize;
+            for (int i = 0; i < jobScheduler.numberOfThreads; i++) {
+                void** args = malloc(6 * sizeof(void*));
+                int* fromIndex = malloc(sizeof(int));
+                int* toIndex = malloc(sizeof(int));
+                *fromIndex = i * batchSize;
+                *toIndex = i * batchSize + batchSize;
+                if (i == jobScheduler.numberOfThreads - 1) 
+                    (*toIndex)+= excessBatchSize;
 
-            // Thread args.
-            args[0] = fromIndex;
-            args[1] = toIndex;
-            args[2] = xIndexesTesting;
-            args[3] = xVals;
-            args[4] = model;
-            args[5] = &threshold;
+                // Thread args.
+                args[0] = fromIndex;
+                args[1] = toIndex;
+                args[2] = xIndexesTesting;
+                args[3] = xVals;
+                args[4] = model;
+                args[5] = &threshold;
 
-            // Create job.
-            Job* newJob = malloc(sizeof(Job));
-            Job_Init(newJob, GetThresholdPair, Tuple_Free, args);
-            JobScheduler_AddJob(&jobScheduler, newJob);
-        }
-
-        // Sync threads.
-        JobScheduler_WaitForJobs(&jobScheduler, jobScheduler.numberOfThreads);
-        
-        // Append results to the accaptedPairs list.
-        while(jobScheduler.results.head != NULL) {
-            Job* currJob = Queue_Pop(&jobScheduler.results);
-
-            free(currJob->taskArgs[0]);
-            free(currJob->taskArgs[1]);
-            free(currJob->taskArgs);
-
-            // If the value was accepted it , append it to the list
-            // and increment the counters accordingly.
-            if(currJob->result != NULL){
-                List_Join(&acceptedPairs, currJob->result);
-                free(currJob->result);
+                // Create job.
+                Job* newJob = malloc(sizeof(Job));
+                Job_Init(newJob, GetThresholdPair, Tuple_Free, args);
+                JobScheduler_AddJob(&jobScheduler, newJob);
             }
 
-            free(currJob);
-        }
-        
-        //Tuple List to array
-        Tuple** acceptedPairsArray = (Tuple**)List_ToArray(acceptedPairs);
-        
-        //Sort array based on accuracy, we translate the prediction into the prediction's error before comparing in PairChance_Cmp
-        qsort(acceptedPairsArray, acceptedPairs.size, sizeof(Tuple*), PairChance_Cmp);
-        
-        //Insert to cliquegroup from higher to lower accuracy (and check if can be inserted)
-        for (int i = 0; i < acceptedPairs.size; i++){
-            unsigned int index1 = xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][0];
-            unsigned int index2 = xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][1];
-            double prediction = *(double*)(acceptedPairsArray[i]->value2);
+            // Sync threads.
+            JobScheduler_WaitForJobs(&jobScheduler, jobScheduler.numberOfThreads);
+            
 
-            ItemCliquePair* icp1 = Hash_GetValue(*trainingPack->indexToIcp, &index1, sizeof(unsigned int));
-            ItemCliquePair* icp2 = Hash_GetValue(*trainingPack->indexToIcp, &index2, sizeof(unsigned int));
-            bool isEqual = (1 - prediction < 0.5) ? true : false;
+            // Append results to the accaptedPairs list.
+            while(jobScheduler.results.head != NULL) {
+                Job* currJob = Queue_Pop(&jobScheduler.results);
 
-            //if pair is valid into cliqueGroup
-            Item* item1 = icp1->item;
-            Item* item2 = icp2->item;
-  
-            //if the pair is valid, then update the cliqueGroup with it
-            if (CliqueGroup_PairIsValid(icp1, icp2, isEqual)){
-                if(isEqual){
-                    CliqueGroup_Update_Similar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
-                }else{
-                    CliqueGroup_Update_NonSimilar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
+                free(currJob->taskArgs[0]);
+                free(currJob->taskArgs[1]);
+                free(currJob->taskArgs);
+
+                // If the value was accepted it , append it to the list
+                // and increment the counters accordingly.
+                if(currJob->result != NULL){
+                    List_Join(&acceptedPairs, currJob->result);
+                    free(currJob->result);
                 }
+
+                free(currJob);
             }
 
-            //"remove" these testing vectors
-            testingSize--;
-            xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][0] = -1;
-            xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][1] = -1;
+            
+            //Tuple List to array
+            Tuple** acceptedPairsArray = (Tuple**)List_ToArray(acceptedPairs);
+            
+            //Sort array based on accuracy, we translate the prediction into the prediction's error before comparing in PairChance_Cmp
+            qsort(acceptedPairsArray, acceptedPairs.size, sizeof(Tuple*), PairChance_Cmp);
+            
+            //Insert to cliquegroup from higher to lower accuracy (and check if can be inserted)
+            printf("Accepted %d pairs for retraining\n", acceptedPairs.size);
+            for (int i = 0; i < acceptedPairs.size; i++){
+                //printf("1\n");
+                unsigned int index1 = xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][0];
+                unsigned int index2 = xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][1];
+                double prediction = *(double*)(acceptedPairsArray[i]->value2);
+                //printf("2\n");
+
+                ItemCliquePair* icp1 = Hash_GetValue(*trainingPack->indexToIcp, &index1, sizeof(unsigned int));
+                ItemCliquePair* icp2 = Hash_GetValue(*trainingPack->indexToIcp, &index2, sizeof(unsigned int));
+                bool isEqual = (1 - prediction < 0.5) ? true : false;
+
+                //if pair is valid into cliqueGroup
+                Item* item1 = icp1->item;
+                Item* item2 = icp2->item;
+    
+                //if the pair is valid, then update the cliqueGroup with it
+                if (CliqueGroup_PairIsValid(icp1, icp2, isEqual)){
+                    if(isEqual){
+                        CliqueGroup_Update_Similar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
+                    }else{
+                        CliqueGroup_Update_NonSimilar(cliqueGroup, item1->id, strlen(item1->id)+1, item2->id, strlen(item2->id)+1);
+                    }
+                }
+
+                //"remove" these testing vectors
+                testingSize--;
+                xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][0] = -1;
+                xIndexesTesting[*(unsigned int*)acceptedPairsArray[i]->value1][1] = -1;
+            }
+
+            //Finalize cliqueGroup
+            CliqueGroup_Finalize(*cliqueGroup);
+
+            //Cleanup
+            free(yValsTraining);
+            for(int i = 0; i < trainingPack->trainingPairs->size; i++){
+                free(xIndexesTraining[i]);
+            }
+            free(xIndexesTraining);
+
+            //Get Pairs that will be trained in the next loop
+            List_FreeValues(*trainingPack->trainingPairs, Tuple_Free);
+            List_Destroy(trainingPack->trainingPairs);
+
+            *trainingPack->trainingPairs = CliqueGroup_GetIdenticalPairs(cliqueGroup);
+            List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(cliqueGroup);
+            List_Join(trainingPack->trainingPairs, &nonIdenticalPairs);
+
+            //More Cleanup
+
+            List_FreeValues(acceptedPairs, Tuple_Free);
+            List_Destroy(&acceptedPairs);
+            free(acceptedPairsArray);
+        }else{
+            //Cleanup
+            free(yValsTraining);
+            for(int i = 0; i < trainingPack->trainingPairs->size; i++){
+                free(xIndexesTraining[i]);
+            }
+            free(xIndexesTraining);
         }
 
 
-        //Finalize cliqueGroup
-        CliqueGroup_Finalize(*cliqueGroup);
-
-        //Cleanup
-        free(yValsTraining);
-        for(int i = 0; i < trainingPack->trainingPairs->size; i++){
-            free(xIndexesTraining[i]);
-        }
-        free(xIndexesTraining);
-
-        //Get Pairs that will be trained in the next loop
-        List_FreeValues(*trainingPack->trainingPairs, Tuple_Free);
-        List_Destroy(trainingPack->trainingPairs);
-        *trainingPack->trainingPairs = CliqueGroup_GetIdenticalPairs(cliqueGroup);
-        List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(cliqueGroup);
-        List_Join(trainingPack->trainingPairs, &nonIdenticalPairs);
-
-        //More Cleanup
-
-        List_FreeValues(acceptedPairs, Tuple_Free);
-        List_Destroy(&acceptedPairs);
-        free(acceptedPairsArray);
-
-        //increment threshold and retrainCounter
-        retrainCounter++;
+        //increment threshold
         threshold += stepValue;
     }
 
@@ -895,6 +919,13 @@ int main(int argc, char* argv[]){
     double maxAccuracyDiff, learningRate;
     ParseArgs(argc, argv, &websitesFolderPath, &dataSetWPath, &bucketSize, &identicalFilePath, &nonIdenticalFilePath, &outputFilePath, &vocabSize, &epochs, &maxAccuracyDiff, &learningRate, &threadCount);
 
+    //set two output paths for testing and validation
+    RemoveFileExtension(outputFilePath);
+    char outputFilePathTesting[BUFFER_SIZE];
+    sprintf(outputFilePathTesting, "%s_testing.txt", outputFilePath);
+
+    char outputFilePathValidation[BUFFER_SIZE];
+    sprintf(outputFilePathValidation, "%s_validation.txt", outputFilePath);
     /* --- Init the job scheduler for multi threading wherever needed ------------------------*/
 
     // NOTE: jobScheduler is global.
@@ -930,7 +961,6 @@ int main(int argc, char* argv[]){
     List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(&cliqueGroup);
     printf("%d non identical pairs found, printed in %s\n\n", nonIdenticalPairs.size, nonIdenticalFilePath);
     
-    printf("New training size after transitivity: %d pairs\n\n", nonIdenticalPairs.size + trainingPairs.size);
     //Redirect stdout to the fd of the nonIdenticalFilePath
     RedirectFileDescriptorToFile(1, nonIdenticalFilePath, &fd_new, &fd_copy);
     CliqueGroup_PrintPairs(nonIdenticalPairs, Item_Print);
@@ -938,6 +968,9 @@ int main(int argc, char* argv[]){
 
     // Join lists for later training.
     List_Join(&trainingPairs, &nonIdenticalPairs);
+    List_Shuffle(&trainingPairs);
+
+    printf("New training size after transitivity: %d pairs\n\n", trainingPairs.size);
 
     //Get all items in a list to use later
     List items = CliqueGroup_GetAllItems(cliqueGroup);
@@ -954,6 +987,7 @@ int main(int argc, char* argv[]){
     Hash icpToIndex, indexToIcp;
     CreateXVals(items, idfDictionary, itemProcessedWords, &xVals, &icpToIndex, &indexToIcp);
     printf("Created TFIDF Vectors\n");
+
 
     LogisticRegression model;
 
@@ -980,10 +1014,10 @@ int main(int argc, char* argv[]){
 
     //Start testing
     printf("Getting Predictions on test set...\n");
-    TestModelOn(&model, &itemPack, testingPairs, &indexToIcp, xVals, outputFilePath, maxAccuracyDiff);
+    TestModelOn(&model, &itemPack, testingPairs, &indexToIcp, xVals, outputFilePathTesting, maxAccuracyDiff);
 
     printf("Getting Predictions on validation set...\n");
-    TestModelOn(&model, &itemPack, validationPairs, &indexToIcp, xVals, outputFilePath, maxAccuracyDiff);
+    TestModelOn(&model, &itemPack, validationPairs, &indexToIcp, xVals, outputFilePathValidation, maxAccuracyDiff);
     //Redirect stdout to the fd of the outputFilePath
     ///RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
     //Reset stdout

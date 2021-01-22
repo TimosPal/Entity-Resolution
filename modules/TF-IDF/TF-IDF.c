@@ -256,7 +256,8 @@ double* TF_IDF_ToArray(Hash hash, Hash dictionary){
 
         double* tfidf = Hash_GetValue(hash, kvp->key , strlen(kvp->key) + 1);
         if(tfidf){
-            array[iter] = *tfidf/* *(double*)kvp->value */;
+            array[iter] = *tfidf;
+            //array[iter] = *(double*)kvp->value;
         }else{
             array[iter] = 0.0;
         }
@@ -291,6 +292,7 @@ Hash TF_IDF_ToIndexHash(Hash hash, Hash dictionary){
         if(tfidf){
             double* tfidfValue = malloc(sizeof(double));
             *tfidfValue = *tfidf;
+            //*tfidfValue = *(double*)kvp->value;
             Hash_Add(&vector, &iter, sizeof(iter), tfidfValue);
         }
 
