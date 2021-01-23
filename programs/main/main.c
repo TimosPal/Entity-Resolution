@@ -11,6 +11,7 @@
 #include "ArgUtil.h"
 #include "FolderUtil.h"
 #include "StringUtil.h"
+#include "TimeUtil.h"
 
 #include "JSONParser.h"
 #include "CSVParser.h"
@@ -26,6 +27,7 @@
 #include "JobScheduler.h"
 
 JobScheduler jobScheduler; // Global so it can be accessed from everywhere
+FILE* timefp; // file pointer to print results
 
 /* It is assumed that the json and csv files have proper formatting and appropriate values ,
  * so no extra error checking is done. */
@@ -56,8 +58,8 @@ int CalculateBucketSize(char* websitesFolderPath){
     return bucketSize;
 }
 
-void ParseArgs(int argc, char* argv[], char **websitesFolderPath, char **dataSetWPath, int* bucketSize, 
-char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath, int* vocabSize, int* epochs, double* maxAccuracyDiff, double* learningRate, int* threadCount){
+void ParseArgs(int argc, char* argv[], char **websitesFolderPath, char **dataSetWPath, int* bucketSize, int* batchSize, int* trainingSteps, bool* equalPairs,
+ char** outputFilePath, char** stopwordsFilePath, int* vocabSize, int* epochs, double* maxAccuracyDiff, double* learningRate, int* threadCount){
     // Get the flags from argv.
     // -f should contain the path to the folder containing the websites folders.
     IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-f", websitesFolderPath), "Argument -f is missing or has no value")
@@ -74,6 +76,36 @@ char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath, in
         *bucketSize = CalculateBucketSize(*websitesFolderPath);
     }
 
+    // -bs is the batchSize
+    char *batchSizeStr;
+    // If -bs is not provided we give it a default value.
+    if(FindArgAfterFlag(argv, argc, "-bs", &batchSizeStr)) {
+        IF_ERROR_MSG(!StringToInt(batchSizeStr, batchSize), "Batch Size should be a number")
+    }else{
+        *batchSize = BATCH_SIZE;
+    }
+
+     // -train is trainingSteps
+    char *trainingStepsStr;
+    // If -train is not provided we give it a default value.
+    if(FindArgAfterFlag(argv, argc, "-train", &trainingStepsStr)) {
+        IF_ERROR_MSG(!StringToInt(trainingStepsStr, trainingSteps), "Training Steps should be a number")
+    }else{
+        *trainingSteps = TRAINING_STEPS;
+    }
+
+    // -eq is equalPairs
+    char *equalPairsStr;
+    int equalPairsInt;
+    // If -eq is not provided we give it a default value.
+    if(FindArgAfterFlag(argv, argc, "-eq", &equalPairsStr)) {
+        IF_ERROR_MSG(!StringToInt(equalPairsStr, &equalPairsInt), "Equal Pairs should be 0 or 1")
+        IF_ERROR_MSG(equalPairsInt != 1 && equalPairsInt != 0, "Equal Pairs should be 0 or 1")
+        *equalPairs = equalPairsInt;
+    }else{
+        *equalPairs = EQUAL_PAIRS;
+    }
+
     // -v is the vocabSize
     char *vocabSizeStr;
     // If -v is not provided we give it a default value.
@@ -84,10 +116,10 @@ char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath, in
         *vocabSize = VOCAB_SIZE;
     }
 
-    // -t is the thread count
+    // -thrd is the thread count
     char *threadCountStr;
-    // If -t is not provided we give it a default value.
-    if(FindArgAfterFlag(argv, argc, "-t", &threadCountStr)) {
+    // If -thrd is not provided we give it a default value.
+    if(FindArgAfterFlag(argv, argc, "-thrd", &threadCountStr)) {
         IF_ERROR_MSG(!StringToInt(threadCountStr, threadCount), "Thread Count should be a number")
     }else{
         // Give it a default value
@@ -124,14 +156,11 @@ char** identicalFilePath, char** nonIdenticalFilePath, char** outputFilePath, in
         *learningRate = LEARNING_RATE;
     }
 
-    //i is the filename for identical pairs to be printed out to
-    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-i", identicalFilePath), "Argument -i is missing or has no value")
-
-    //n is the filename for non identical pairs to be printed out to
-    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-n", nonIdenticalFilePath), "Argument -n is missing or has no value")
-
-    //o is the filename for testing output to be printed out to
+    //o is the directory to save results
     IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-o", outputFilePath), "Argument -o is missing or has no value")
+
+    //sw is the stopwords file
+    IF_ERROR_MSG(!FindArgAfterFlag(argv, argc, "-sw", stopwordsFilePath), "Argument -sw is missing or has no value")
 }
 
 void HandleData_X(char* websitesFolderPath,int bucketSize,CliqueGroup* cliqueGroup){
@@ -147,7 +176,6 @@ void HandleData_X(char* websitesFolderPath,int bucketSize,CliqueGroup* cliqueGro
     while(currWebsiteFolder != NULL){
         char websitePath[BUFFER_SIZE];
         sprintf(websitePath,"%s/%s",websitesFolderPath,(char*)(currWebsiteFolder->value));
-
         // Open each item inside the current website folder.
         List currItems;
         IF_ERROR_MSG(!GetFolderItems(websitePath, &currItems), "failed to open/close website folder")
@@ -304,11 +332,11 @@ void WordList_Free(void* val){
 
 /* Creates all processed items at once because they will
  *be needed many times when creating the models*/
-Hash CreateProcessedItems(CliqueGroup cg){
+Hash CreateProcessedItems(CliqueGroup cg, char* stopwordsFilePath){
     Hash itemProcessedWords;
     Hash_Init(&itemProcessedWords, cg.hash.bucketSize, cg.hash.hashFunction, cg.hash.cmpFunction, false);
 
-    Hash stopwords = CreateStopwordHash(STOPWORDS_FILE);
+    Hash stopwords = CreateStopwordHash(stopwordsFilePath);
 
     Node* currCliqueNode = cg.cliques.head;
     while (currCliqueNode != NULL){
@@ -393,10 +421,12 @@ void CreateXVals(List items, Hash idfDictionary, Hash itemProcessedWords, Hash**
         *index = k;
         //add to icpToIndex Hash
         Hash_Add(icpToIndex, &icp->id, sizeof(icp->id), index);
+        //printf("%d %d\n", icp->id, *index);
+        
         //add to indexToIcp Hash
         Hash_Add(indexToIcp, index, sizeof(unsigned int), icp);
         xVals[k] = TF_IDF_ToIndexHash(x[k], idfDictionary);
-
+        
         Hash_FreeValues(x[k], free);
         Hash_Destroy(x[k]);
 
@@ -444,10 +474,12 @@ void CreateX(List items, List pairs, Hash idfDictionary, Hash itemProcessedWords
         ItemCliquePair* icp1 = icpPair[0];
         unsigned int* index1 = Hash_GetValue(indexes, &icp1->id, sizeof(icp1->id));
         pairIndexes[k][0] = *index1; 
+        //printf("ID IS %u and INDEX IS %u\n", icp1->id, *index1);
 
         ItemCliquePair* icp2 = icpPair[1];
         unsigned int* index2 = Hash_GetValue(indexes, &icp2->id, sizeof(icp2->id));
         pairIndexes[k][1] = *index2; 
+        //printf("ID IS %u and INDEX IS %u\n", icp2->id, *index2);
 
         //sort the 2 indexes
         if (pairIndexes[k][0] > pairIndexes[k][1]){
@@ -495,35 +527,6 @@ typedef struct Item_Pack{
     Hash* itemProcessedWords;
     List* items;
 } Item_Pack;
-
-/* get predictions of the pairs given and return list with tuples(prediction, real value) */
-void* PredictPairs(void** args){
-    int* fromIndex = args[0];
-    int* toIndex = args[1];
-    unsigned int** xIndexesTesting = args[2];
-    Hash* xVals = args[3];
-    double *yVals = args[4];
-    LogisticRegression* model = args[5];
-    
-    List* predictions = malloc(sizeof(List));
-    List_Init(predictions);
-
-    for(int i = *fromIndex; i < *toIndex; i++){
-        
-        Hash leftVector = xVals[xIndexesTesting[i][0]]; //Hash1
-        Hash rightVector = xVals[xIndexesTesting[i][1]]; //Hash2
-
-        double prediction = LogisticRegression_Predict(model, &leftVector, &rightVector);
-
-        //Add pair and predictionError tuple to list
-        Tuple* pairPredictionErrorTuple = malloc(sizeof(Tuple));
-        Tuple_Init(pairPredictionErrorTuple, &prediction, sizeof(double), &yVals[i], sizeof(double));
-        
-        List_Append(predictions, pairPredictionErrorTuple); 
-    }
-
-    return predictions;
-}
 
 void* GetThresholdPair(void** args){
     int* fromIndex = args[0];
@@ -612,10 +615,39 @@ List GetRetrainingPairs(List* items, int n){
     return retrainingPairs;
 }
 
-void TestModelOn(LogisticRegression* model, Item_Pack* itemPack, List testingPairs, Hash* indexToIcp, Hash* xVals, char* outputFilePath, double maxAccuracyDiff){
+/* get predictions of the pairs given and return list with tuples(prediction, real value) */
+void* PredictPairs(void** args){
+    int* fromIndex = args[0];
+    int* toIndex = args[1];
+    unsigned int** xIndexesTesting = args[2];
+    Hash* xVals = args[3];
+    double *yVals = args[4];
+    LogisticRegression* model = args[5];
+    
+    List* predictions = malloc(sizeof(List));
+    List_Init(predictions);
+
+    for(int i = *fromIndex; i < *toIndex; i++){
+        
+        Hash leftVector = xVals[xIndexesTesting[i][0]]; //Hash1
+        Hash rightVector = xVals[xIndexesTesting[i][1]]; //Hash2
+
+        double prediction = LogisticRegression_Predict(model, &leftVector, &rightVector);
+
+        //Add pair and predictionError tuple to list
+        Tuple* pairPredictionErrorTuple = malloc(sizeof(Tuple));
+        Tuple_Init(pairPredictionErrorTuple, &prediction, sizeof(double), &yVals[i], sizeof(double));
+        
+        List_Append(predictions, pairPredictionErrorTuple); 
+    }
+
+    return predictions;
+}
+
+void TestModelOn(LogisticRegression* model, Item_Pack* itemPack, List testingPairs, Hash* icpToIndex, Hash* xVals, char* outputFilePath, double maxAccuracyDiff){
     unsigned int **xIndexesTesting;
     double *yVals;
-    CreateX(*itemPack->items, testingPairs, *itemPack->idfDictionary, *itemPack->itemProcessedWords, *indexToIcp, &xIndexesTesting);
+    CreateX(*itemPack->items, testingPairs, *itemPack->idfDictionary, *itemPack->itemProcessedWords, *icpToIndex, &xIndexesTesting);
     yVals = CreateY(testingPairs);
 
     int batchSize = testingPairs.size / jobScheduler.numberOfThreads;
@@ -689,7 +721,7 @@ void TestModelOn(LogisticRegression* model, Item_Pack* itemPack, List testingPai
             testingReal0++;
         }
 
-        if(fabs(prediction - realValue) < maxAccuracyDiff){
+        if(fabs(prediction - (double)realValue) < maxAccuracyDiff){
             if (realValue == 1.0){
                 testingCounter1++;
             }else{
@@ -727,23 +759,25 @@ void TestModelOn(LogisticRegression* model, Item_Pack* itemPack, List testingPai
     List_Destroy(&testingPredictions);
 }
 
-void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Training_Pack* trainingPack, Item_Pack* itemPack, Hash* xVals){
+void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Training_Pack* trainingPack, Item_Pack* itemPack, Hash* xVals, int trainingSteps, bool equalPairs){
     unsigned int width = 2 * itemPack->idfDictionary->keyValuePairs.size;
 
     printf("Created X Y Datasets for training\n");
     
-    //Testing Datasets
     unsigned int** xIndexesTesting;
+    if (trainingSteps != 1){
+        //Testing Datasets
+        CreateX(*itemPack->items,
+                *trainingPack->testingPairs,
+                *itemPack->idfDictionary,
+                *itemPack->itemProcessedWords,
+                *trainingPack->icpToIndex,
+                &xIndexesTesting);
+
+        printf("Created X Array for retraining predictions\n");
+    }
+    printf("\n");
     
-    CreateX(*itemPack->items,
-            *trainingPack->testingPairs,
-            *itemPack->idfDictionary,
-            *itemPack->itemProcessedWords,
-            *trainingPack->icpToIndex,
-            &xIndexesTesting);
-
-
-    printf("Created X Array for retraining predictions\n\n");
     
     double threshold = THRESHOLD;
     double stepValue = STEP_VALUE;
@@ -752,7 +786,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
     LogisticRegression_Init(model, 0, xVals, width, itemPack->items->size);
 
     int testingSize = trainingPack->testingPairs->size;
-    while(threshold < 0.5 && trainCounter != TRAINING_STEPS){ // also stop if it has retrained TRAINING_STEPS times
+    while(threshold < 0.5 && trainCounter != trainingSteps){ // also stop if it has retrained trainingSteps times
         unsigned int height = trainingPack->trainingPairs->size;
         unsigned int** xIndexesTraining;
         double* yValsTraining;
@@ -774,7 +808,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         LogisticRegression_Train(model,xIndexesTraining,yValsTraining,height, trainingPack->learningRate, trainingPack->epochs);
         trainCounter++;
         //Start predicting
-        if (trainCounter != TRAINING_STEPS){
+        if (trainCounter != trainingSteps){
             printf("Predicting #%d...\n", trainCounter - 1);
 
             List acceptedPairs;
@@ -883,7 +917,27 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
 
             *trainingPack->trainingPairs = CliqueGroup_GetIdenticalPairs(cliqueGroup);
             List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(cliqueGroup);
+
+            //If we need equal identical and non-identical pairs for training
+            if (equalPairs){
+                
+                List pairsToRemove;
+                List_Init(&pairsToRemove);
+                if(trainingPack->trainingPairs->size > nonIdenticalPairs.size){
+                    List_Shuffle(trainingPack->trainingPairs);
+                    double splitPercentage = (double)(nonIdenticalPairs.size)/ trainingPack->trainingPairs->size;
+                    List_Split(trainingPack->trainingPairs, &pairsToRemove, splitPercentage);
+                }else{
+                    List_Shuffle(&nonIdenticalPairs);
+                    double splitPercentage = (double)(trainingPack->trainingPairs->size)/nonIdenticalPairs.size;
+                    List_Split(&nonIdenticalPairs, &pairsToRemove, splitPercentage);
+                }
+                List_FreeValues(pairsToRemove, Tuple_Free);
+                List_Destroy(&pairsToRemove);
+            }
+
             List_Join(trainingPack->trainingPairs, &nonIdenticalPairs);
+            List_Shuffle(trainingPack->trainingPairs);
 
             //More Cleanup
 
@@ -904,28 +958,91 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
         threshold += stepValue;
     }
 
-    //Cleanup
-    for(int i = 0; i < trainingPack->testingPairs->size; i++){
-        free(xIndexesTesting[i]);
+    if(trainingSteps != 1){
+        //Cleanup for testing
+        for(int i = 0; i < trainingPack->testingPairs->size; i++){
+            free(xIndexesTesting[i]);
+        }
+        free(xIndexesTesting);
     }
-    free(xIndexesTesting);
 }
 
 int main(int argc, char* argv[]){
     /* --- Arguments --------------------------------------------------------------------------*/
 
-    char *websitesFolderPath , *dataSetWPath, *identicalFilePath, *nonIdenticalFilePath, *outputFilePath;
-    int bucketSize, vocabSize, epochs, threadCount;
-    double maxAccuracyDiff, learningRate;
-    ParseArgs(argc, argv, &websitesFolderPath, &dataSetWPath, &bucketSize, &identicalFilePath, &nonIdenticalFilePath, &outputFilePath, &vocabSize, &epochs, &maxAccuracyDiff, &learningRate, &threadCount);
+    char *websitesFolderPath , *dataSetWPath, *outputFilePath, *stopwordsFilePath;
+    int bucketSize, vocabSize, epochs, threadCount, batchSize, trainingSteps, numberOfThreads = WORKERS;
+    bool equalPairs;
+    double maxAccuracyDiff, learningRate, threshhold = THRESHOLD, step_value = STEP_VALUE;
+    ParseArgs(argc, argv, &websitesFolderPath, &dataSetWPath, &bucketSize, &batchSize, &trainingSteps, &equalPairs, &outputFilePath, &stopwordsFilePath, &vocabSize, &epochs, &maxAccuracyDiff, &learningRate, &threadCount);
 
-    //set two output paths for testing and validation
-    RemoveFileExtension(outputFilePath);
-    char outputFilePathTesting[BUFFER_SIZE];
-    sprintf(outputFilePathTesting, "%s_testing.txt", outputFilePath);
+    //Set a name for our dataset
+    char* medium = "medium";
+    char* large = "large";
+    char dataset[100];
+    if(strstr(dataSetWPath, medium)){
+        strcpy(dataset, medium);
+    }else if(strstr(dataSetWPath, large)){
+        strcpy(dataset, large);
+    }else{
+        strcpy(dataset, dataSetWPath);
+    }
 
-    char outputFilePathValidation[BUFFER_SIZE];
-    sprintf(outputFilePathValidation, "%s_validation.txt", outputFilePath);
+    /* --- Initialize stat to check if directories exist -------------------------------------*/
+
+    struct stat st = {0};
+
+    /* --- Files to print results int --------------------------------------------------------*/
+
+    clock_t clockStart;
+
+    //create directory in outputFilePath and concat it to outputFilePath
+    char outputFolderPath[BUFFER_SIZE];
+    sprintf(outputFolderPath, "%s/Output", outputFilePath);
+    if (stat(outputFolderPath, &st) == -1){
+        if (mkdir(outputFolderPath, 0700)){
+            printf("Cannot create directory for output at %s\n", outputFolderPath);
+            perror("mkdir");
+            exit(1);
+        }
+    }
+
+    char resultFolderPath[2*BUFFER_SIZE];
+    sprintf(resultFolderPath, "%s/Results_DATA-%s_DICT-%d_DIFF-%f_LR-%f_EP-%d_EQ-%d_BS-%d_THLD-%f_SV-%f_TS-%d_THR-%d", outputFolderPath, dataset, vocabSize, maxAccuracyDiff, learningRate, epochs, equalPairs, batchSize, threshhold, step_value, trainingSteps, numberOfThreads);
+    if (stat(resultFolderPath, &st) == -1){
+        if (mkdir(resultFolderPath, 0700)){
+            printf("Cannot create directory for results at %s\n", resultFolderPath);
+            perror("mkdir");
+            exit(1);
+        }
+    }
+
+    char pairFolderPath[2*BUFFER_SIZE];
+    sprintf(pairFolderPath, "%s/Pairs_%s", outputFolderPath, dataset);
+    if (stat(pairFolderPath, &st) == -1){
+        if(mkdir(pairFolderPath, 0700)){
+            printf("Cannot create directory for pairs at %s\n", pairFolderPath);
+            perror("mkdir");
+            exit(1);
+        }
+    }
+
+    char outputFilePathTesting[3*BUFFER_SIZE];
+    sprintf(outputFilePathTesting, "%s/test_results.txt", resultFolderPath);
+
+    char outputFilePathValidation[3*BUFFER_SIZE];
+    sprintf(outputFilePathValidation, "%s/validation_results.txt", resultFolderPath);
+
+    char identicalFilePath[3*BUFFER_SIZE];
+    sprintf(identicalFilePath, "%s/identical.txt", pairFolderPath);
+
+    char nonIdenticalFilePath[3*BUFFER_SIZE];
+    sprintf(nonIdenticalFilePath, "%s/non_identical.txt", pairFolderPath);
+    
+    char timeFilePath[3*BUFFER_SIZE]; 
+    sprintf(timeFilePath, "%s/times.csv", resultFolderPath);
+    timefp = fopen(timeFilePath, "w");
+
     /* --- Init the job scheduler for multi threading wherever needed ------------------------*/
 
     // NOTE: jobScheduler is global.
@@ -933,21 +1050,36 @@ int main(int argc, char* argv[]){
 
     /* --- Reads Json files and adds them to the clique ---------------------------------------*/
 
-
     CliqueGroup cliqueGroup;
     CliqueGroup_Init(&cliqueGroup, bucketSize, RSHash, StringCmp);
+    
+    /* &&&&&&&&&&& START CLOCK &&&&&&&&&&& */
+    clockStart = startClock();
+
     HandleData_X(websitesFolderPath,bucketSize,&cliqueGroup);
+    
+    /* &&&&&&&&&&&  END CLOCK  &&&&&&&&&&& */
+    endClock(clockStart, "Insert items into cliques", timefp);
 
     /* --- Reads CSV files and updates the cliqueGroup ----------------------------------------*/
     List testingPairs;
     List validationPairs;
+
+    /* &&&&&&&&&&& START CLOCK &&&&&&&&&&& */
+    clockStart = startClock();
+    
     HandleData_W(dataSetWPath, &cliqueGroup, &testingPairs, &validationPairs);
+    
+    /* &&&&&&&&&&&  END CLOCK  &&&&&&&&&&& */
+    endClock(clockStart, "Update cliques based on training pairs", timefp);
 
     /* --- Print results ----------------------------------------------------------------------*/
     
     printf("\n");
 
-    //Get Identical Pairs
+    /* &&&&&&&&&&& START CLOCK &&&&&&&&&&& */
+    clockStart = startClock();
+    
     List trainingPairs = CliqueGroup_GetIdenticalPairs(&cliqueGroup);
     printf("%d identical pairs found, printed in %s\n", trainingPairs.size, identicalFilePath);
     
@@ -965,35 +1097,86 @@ int main(int argc, char* argv[]){
     RedirectFileDescriptorToFile(1, nonIdenticalFilePath, &fd_new, &fd_copy);
     CliqueGroup_PrintPairs(nonIdenticalPairs, Item_Print);
     ResetFileDescriptor(1, fd_new, fd_copy);
+    
+    /* &&&&&&&&&&&  END CLOCK  &&&&&&&&&&& */
+    endClock(clockStart, "Get and Print identical and non identical pairs", timefp);
+
+    //If we need equal identical and non-identical pairs for training
+    if (equalPairs){
+        List pairsToRemove;
+        List_Init(&pairsToRemove);
+        if(trainingPairs.size > nonIdenticalPairs.size){
+            List_Shuffle(&trainingPairs);
+            double splitPercentage = (double)(nonIdenticalPairs.size)/trainingPairs.size;
+            List_Split(&trainingPairs, &pairsToRemove, splitPercentage);
+        }else{
+            List_Shuffle(&nonIdenticalPairs);
+            double splitPercentage = (double)(trainingPairs.size)/nonIdenticalPairs.size;
+            List_Split(&nonIdenticalPairs, &pairsToRemove, splitPercentage);
+        }
+        List_FreeValues(pairsToRemove, Tuple_Free);
+        List_Destroy(&pairsToRemove);
+    }
 
     // Join lists for later training.
     List_Join(&trainingPairs, &nonIdenticalPairs);
     List_Shuffle(&trainingPairs);
 
-    printf("New training size after transitivity: %d pairs\n\n", trainingPairs.size);
+    printf("New training size after transitivity: %d pairs", trainingPairs.size);
+    if (equalPairs){
+        printf(", equal pairs is enabled");
+    }
+    printf("\n\n");
 
     //Get all items in a list to use later
     List items = CliqueGroup_GetAllItems(cliqueGroup);
     
     /* --- Create processed words for items ---------------------------------------------------*/
 
-    Hash itemProcessedWords = CreateProcessedItems(cliqueGroup);
+    /* &&&&&&&&&&& START CLOCK &&&&&&&&&&& */
+    clockStart = startClock();
+    
+    Hash itemProcessedWords = CreateProcessedItems(cliqueGroup, stopwordsFilePath);
     printf("Created Processed Words\n");
+    
+    /* &&&&&&&&&&&  END CLOCK  &&&&&&&&&&& */
+    endClock(clockStart, "Create Processed Items", timefp);
+    
+    /* &&&&&&&&&&& START CLOCK &&&&&&&&&&& */
+    clockStart = startClock();
+    
     Hash idfDictionary = IDF_Calculate(items, itemProcessedWords, vocabSize); //Create Dictionary based on items list
     printf("Created and Trimmed Dictionary based on average TFIDF\n");
+    
+    /* &&&&&&&&&&&  END CLOCK  &&&&&&&&&&& */
+    endClock(clockStart, "Create IDF Dictionary", timefp);
 
-
+    /* &&&&&&&&&&& START CLOCK &&&&&&&&&&& */
+    clockStart = startClock();
+    
     Hash* xVals;
     Hash icpToIndex, indexToIcp;
     CreateXVals(items, idfDictionary, itemProcessedWords, &xVals, &icpToIndex, &indexToIcp);
     printf("Created TFIDF Vectors\n");
+    
+    /* &&&&&&&&&&&  END CLOCK  &&&&&&&&&&& */
+    endClock(clockStart, "Create TFIDF Vectors", timefp);
 
 
     LogisticRegression model;
 
     //Get pairs for which the model will be retrained
-    List retrainingPairs = GetRetrainingPairs(&items, RETRAINING_TESTING_PAIRS);
-    printf("Created X Dataset for retraining predictions\n");
+    List retrainingPairs;
+    if(trainingSteps != 1){
+        /* &&&&&&&&&&& START CLOCK &&&&&&&&&&& */
+        clockStart = startClock();
+        
+        retrainingPairs = GetRetrainingPairs(&items, RETRAINING_TESTING_PAIRS);
+        printf("Created X Dataset for retraining predictions\n");
+        
+        /* &&&&&&&&&&&  END CLOCK  &&&&&&&&&&& */
+        endClock(clockStart, "Create Pairs for retraining", timefp);
+    }
 
     //Training
     //This pack contains the testing Pairs for which the model will be retrained
@@ -1010,29 +1193,32 @@ int main(int argc, char* argv[]){
                           .itemProcessedWords = &itemProcessedWords
                          };
 
-    DynamicLearning(&cliqueGroup, &model, &trainingPack, &itemPack, xVals);
+    /* &&&&&&&&&&& START CLOCK &&&&&&&&&&& */
+    clockStart = startClock();
+    
+    DynamicLearning(&cliqueGroup, &model, &trainingPack, &itemPack, xVals, trainingSteps, equalPairs);
+    
+    /* &&&&&&&&&&&  END CLOCK  &&&&&&&&&&& */
+    endClock(clockStart, "Dynamic Retraining", timefp);
 
     //Start testing
-    printf("Getting Predictions on test set...\n");
-    TestModelOn(&model, &itemPack, testingPairs, &indexToIcp, xVals, outputFilePathTesting, maxAccuracyDiff);
-
-    printf("Getting Predictions on validation set...\n");
-    TestModelOn(&model, &itemPack, validationPairs, &indexToIcp, xVals, outputFilePathValidation, maxAccuracyDiff);
-    //Redirect stdout to the fd of the outputFilePath
-    ///RedirectFileDescriptorToFile(1, outputFilePath, &fd_new, &fd_copy);
-    //Reset stdout
-    //ResetFileDescriptor(1, fd_new, fd_copy);
-    //printf("Printed prediction results in %s\n\n", outputFilePath);
+    /* &&&&&&&&&&& START CLOCK &&&&&&&&&&& */
+    clockStart = startClock();
     
-    //NOTE: PREDICTION PRINT FOR LATER USE
-    //printf("Prediction : %f Real value : %f\n", prediction, yValsTesting[i]);
+    printf("Getting Predictions on test set...\n");
+    TestModelOn(&model, &itemPack, testingPairs, &icpToIndex, xVals, outputFilePathTesting, maxAccuracyDiff);
+    
+    /* &&&&&&&&&&&  END CLOCK  &&&&&&&&&&& */
+    endClock(clockStart, "Testing Set Predictions", timefp);
 
-    //TODO: we dont know how many identical and non identical pairs there were
-    //printf("Identical Pair Accuracy : %d / %d\n", counter1 , testingPairs.size);
-    //printf("Non Identical Pair Accuracy : %d / %d\n", counter0 , testingPairs.size);
-    //printf("General Pair Accuracy : %d / %d (%f%%)\n", counter0 + counter1 , testingPairs.size, accuracyPercentage);
-    //printf("%d Identical Pairs accurate\n%d Non Identical pairs accurate\n",counter1,counter0);
-    //printf("\n");
+    /* &&&&&&&&&&& START CLOCK &&&&&&&&&&& */
+    clockStart = startClock();
+    
+    printf("Getting Predictions on validation set...\n");
+    TestModelOn(&model, &itemPack, validationPairs, &icpToIndex, xVals, outputFilePathValidation, maxAccuracyDiff);
+    
+    /* &&&&&&&&&&&  END CLOCK  &&&&&&&&&&& */
+    endClock(clockStart, "Validation Set Predictions", timefp);
 
     /* --- Clean up ---------------------------------------------------------------------------*/
     
@@ -1048,8 +1234,10 @@ int main(int argc, char* argv[]){
     List_FreeValues(trainingPairs, Tuple_Free);
     List_Destroy(&trainingPairs);
 
-    List_FreeValues(retrainingPairs, Tuple_Free);
-    List_Destroy(&retrainingPairs);
+    if(trainingSteps != 1){
+        List_FreeValues(retrainingPairs, Tuple_Free);
+        List_Destroy(&retrainingPairs);
+    }
 
     LogisticRegression_Destroy(model);
 
@@ -1075,6 +1263,8 @@ int main(int argc, char* argv[]){
     
     CliqueGroup_FreeValues(cliqueGroup, Item_Free);
     CliqueGroup_Destroy(cliqueGroup);
+
+    fclose(timefp);
 
     printf("Exiting...\n\n");
 

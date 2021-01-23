@@ -142,6 +142,7 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
 
     bool earlyStop = false;
     int epochsCompleted = 0;
+
     for(int k = 0; k < epochs; k++) {
         int m = 0;
         while (m < batches) {
@@ -198,12 +199,12 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
         }
 
         //stop if euclidean norm of new vs old weights is small enough
+        double euclideanWeightDist = 0.0;
         if (k > 0){
-            double euclideanWeightDist =  EuclideanDistance(model->weights, previousEpochWeights, model->width);
+            euclideanWeightDist =  EuclideanDistance(model->weights, previousEpochWeights, model->width);
             if (euclideanWeightDist < EARLY_STOP_EUCLIDEAN_DISTANCE){
                 earlyStop = true;
             }
-            printf(", Dist is %.15f\n", euclideanWeightDist);
         }
 
         for (int i = 0; i < model->width; ++i) {
@@ -212,7 +213,7 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
 
         epochsCompleted++;
 
-        printf("\r%d out of %d epochs", k+1, epochs);
+        printf("\r%d out of %d epochs, Dist is %.15f", k+1, epochs, euclideanWeightDist);
         fflush(stdout);
 
         if(earlyStop) break;
@@ -227,7 +228,7 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
     }
     free(subGradients);
 
-    printf("\rTraining completed with %d epochs\n\n", epochsCompleted);
+    printf("\rTraining completed with %d epochs                           \n\n", epochsCompleted);
 
     return model->weights;
 }
