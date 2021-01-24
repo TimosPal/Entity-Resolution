@@ -262,7 +262,7 @@ void HandleData_W(char* dataSetWPath, CliqueGroup* cliqueGroup, List* testingPai
 
     fclose(dataSetFile);
 
-    printf("Pairs in file are %d\n", pairs.size);
+    printf("Pairs in file are %d\n\n", pairs.size);
     //Shuffle and Split all pairs
     List_Shuffle(&pairs);
 
@@ -919,8 +919,7 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
             List nonIdenticalPairs = CliqueGroup_GetNonIdenticalPairs(cliqueGroup);
 
             //If we need equal identical and non-identical pairs for training
-            if (equalPairs){
-                
+            if (equalPairs){ 
                 List pairsToRemove;
                 List_Init(&pairsToRemove);
                 if(trainingPack->trainingPairs->size > nonIdenticalPairs.size){
@@ -939,8 +938,13 @@ void DynamicLearning(CliqueGroup* cliqueGroup, LogisticRegression* model, Traini
             List_Join(trainingPack->trainingPairs, &nonIdenticalPairs);
             List_Shuffle(trainingPack->trainingPairs);
 
-            //More Cleanup
+            printf("New training size after transitivity: %d pairs", trainingPack->trainingPairs->size);
+            if (equalPairs){
+                printf(", equal pairs is enabled");
+            }
+            printf("\n\n");
 
+            //More Cleanup
             List_FreeValues(acceptedPairs, Tuple_Free);
             List_Destroy(&acceptedPairs);
             free(acceptedPairsArray);
@@ -1008,7 +1012,7 @@ int main(int argc, char* argv[]){
     }
 
     char resultFolderPath[2*BUFFER_SIZE];
-    sprintf(resultFolderPath, "%s/Results_DATA-%s_DICT-%d_DIFF-%f_LR-%f_EP-%d_EQ-%d_BS-%d_THLD-%f_SV-%f_TS-%d_THR-%d", outputFolderPath, dataset, vocabSize, maxAccuracyDiff, learningRate, epochs, equalPairs, batchSize, threshhold, step_value, trainingSteps, numberOfThreads);
+    sprintf(resultFolderPath, "%s/Results_DATA-%s_DICT-%d_LR-%f_EP-%d_BS-%d_TS-%d_EQ-%d_DIFF-%f_THLD-%f_SV-%f_THR-%d", outputFolderPath, dataset, vocabSize, learningRate, epochs, batchSize, trainingSteps, equalPairs, maxAccuracyDiff, threshhold, step_value, numberOfThreads);
     if (stat(resultFolderPath, &st) == -1){
         if (mkdir(resultFolderPath, 0700)){
             printf("Cannot create directory for results at %s\n", resultFolderPath);

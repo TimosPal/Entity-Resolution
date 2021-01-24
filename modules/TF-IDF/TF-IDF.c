@@ -291,7 +291,7 @@ Hash TF_IDF_ToIndexHash(Hash hash, Hash dictionary){
         
         if(tfidf){
             double* tfidfValue = malloc(sizeof(double));
-            *tfidfValue = *tfidf * 100;
+            *tfidfValue = *tfidf;// * 100;
             //*tfidfValue = *(double*)kvp->value; //TF IS 1
             Hash_Add(&vector, &iter, sizeof(iter), tfidfValue);
         }

@@ -133,7 +133,7 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
         batches++;
     }
 
-    int jobsPerUpdate = jobScheduler.numberOfThreads;
+    int jobsPerUpdate = JOBS_PER_UPDATE; //jobScheduler.numberOfThreads;
 
     double** subGradients = malloc(jobsPerUpdate * sizeof(double*));
     for (int l = 0; l < jobsPerUpdate; ++l) {

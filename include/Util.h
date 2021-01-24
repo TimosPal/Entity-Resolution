@@ -18,11 +18,12 @@
 #define THRESHOLD 0.02
 #define WORKERS 1
 #define EARLY_STOP_EUCLIDEAN_DISTANCE 0.000001
-#define RETRAINING_TESTING_PAIRS 100
+#define RETRAINING_TESTING_PAIRS 10000
 #define TRAINING_STEPS 1
 #define STEP_VALUE 0.02
 #define CLIQUE_SIZE_LIMIT 3000
 #define EQUAL_PAIRS true;
+#define JOBS_PER_UPDATE 10;
 
 #define IF_ERROR_MSG(x,msg) { if(x) {fprintf(stderr,"ERROR : %s.\n",msg); exit(EXIT_ERROR_CODE); } }
 
