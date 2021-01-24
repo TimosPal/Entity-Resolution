@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdio.h>
 
-clock_t startClock();
-void endClock(clock_t start, char* process, FILE* fp);
+void startClock(struct timespec* start);
+void endClock(struct timespec* start, char* process, FILE* fp);
 
 #endif

@@ -47,10 +47,10 @@ double SigmoidFunction(double x){
     return val;
 }
 
-double PartialDerivative(LogisticRegression* model, unsigned int** xIndexes, double* yVals, unsigned int height, int derivativeIndex, int j){
+double PartialDerivative(LogisticRegression* model, unsigned int** xIndexes, double* yVals, unsigned int height, int derivativeIndex, int j, int batchSize){
     double result = 0;
     
-    int limit = j + BATCH_SIZE;
+    int limit = j + batchSize;
     if (limit > height){
         limit = height;
     }
@@ -81,9 +81,9 @@ double PartialDerivative(LogisticRegression* model, unsigned int** xIndexes, dou
     return result;
 }
 
-void GradientVector(LogisticRegression* model,unsigned int** xIndexes, double* yVals, unsigned int height, double* vector, int j){
+void GradientVector(LogisticRegression* model,unsigned int** xIndexes, double* yVals, unsigned int height, double* vector, int j, int batchSize){
     for (int i = 0; i < model->width; i++) {
-        vector[i] = PartialDerivative(model, xIndexes, yVals, height, i, j);
+        vector[i] = PartialDerivative(model, xIndexes, yVals, height, i, j, batchSize);
         //printf("Partial derivative (%d) : %.14f\n", i, vector[i]);
     }
 }
@@ -114,22 +114,24 @@ void* CalculateGradient(void** args){
     unsigned int* height = args[3];
     double* subGradient = args[4];
     int* startIndx = args[5];
+    int* batchSize = args[6];
 
-    GradientVector(model, xIndexes, yVals, *height, subGradient, *startIndx);
+    GradientVector(model, xIndexes, yVals, *height, subGradient, *startIndx, *batchSize);
 
     free(startIndx);
+    free(batchSize);
     free(args);
 
     return NULL; // Changed already made into the sub gradient arrays.
 }
 
-double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndexes, double* yVals, unsigned int height, double learningRate, int epochs) {
+double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndexes, double* yVals, unsigned int height, double learningRate, int epochs, int batchSize) {
     double* newW = malloc(model->width * sizeof(double));
     double* gradientVector = malloc(model->width * sizeof(double));
     double* previousEpochWeights = calloc(model->width, sizeof(double));
 
-    int batches = (int)height / BATCH_SIZE;
-    if (height % BATCH_SIZE != 0){
+    int batches = (int)height / batchSize;
+    if (height % batchSize != 0){
         batches++;
     }
 
@@ -156,10 +158,13 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
 
                 // Creating the thread args.
                 Job* newJob = malloc(sizeof(Job));
-                void** args = malloc(6 * sizeof(void*));
+                void** args = malloc(7 * sizeof(void*));
 
                 int* startIndx = malloc(sizeof(int));
-                *startIndx = m++ * BATCH_SIZE;
+                *startIndx = m++ * batchSize;
+
+                int* batchSizePtr = malloc(sizeof(int));
+                *batchSizePtr = batchSize;
 
                 args[0] = model;
                 args[1] = xIndexes;
@@ -167,6 +172,7 @@ double* LogisticRegression_Train(LogisticRegression *model,unsigned int** xIndex
                 args[3] = &height;
                 args[4] = subGradients[j];
                 args[5] = startIndx;
+                args[6] = batchSizePtr;
 
                 // Pushing the job to the thread pool queue.
                 Job_Init(newJob, CalculateGradient, NULL, args);

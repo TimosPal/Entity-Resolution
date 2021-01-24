@@ -1,12 +1,11 @@
 #!/bin/bash
-learning_rates=( 2 0.2 0.02 );
-epochs1=( 6 12 24);
-datasets=( Datasets/sigmod_medium_labelled_dataset.csv Datasets/sigmod_large_labelled_dataset.csv );
-batch_sizes=( 32 256 512 );
-
 make clean;
 make;
 
+learning_rates=( 2 0.2 0.02 );
+epochs1=( 6 12 24);
+datasets=( Datasets/sigmod_medium_labelled_dataset.csv Datasets/sigmod_large_labelled_dataset.csv );
+batch_sizes=( 256 512 1024 );
 
 #WITHOUT RETRAINING
 for dataset in "${datasets[@]}"
@@ -31,9 +30,10 @@ done
 
 #EQUAL PAIRS MEDIUM
 equal_pairs=( 0 1 );
-epochs2=( 10 100 1000);
+epochs2=( 10 100 );
+learning_rates2=( 20 2 0.2);
 
-for learning_rate in "${learning_rates[@]}"
+for learning_rate in "${learning_rates2[@]}"
 do
     for epoch in "${epochs2[@]}"
     do
@@ -43,9 +43,9 @@ done
 
 
 #EQUAL PAIRS LARGE
-epochs3=( 10 50 100);
+epochs3=( 10 100);
 
-for learning_rate in "${learning_rates[@]}"
+for learning_rate in "${learning_rates2[@]}"
 do
     for epoch in "${epochs3[@]}"
     do
@@ -55,7 +55,7 @@ done
 
 
 #THREAD COUNT
-thread_counts=( 1 2 4 8 16 );
+thread_counts=( 1 2 4 8 );
 for thread_count in "${thread_counts[@]}"
 do
     ./programs/main/main -f Datasets/camera_specs/2013_camera_specs -w ${datasets[1]} -sw stopwords.txt -o . -v 1000 -e 10 -d 0.5 -r ${learning_rates[0]} -thrd $thread_count -bs ${batch_sizes[1]} -eq 0 -train 1;
@@ -63,9 +63,9 @@ done
 
 
 #WITH RETRAINING
-training_steps=( 2 4 6);
+training_steps=( 1 2 4 );
 for training_step_val in "${training_steps[@]}"
 do
-    ./programs/main/main -f Datasets/camera_specs/2013_camera_specs -w ${datasets[1]} -sw stopwords.txt -o . -v 1000 -e 10 -d 0.5 -r ${learning_rates[0]} -thrd 10 -bs ${batch_sizes[1]} -eq 0 -train 1;
+    ./programs/main/main -f Datasets/camera_specs/2013_camera_specs -w ${datasets[1]} -sw stopwords.txt -o . -v 1000 -e 10 -d 0.5 -r ${learning_rates[0]} -thrd 10 -bs ${batch_sizes[1]} -eq 1 -train $training_step_val;
 done
 
