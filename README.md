@@ -1,4 +1,4 @@
-Project's report: [./report.pdf](report.pdf)
+For more information on this project, read the project's [report](./Report.pdf).
 
 ### How to compile / Makefile usage :
 If run through make , the arguments used are defined in the main's 
