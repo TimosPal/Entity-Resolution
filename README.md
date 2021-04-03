@@ -1,4 +1,6 @@
-For more information on this project, read the project's [report](./Report.pdf).
+# Entity Resolution
+Logistic regression binary classifier trained with camera descriptions. Predicts whether two items are similar. New relationships are induced, forming cliques. TF-IDF is used for the vectorization of the data sets.
+**For more information read the project's [report](./Report.pdf).**
 
 ### How to compile / Makefile usage :
 If run through make , the arguments used are defined in the main's 
