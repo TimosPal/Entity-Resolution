@@ -32,7 +32,3 @@ Makefile located in programs/main
 
 ### External libraries :
 - acutest.h , used for unit testing, include with command "git submodule update"
-
-### Contributors :
-- Palaiologos Timotheos AM: 1115201700112
-- Desipris Georgios AM: 1115201700030
